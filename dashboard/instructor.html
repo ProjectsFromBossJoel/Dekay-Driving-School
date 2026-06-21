@@ -1911,6 +1911,25 @@
       if (btn) btn.classList.add("active");
       const titles = { dashboard: "Dashboard", students: "My Students", attendance: "Attendance", myAttendance: "My Attendance", quizzes: "Quizzes", settings: "Settings" };
       document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
+      
+      // Auto-refresh data when switching pages
+      if (name === "students") {
+        loadMyStudents().then(() => updateDashboardStats());
+      }
+      if (name === "attendance") {
+        loadAttendanceRecords();
+      }
+      if (name === "myAttendance") {
+        loadMyAttendance();
+      }
+      if (name === "dashboard") {
+        loadMyStudents().then(() => {
+          loadAttendanceRecords();
+          updateDashboardStats();
+          checkInstructorClassSession();
+        });
+      }
+      
       if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
     }
     function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
