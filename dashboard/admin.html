@@ -3269,7 +3269,7 @@ window.approveStudent = async function(uid) {
         await setDoc(progressRef, defaultProgress);
       }
       
-      // ── SEND APPROVAL EMAIL VIA SERVERLESS FUNCTION ──
+       // ── SEND APPROVAL EMAIL VIA SERVERLESS FUNCTION ──
       const student = allStudents.find(s => s.id === uid);
       if (student && student.email) {
         fetch('https://dekay-driving-school.vercel.app/api/send-approval-email', {
