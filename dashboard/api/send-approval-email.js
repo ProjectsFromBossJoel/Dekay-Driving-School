@@ -1,15 +1,13 @@
 export default async function handler(req, res) {
-  // ── CORS HEADERS (Allow cross-origin requests from Firebase) ──
+  // ── CORS HEADERS ──
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
-  // Handle browser preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -23,11 +21,14 @@ export default async function handler(req, res) {
   try {
     const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + Buffer.from(process.env.EMAILJS_PRIVATE_KEY + ':').toString('base64')
+      },
       body: JSON.stringify({
         service_id: process.env.EMAILJS_SERVICE_ID,
         template_id: process.env.EMAILJS_TEMPLATE_ID,
-        user_id: process.env.EMAILJS_PRIVATE_KEY,
+        user_id: process.env.EMAILJS_PUBLIC_KEY,
         template_params: {
           to_name,
           course_name,
@@ -42,10 +43,10 @@ export default async function handler(req, res) {
     } else {
       const error = await response.text();
       console.error('EmailJS error:', error);
-      return res.status(500).json({ error: 'Failed to send email' });
+      return res.status(500).json({ error: 'Failed to send email', details: error });
     }
   } catch (err) {
     console.error('Server error:', err);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error', details: err.message });
   }
 }
