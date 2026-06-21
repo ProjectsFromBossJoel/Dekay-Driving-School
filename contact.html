@@ -443,6 +443,10 @@
     </div>
   </footer>
 
+    <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
   <script>
     const navbar = document.getElementById('navbar');
     window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 40); });
@@ -463,12 +467,9 @@
       appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b"
     };
 
-    // Load Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    // Initialize Firebase (compat mode — no import needed)
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
     async function handleSubmit() {
       const firstName = document.getElementById('firstName').value.trim();
@@ -494,8 +495,7 @@
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
 
       try {
-        // Save to Firestore
-        await addDoc(collection(db, "enquiries"), {
+        await db.collection("enquiries").add({
           firstName,
           lastName,
           phone,
@@ -504,7 +504,7 @@
           experience: experience || null,
           message: message || null,
           status: "new",
-          createdAt: serverTimestamp()
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         document.getElementById('formContent').style.display = 'none';
