@@ -1981,9 +1981,11 @@
           });
         }
         
-        buildPipelines(2, studentData);
-        document.getElementById("dashStage").textContent = "2";
-        showToast("✅ Stage 1 complete! You can now start theory lessons.", "success");
+        showToast("✅ Stage 1 complete! Refreshing...", "success");
+        // Refresh everything after a short delay
+        setTimeout(() => {
+          initDashboard();
+        }, 1500);
       } else {
         showToast("Photo updated ✓", "success");
       }
