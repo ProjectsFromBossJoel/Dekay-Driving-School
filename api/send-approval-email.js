@@ -18,32 +18,46 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
+  // Debug: Check if env vars exist
+  console.log('Env vars present:', {
+    service: !!process.env.EMAILJS_SERVICE_ID,
+    template: !!process.env.EMAILJS_TEMPLATE_ID,
+    publicKey: !!process.env.EMAILJS_PUBLIC_KEY,
+    privateKey: !!process.env.EMAILJS_PRIVATE_KEY
+  });
+
   try {
+    const requestBody = {
+      service_id: process.env.EMAILJS_SERVICE_ID,
+      template_id: process.env.EMAILJS_TEMPLATE_ID,
+      user_id: process.env.EMAILJS_PUBLIC_KEY,
+      template_params: {
+        to_name,
+        course_name,
+        to_email,
+        login_link
+      }
+    };
+
+    console.log('Sending to EmailJS...');
+
     const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + Buffer.from(process.env.EMAILJS_PRIVATE_KEY + ':').toString('base64')
+        'Authorization': `Bearer ${process.env.EMAILJS_PRIVATE_KEY}`
       },
-      body: JSON.stringify({
-        service_id: process.env.EMAILJS_SERVICE_ID,
-        template_id: process.env.EMAILJS_TEMPLATE_ID,
-        user_id: process.env.EMAILJS_PUBLIC_KEY,
-        template_params: {
-          to_name,
-          course_name,
-          to_email,
-          login_link
-        }
-      })
+      body: JSON.stringify(requestBody)
     });
+
+    const result = await response.text();
+    console.log('EmailJS response status:', response.status);
+    console.log('EmailJS response body:', result);
 
     if (response.ok) {
       return res.status(200).json({ success: true });
     } else {
-      const error = await response.text();
-      console.error('EmailJS error:', error);
-      return res.status(500).json({ error: 'Failed to send email', details: error });
+      return res.status(500).json({ error: 'Failed to send email', details: result });
     }
   } catch (err) {
     console.error('Server error:', err);
