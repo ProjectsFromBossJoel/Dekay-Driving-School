@@ -2047,7 +2047,7 @@
   <!-- TOAST -->
   <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
 
-<script src="config.js"></script>
+
   
 <script>
   // Global stubs so onclick= attributes work before the module loads
@@ -3219,8 +3219,8 @@
   };
 
 
-    // ── APPROVE STUDENT ──
-    window.approveStudent = async function(uid) {
+// ── APPROVE STUDENT ──
+window.approveStudent = async function(uid) {
     if (!(await showConfirm("Approve student", "Approve this student? They will be able to sign in."))) return;
     try {
       const adminName = document.getElementById("adminName").textContent;
@@ -3267,6 +3267,30 @@
         });
       } else {
         await setDoc(progressRef, defaultProgress);
+      }
+      
+      // ── SEND APPROVAL EMAIL VIA SERVERLESS FUNCTION ──
+      const student = allStudents.find(s => s.id === uid);
+      if (student && student.email) {
+        fetch('/api/send-approval-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to_name: student.firstName || 'Student',
+            course_name: student.courseType || 'your course',
+            to_email: student.email,
+            login_link: window.location.origin + '/login.html'
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            console.log("✅ Approval email sent to", student.email);
+          } else {
+            console.warn("⚠️ Email may not have sent:", data.error);
+          }
+        })
+        .catch(err => console.warn("⚠️ Email request failed:", err));
       }
       
       showToast("Student approved ✓", "success");
