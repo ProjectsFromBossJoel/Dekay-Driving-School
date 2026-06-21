@@ -818,58 +818,6 @@
     .sign-photo-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
     .sign-photo-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
 
-    /* ── DVLA MINI BADGE (above gallery) ── */
-    .dvla-mini-wrap {
-      display: flex;
-      justify-content: center;
-      padding: 40px 5% 60px;
-    }
-    .dvla-mini {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-      background: rgba(245,166,35,0.06);
-      border: 1px solid var(--border);
-      border-radius: 50px;
-      padding: 10px 22px 10px 10px;
-      transition: all var(--transition);
-    }
-    .dvla-mini:hover {
-      border-color: var(--gold);
-      background: rgba(245,166,35,0.1);
-      cursor: pointer;
-    }
-    .dvla-mini-logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: var(--white);
-      padding: 3px;
-      flex-shrink: 0;
-    }
-    .dvla-mini-logo img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      display: block;
-    }
-    .dvla-mini-text {
-      font-size: 13px;
-      color: var(--text-light);
-      font-weight: 500;
-    }
-    .dvla-mini-text strong {
-      color: var(--gold);
-      font-weight: 700;
-    }
-
-    @media (max-width: 480px) {
-      .dvla-mini { padding: 8px 16px 8px 8px; gap: 10px; }
-      .dvla-mini-logo { width: 32px; height: 32px; }
-      .dvla-mini-text { font-size: 12px; }
-    }
-
     /* ── DVLA BADGE ── */
     .dvla-section {
       display: flex;
@@ -1624,18 +1572,6 @@
       </div>
     </div>
   </section>
-
-  <!-- ── DVLA MINI BADGE ── -->
-  <div class="dvla-mini-wrap reveal">
-    <div class="dvla-mini">
-      <div class="dvla-mini-logo">
-        <img src="img/dvla_logo.jpg" alt="DVLA Ghana" />
-      </div>
-      <div class="dvla-mini-text">
-        <strong>Approved</strong> by the Driver &amp; Vehicle Licensing Authority
-      </div>
-    </div>
-  </div>
 
   <!-- ── PROMO VIDEOS ── -->
   <section class="videos-section" id="videos">
