@@ -2024,7 +2024,13 @@
 
     // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
     if (name === "dashboard") {
-      initDashboard();
+      // Re-fetch latest data first
+      getDoc(doc(db, "users", currentUser.uid)).then(snap => {
+        if (snap.exists()) {
+          studentData = snap.data();
+        }
+        initDashboard();
+      });
     }
     if (name === "lessons") {
       loadLessons();
@@ -2036,7 +2042,13 @@
       loadAttendance(studentData.trainingStage || 1);
     }
     if (name === "progress") {
-      buildPipelines(studentData.trainingStage || 1, studentData);
+      // Re-fetch latest student data from Firestore
+      getDoc(doc(db, "users", currentUser.uid)).then(snap => {
+        if (snap.exists()) {
+          studentData = snap.data();
+          buildPipelines(studentData.trainingStage || 1, studentData);
+        }
+      });
     }
     if (name === "notifications") {
       loadNotifications();
