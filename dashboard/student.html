@@ -2017,21 +2017,41 @@
       dashboard: "Dashboard", lessons: "Video Lessons", quizzes: "Quizzes",
       attendance: "Attendance", progress: "My Progress",
       notifications: "Notifications", profile: "Profile",
-      classes: "My Classes", resources: "Resources", instructors: "My Instructors"
+      classes: "My Classes", resources: "Resources", instructors: "My Instructors",
+      certificates: "My Certificates"
     };
     document.getElementById("topbarTitle").textContent = titles[name] || "Portal";
 
-    // Load instructors data when that page is shown
-    if (name === "instructors" && typeof loadInstructors === "function") {
-      loadInstructors();
+    // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
+    if (name === "dashboard") {
+      initDashboard();
     }
-    // Load classes data when that page is shown
+    if (name === "lessons") {
+      loadLessons();
+    }
+    if (name === "quizzes") {
+      loadQuizzes();
+    }
+    if (name === "attendance") {
+      loadAttendance(studentData.trainingStage || 1);
+    }
+    if (name === "progress") {
+      buildPipelines(studentData.trainingStage || 1, studentData);
+    }
+    if (name === "notifications") {
+      loadNotifications();
+    }
     if (name === "classes" && typeof loadMyClasses === "function") {
       loadMyClasses();
     }
-    // Load resources when that page is shown
     if (name === "resources" && typeof loadResources === "function") {
       loadResources();
+    }
+    if (name === "instructors" && typeof loadInstructors === "function") {
+      loadInstructors();
+    }
+    if (name === "certificates") {
+      loadStudentCertificates();
     }
 
     if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
@@ -3060,14 +3080,6 @@
     }
   }
 
-  // Override showPage to load certificates when needed
-  const originalStudentShowPage = window.showPage;
-  window.showPage = function(name, btn) {
-    originalStudentShowPage(name, btn);
-    if (name === "certificates") {
-      loadStudentCertificates();
-    }
-  };
   
 </script>
 </body>

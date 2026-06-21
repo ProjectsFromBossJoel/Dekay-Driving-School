@@ -5717,7 +5717,7 @@ window.approveStudent = async function(uid) {
     await loadStudentPermissions();
   }
 
-  // ══════════════════════════════════════
+    // ══════════════════════════════════════
   // PAGE NAVIGATION & UI HELPERS (from the old regular script)
   // ══════════════════════════════════════
   function showPage(name, btn) {
@@ -5733,14 +5733,39 @@ window.approveStudent = async function(uid) {
       notifications:'Send Notifications', settings:'Settings'
     };
     document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
-    // Load permissions when that page is shown
-    if (name === "permissions") {
-      loadAllPermissions();
+    
+    // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
+    if (name === "students") {
+      loadStudents().then(() => buildOverview());
     }
-    // Load resources when that page is shown
+    if (name === "overview") {
+      buildOverview();
+    }
+    if (name === "attendance") {
+      loadAttendance();
+    }
+    if (name === "lessons") {
+      loadLessons();
+    }
+    if (name === "quizzes") {
+      loadQuizzes();
+    }
+    if (name === "courses") {
+      loadCourses();
+    }
+    if (name === "instructors") {
+      loadInstructors();
+    }
+    if (name === "classes") {
+      loadClasses();
+    }
     if (name === "resources") {
       loadAdminResources();
     }
+    if (name === "permissions") {
+      loadAllPermissions();
+    }
+    
     if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
   }
 
