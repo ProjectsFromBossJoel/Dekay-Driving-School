@@ -274,11 +274,11 @@
         </div>
         <div class="feature-item">
           <div class="feature-dot"><i class="fas fa-clock"></i></div>
-          Approval usually within 24 hours
+          Approval may take a few days
         </div>
         <div class="feature-item">
           <div class="feature-dot"><i class="fas fa-bell"></i></div>
-          You'll be notified when approved
+          Check your inbox for confirmation
         </div>
       </div>
     </div>
@@ -601,7 +601,7 @@
         // Immediately sign out – the student will sign in again after approval
         await signOut(auth);
 
-        showToast("Registration successful! Your account is pending approval.", "success");
+        showToast("Account created! You'll receive an admission email once approved. Please check your inbox regularly, including spam.", "success");
         document.querySelectorAll(".form-input, .form-select").forEach(el => el.value = "");
         document.getElementById("courseType").value = "";
         document.getElementById("ghCardNumber").value = "";
@@ -665,7 +665,7 @@
 
         // Sign out so they don’t stay signed in
         await signOut(auth);
-        showToast("Registration successful! Your account is pending approval.", "success");
+        showToast("Account created! You'll receive an admission email once approved. Please check your inbox regularly, including spam.", "success");
       } catch (err) {
         console.error(err);
         btn.disabled = false;
