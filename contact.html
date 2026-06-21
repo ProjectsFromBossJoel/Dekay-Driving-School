@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us | Dekay Driving School</title>
+  <link rel="icon" type="image/x-icon" href="img/logo2.png" />
+  <meta name="description" content="Get in touch with Dekay Driving School, Ablekuma NIC Junction, Accra. Call, WhatsApp, or fill in our booking form." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --navy: #0A1628; --navy-mid: #12223F; --navy-light: #1C3259;
+      --gold: #F5A623; --gold-light: #FAC75A;
+      --white: #FFFFFF; --text-muted: #8B9AB0; --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2); --radius: 12px; --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.18); --transition: 0.3s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); line-height: 1.6; overflow-x: hidden; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0 5%; height: 72px; display: flex; align-items: center; justify-content: space-between; background: rgba(10,22,40,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); transition: background var(--transition); }
+    nav.scrolled { background: var(--navy); box-shadow: 0 2px 20px rgba(0,0,0,0.4); }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon { width: 40px; height: 40px; background: var(--gold); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--navy); }
+    .nav-logo-text .name { font-size: 15px; font-weight: 700; color: var(--white); letter-spacing: 0.5px; }
+    .nav-logo-text .tagline { font-size: 10px; color: var(--gold); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--text-light); font-size: 14px; font-weight: 500; transition: color var(--transition); }
+    .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+    .nav-cta { display: flex; align-items: center; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: var(--radius); font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border: none; transition: all var(--transition); font-family: 'Inter', sans-serif; }
+    .btn-primary { background: var(--gold); color: var(--navy); }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,166,35,0.35); }
+    .btn-outline { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.3); }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-lg { padding: 14px 32px; font-size: 15px; border-radius: 14px; }
+    .btn-full { width: 100%; justify-content: center; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--white); border-radius: 2px; }
+    .mobile-menu { display: none; position: fixed; top: 72px; left: 0; right: 0; bottom: 0; background: var(--navy); z-index: 999; padding: 32px 5%; flex-direction: column; gap: 24px; }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { text-decoration: none; color: var(--text-light); font-size: 18px; font-weight: 500; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+
+    /* PAGE HEADER */
+    .page-header { padding: 140px 5% 80px; background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(245,166,35,0.07) 0%, transparent 70%), linear-gradient(135deg, #0A1628 0%, #12223F 100%); text-align: center; position: relative; overflow: hidden; }
+    .page-header-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(245,166,35,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(245,166,35,0.04) 1px, transparent 1px); background-size: 60px 60px; }
+    .page-header-content { position: relative; z-index: 2; }
+    .breadcrumb { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    .breadcrumb a { color: var(--gold); text-decoration: none; }
+    .breadcrumb i { font-size: 10px; }
+    .page-header h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 700; line-height: 1.1; letter-spacing: -1px; margin-bottom: 16px; }
+    .page-header h1 span { color: var(--gold); }
+    .page-header p { font-size: 17px; color: var(--text-light); max-width: 540px; margin: 0 auto; line-height: 1.7; }
+
+    /* QUICK CONTACT STRIP */
+    .quick-strip { background: var(--navy-mid); border-bottom: 1px solid var(--border); padding: 0 5%; }
+    .quick-strip-inner { display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: wrap; }
+    .quick-item { display: flex; align-items: center; gap: 12px; padding: 20px 36px; border-right: 1px solid var(--border); text-decoration: none; transition: background var(--transition); }
+    .quick-item:last-child { border-right: none; }
+    .quick-item:hover { background: rgba(245,166,35,0.05); }
+    .quick-item-icon { width: 40px; height: 40px; background: rgba(245,166,35,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 16px; flex-shrink: 0; }
+    .quick-item-text { display: flex; flex-direction: column; }
+    .quick-item-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+    .quick-item-value { font-size: 14px; font-weight: 600; color: var(--white); }
+
+    /* MAIN CONTACT SECTION */
+    .contact-section { padding: 80px 5%; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 420px; gap: 48px; align-items: start; }
+
+    /* FORM */
+    .form-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px; }
+    .form-card-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .form-card-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.6; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-light); margin-bottom: 8px; }
+    .form-label span { color: var(--gold); margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 12px 16px;
+      background: var(--navy); border: 1.5px solid var(--border);
+      border-radius: var(--radius); color: var(--white);
+      font-size: 14px; font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color var(--transition);
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); }
+    .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%238B9AB0' d='M4 6l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 16px; cursor: pointer; }
+    .form-select option { background: var(--navy-mid); }
+    .form-textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+    .form-check { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 24px; }
+    .form-check input[type="checkbox"] { margin-top: 2px; accent-color: var(--gold); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+    .form-check label { font-size: 13px; color: var(--text-muted); line-height: 1.5; cursor: pointer; }
+    .form-check a { color: var(--gold); text-decoration: none; }
+
+    .submit-btn { width: 100%; padding: 16px; background: var(--gold); color: var(--navy); border: none; border-radius: var(--radius); font-size: 15px; font-weight: 700; cursor: pointer; transition: all var(--transition); font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .submit-btn:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,166,35,0.35); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .form-success { display: none; text-align: center; padding: 40px 20px; }
+    .form-success i { font-size: 52px; color: #4CAF50; margin-bottom: 16px; }
+    .form-success h3 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .form-success p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+    /* SIDEBAR */
+    .contact-sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+    .info-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; }
+    .info-card-title { font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+
+    .info-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-icon { width: 38px; height: 38px; background: rgba(245,166,35,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 14px; flex-shrink: 0; }
+    .info-text-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+    .info-text-value { font-size: 14px; font-weight: 600; color: var(--white); }
+    .info-text-value a { color: var(--white); text-decoration: none; transition: color var(--transition); }
+    .info-text-value a:hover { color: var(--gold); }
+
+    .hours-list { display: flex; flex-direction: column; gap: 10px; }
+    .hours-row { display: flex; justify-content: space-between; font-size: 13px; }
+    .hours-day { color: var(--text-muted); }
+    .hours-time { color: var(--white); font-weight: 600; }
+    .hours-time.closed { color: #EF5350; font-weight: 500; }
+
+    .whatsapp-card { background: linear-gradient(135deg, rgba(37,211,102,0.12) 0%, rgba(37,211,102,0.06) 100%); border: 1px solid rgba(37,211,102,0.25); border-radius: var(--radius-lg); padding: 28px; text-align: center; }
+    .whatsapp-icon { font-size: 40px; color: #25D166; margin-bottom: 12px; }
+    .whatsapp-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .whatsapp-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.6; }
+    .whatsapp-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; background: #25D166; color: #fff; border-radius: var(--radius); font-size: 14px; font-weight: 700; text-decoration: none; transition: all var(--transition); }
+    .whatsapp-btn:hover { background: #1da851; transform: translateY(-1px); }
+
+    /* MAP */
+    .map-section { padding: 0 5% 80px; }
+    .map-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .map-header { padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .map-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .map-title i { color: var(--gold); }
+    .map-address { font-size: 13px; color: var(--text-muted); }
+    .map-directions { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--gold); text-decoration: none; transition: opacity var(--transition); }
+    .map-directions:hover { opacity: 0.8; }
+    .map-embed { height: 360px; background: var(--navy-light); display: flex; align-items: center; justify-content: center; position: relative; }
+    .map-embed iframe { width: 100%; height: 100%; border: none; }
+    .map-placeholder { text-align: center; }
+    .map-placeholder i { font-size: 52px; color: var(--border); margin-bottom: 16px; display: block; }
+    .map-placeholder p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
+
+    /* FOOTER */
+    footer { background: #060F1E; border-top: 1px solid var(--border); padding: 52px 5% 28px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .footer-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+    .footer-socials { display: flex; gap: 10px; }
+    .social-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--navy-mid); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; text-decoration: none; transition: all var(--transition); }
+    .social-btn:hover { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+    .footer-col h4 { font-size: 13px; font-weight: 600; color: var(--white); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color var(--transition); display: flex; align-items: center; gap: 6px; }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-links a i { font-size: 11px; }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-bottom p { font-size: 12px; color: var(--text-muted); }
+    .footer-bottom-links { display: flex; gap: 20px; }
+    .footer-bottom-links a { font-size: 12px; color: var(--text-muted); text-decoration: none; }
+    .footer-bottom-links a:hover { color: var(--gold); }
+
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 960px) { .contact-grid { grid-template-columns: 1fr; } .contact-sidebar { display: grid; grid-template-columns: 1fr 1fr; } .footer-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .nav-links, .nav-cta { display: none; } .hamburger { display: flex; } .quick-item { padding: 16px 20px; } .form-row { grid-template-columns: 1fr; } .contact-sidebar { grid-template-columns: 1fr; } .map-header { flex-direction: column; align-items: flex-start; gap: 10px; } .footer-grid { grid-template-columns: 1fr; } .footer-bottom { flex-direction: column; text-align: center; } }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar">
+    <a href="index.html" class="nav-logo">
+      <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 100px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+      <div class="nav-logo-text">
+        <div class="name">Dekay Driving School</div>
+        <div class="tagline">Ablekuma · Accra</div>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="courses.html">Courses</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="faqs.html">FAQs</a></li>
+      <li><a href="contact.html" class="active">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="login.html" class="btn btn-outline">Login</a>
+      <a href="contact.html" class="btn btn-primary"><i class="fas fa-phone-alt"></i> Book a Lesson</a>
+    </div>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a>
+    <a href="courses.html">Courses</a>
+    <a href="about.html">About</a>
+    <a href="faqs.html">FAQs</a>
+    <a href="contact.html">Contact</a>
+    <a href="login.html" style="color:var(--gold)">Login</a>
+    <a href="contact.html" class="btn btn-primary" style="text-align:center">Book a Lesson</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-grid"></div>
+    <div class="page-header-content">
+      <div class="breadcrumb"><a href="index.html">Home</a><i class="fas fa-chevron-right"></i><span>Contact</span></div>
+      <h1>Get in <span>Touch</span></h1>
+      <p>Book a free consultation, ask a question, or just say hello — we're available 7 days a week.</p>
+    </div>
+  </div>
+
+  <!-- QUICK CONTACT STRIP -->
+  <div class="quick-strip">
+    <div class="quick-strip-inner">
+      <a href="tel:0274211566" class="quick-item">
+        <div class="quick-item-icon"><i class="fas fa-phone"></i></div>
+        <div class="quick-item-text"><span class="quick-item-label">Call us</span><span class="quick-item-value">0274 211 566</span></div>
+      </a>
+      <a href="tel:0269824898" class="quick-item">
+        <div class="quick-item-icon"><i class="fas fa-phone"></i></div>
+        <div class="quick-item-text"><span class="quick-item-label">Call us</span><span class="quick-item-value">0269 824 898</span></div>
+      </a>
+      <a href="https://wa.me/233274211566" class="quick-item">
+        <div class="quick-item-icon" style="background:rgba(37,211,102,0.12)"><i class="fab fa-whatsapp" style="color:#25D166"></i></div>
+        <div class="quick-item-text"><span class="quick-item-label">WhatsApp</span><span class="quick-item-value">Chat instantly</span></div>
+      </a>
+      <div class="quick-item" style="cursor:default">
+        <div class="quick-item-icon"><i class="fas fa-map-marker-alt"></i></div>
+        <div class="quick-item-text"><span class="quick-item-label">Location</span><span class="quick-item-value">Ablekuma NIC Junction</span></div>
+      </div>
+      <div class="quick-item" style="cursor:default">
+        <div class="quick-item-icon"><i class="fas fa-clock"></i></div>
+        <div class="quick-item-text"><span class="quick-item-label">Open</span><span class="quick-item-value">Mon – Sat, 7am – 6pm</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTACT -->
+  <section class="contact-section">
+    <div class="contact-grid">
+
+      <!-- FORM -->
+      <div class="form-card reveal">
+        <div id="formContent">
+          <div class="form-card-title">Book a free lesson</div>
+          <p class="form-card-sub">Fill in the form and we'll call you back within 24 hours to confirm your slot and answer any questions.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="firstName">First name <span>*</span></label>
+              <input type="text" id="firstName" class="form-input" placeholder="Kwame" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lastName">Last name <span>*</span></label>
+              <input type="text" id="lastName" class="form-input" placeholder="Asante" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone number <span>*</span></label>
+            <input type="tel" id="phone" class="form-input" placeholder="024 000 0000" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email address</label>
+            <input type="email" id="email" class="form-input" placeholder="you@example.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="courseType">Course I'm interested in <span>*</span></label>
+            <select id="courseType" class="form-select" required>
+              <option value="" disabled selected>Select a course…</option>
+              <option value="manual">Manual Transmission</option>
+              <option value="automatic">Automatic Transmission</option>
+              <option value="motorcycle">Motorcycle</option>
+              <option value="bus">Bus / Commercial Vehicle</option>
+              <option value="truck">Truck / Heavy Goods Vehicle</option>
+              <option value="unsure">Not sure — need advice</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="experience">Driving experience</label>
+            <select id="experience" class="form-select">
+              <option value="" disabled selected>Select your level…</option>
+              <option value="none">Complete beginner</option>
+              <option value="some">Some experience, no licence</option>
+              <option value="licensed">Already licensed, refresher needed</option>
+              <option value="upgrade">Hold car licence, upgrading to commercial</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="message">Anything else you'd like us to know?</label>
+            <textarea id="message" class="form-textarea" placeholder="Preferred start date, questions, etc."></textarea>
+          </div>
+
+          <div class="form-check">
+            <input type="checkbox" id="agree" />
+            <label for="agree">I agree to be contacted by Dekay Driving School regarding my enquiry. We don't share your details with anyone.</label>
+          </div>
+
+          <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+            <i class="fas fa-paper-plane"></i> Send my enquiry
+          </button>
+        </div>
+
+        <!-- SUCCESS STATE -->
+        <div class="form-success" id="formSuccess">
+          <i class="fas fa-check-circle"></i>
+          <h3>Enquiry received!</h3>
+          <p>Thank you — we'll call you back within 24 hours to confirm your free consultation slot. In the meantime, feel free to <a href="https://wa.me/233274211566" style="color:var(--gold)">WhatsApp us</a> if you have any urgent questions.</p>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="contact-sidebar">
+
+        <!-- CONTACT INFO -->
+        <div class="info-card reveal" style="transition-delay:0.1s">
+          <div class="info-card-title"><i class="fas fa-info-circle"></i> Contact details</div>
+          <div class="info-row">
+            <div class="info-icon"><i class="fas fa-phone"></i></div>
+            <div>
+              <div class="info-text-label">Phone</div>
+              <div class="info-text-value"><a href="tel:0274211566">0274 211 566</a></div>
+              <div class="info-text-value"><a href="tel:0269824898">0269 824 898</a></div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+              <div class="info-text-label">Address</div>
+              <div class="info-text-value">Ablekuma NIC Junction<br>Ablekuma, Accra, Ghana</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon"><i class="fas fa-bus"></i></div>
+            <div>
+              <div class="info-text-label">Getting here</div>
+              <div class="info-text-value" style="font-weight:400; font-size:13px; color:var(--text-muted)">Accessible from Kaneshie, Dansoman, and central Accra. Look for the NIC building at Ablekuma Junction.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPENING HOURS -->
+        <div class="info-card reveal" style="transition-delay:0.15s">
+          <div class="info-card-title"><i class="fas fa-clock"></i> Opening hours</div>
+          <div class="hours-list">
+            <div class="hours-row"><span class="hours-day">Monday – Friday</span><span class="hours-time">7:00 am – 6:00 pm</span></div>
+            <div class="hours-row"><span class="hours-day">Saturday</span><span class="hours-time">8:00 am – 4:00 pm</span></div>
+            <div class="hours-row"><span class="hours-day">Sunday</span><span class="hours-time closed">Closed</span></div>
+          </div>
+          <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted);">
+            <i class="fas fa-info-circle" style="color:var(--gold); margin-right:6px"></i>
+            Practical sessions can be scheduled for early morning slots — ask when you call.
+          </div>
+        </div>
+
+        <!-- WHATSAPP -->
+        <div class="whatsapp-card reveal" style="transition-delay:0.2s">
+          <div class="whatsapp-icon"><i class="fab fa-whatsapp"></i></div>
+          <h4>Prefer to chat?</h4>
+          <p>WhatsApp is the fastest way to reach us. Ask about courses, send photos of documents, or confirm your schedule — we reply within minutes.</p>
+          <a href="https://wa.me/233274211566?text=Hello%2C%20I%27d%20like%20to%20find%20out%20more%20about%20Dekay%20Driving%20School." class="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i> Open WhatsApp chat
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section class="map-section">
+    <div class="map-card reveal">
+      <div class="map-header">
+        <div>
+          <div class="map-title"><i class="fas fa-map-marker-alt"></i> Dekay Driving School — Ablekuma, Accra</div>
+          <div class="map-address">Ablekuma NIC Junction, Ablekuma, Greater Accra Region, Ghana</div>
+        </div>
+        <a href="https://maps.google.com/?q=Dekay+Driving+School+Ablekuma+Accra+Ghana" target="_blank" rel="noopener" class="map-directions">
+          <i class="fas fa-directions"></i> Get directions
+        </a>
+      </div>
+
+    
+      <div class="map-embed">
+        <!-- Replace this src with your exact Google Maps embed URL for pin accuracy -->
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.694524622781!2d-0.2966719!3d5.6120527!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf995d133681dd%3A0x306396746c241bf!2sDekay%20Driving%20School!5e0!3m2!1sen!2sgh!4v1781221828043!5m2!1sen!2sgh"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Dekay Driving School location"
+        ></iframe>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="margin-bottom:16px;display:inline-flex">
+          <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 65px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+          <div class="nav-logo-text"><div class="name">Dekay Driving School</div><div class="tagline">Ablekuma · Accra</div></div>
+        </a>
+        <p class="footer-desc">Professional driving training for manual, automatic, motorcycle, bus and truck licences. Located at Ablekuma NIC Junction, Accra.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Quick links</h4><ul class="footer-links"><li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Courses</a></li><li><a href="about.html"><i class="fas fa-chevron-right"></i> About us</a></li><li><a href="faqs.html"><i class="fas fa-chevron-right"></i> FAQs</a></li><li><a href="contact.html"><i class="fas fa-chevron-right"></i> Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Courses</h4><ul class="footer-links"><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Manual</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Automatic</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Motorcycle</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Commercial bus</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Heavy goods</a></li></ul></div>
+      <div class="footer-col"><h4>Contact</h4><ul class="footer-links"><li><a href="tel:0274211566"><i class="fas fa-phone"></i> 0274 211 566</a></li><li><a href="tel:0269824898"><i class="fas fa-phone"></i> 0269 824 898</a></li><li><a href="https://wa.me/233274211566"><i class="fab fa-whatsapp"></i> WhatsApp</a></li><li><a href="https://www.google.com/maps?q=Dekay+Driving+School+Ablekuma+Accra+Ghana"><i class="fas fa-map-marker-alt"></i> Ablekuma NIC Junction</a></li><li><a href="login.html"><i class="fas fa-user"></i> Student portal</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;width:100%;">
+        <div style="font-size:12px;color:var(--text-muted);flex:1;text-align:left;">
+          &copy; 2026 Dekay Driving School. All rights reserved.
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);flex:1;text-align:center;">
+          Designed &amp; Maintained by
+          <a href="https://myportfolio-theta-topaz-43.vercel.app/" target="_blank" style="color:var(--gold);text-decoration:none;font-weight:600;transition:color 0.3s ease;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Prince Antwi Wiafe</a>
+        </div>
+        <div style="display:flex;gap:16px;flex:1;justify-content:flex-end;align-items:center;">
+          <a href="#" style="font-size:12px;color:var(--text-muted);text-decoration:none;transition:color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Privacy policy</a>
+          <span style="color:var(--text-muted);">|</span>
+          <a href="#" style="font-size:12px;color:var(--text-muted);text-decoration:none;transition:color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Terms of use</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 40); });
+    document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('mobileMenu').classList.toggle('open'); });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    function handleSubmit() {
+      const firstName = document.getElementById('firstName').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const courseType = document.getElementById('courseType').value;
+      const agreed = document.getElementById('agree').checked;
+
+      if (!firstName || !phone || !courseType) {
+        alert('Please fill in your name, phone number, and course type.');
+        return;
+      }
+      if (!agreed) {
+        alert('Please agree to be contacted before submitting.');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+
+      // Simulate submission (replace with Firebase write or EmailJS call)
+      setTimeout(() => {
+        document.getElementById('formContent').style.display = 'none';
+        document.getElementById('formSuccess').style.display = 'block';
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

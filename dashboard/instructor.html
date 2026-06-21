@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instructor Portal | Dekay Driving School</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ========== SAME STYLES AS ADMIN PANEL (with minor adjustments) ========== */
+    :root {
+      --navy: #0A1628; --navy-mid: #12223F; --navy-light: #1C3259;
+      --gold: #F5A623; --gold-light: #FAC75A;
+      --white: #FFFFFF; --text-muted: #8B9AB0; --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2); --border-subtle: rgba(255,255,255,0.06);
+      --radius: 12px; --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.2);
+      --transition: 0.25s ease;
+      --success: #4CAF50; --error: #EF5350; --warn: #FF9800; --info: #64B5F6;
+      --sidebar: 250px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: var(--sidebar); background: var(--navy-mid); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition); }
+    .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 18px 18px 14px; border-bottom: 1px solid var(--border); text-decoration: none; }
+    .sidebar-brand-icon { width: 44px; height: 44px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sidebar-brand-name { font-size: 13px; font-weight: 700; color: var(--white); }
+    .sidebar-brand-sub { font-size: 10px; color: var(--gold); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+    .instructor-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(245,166,35,0.12); border: 1px solid var(--border); border-radius: 50px; padding: 2px 8px; font-size: 9px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+
+    .sidebar-nav { flex: 1; padding: 14px 10px; overflow-y: auto; }
+    .nav-section-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; padding: 0 10px; margin: 14px 0 6px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; font-family: 'Inter', sans-serif; transition: all var(--transition); }
+    .nav-item i { font-size: 14px; width: 18px; text-align: center; }
+    .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+    .nav-item.active { color: var(--gold); background: rgba(245,166,35,0.1); font-weight: 600; }
+    .nav-item .badge { margin-left: auto; font-size: 10px; font-weight: 700; background: var(--error); color: var(--white); padding: 2px 7px; border-radius: 50px; }
+
+    .sidebar-footer { padding: 12px 10px; border-top: 1px solid var(--border); }
+
+    /* Main content */
+    .main { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; }
+    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(10,22,40,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 28px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .topbar-title { font-size: 17px; font-weight: 700; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .instructor-chip { display: flex; align-items: center; gap: 7px; padding: 6px 14px; background: rgba(245,166,35,0.1); border: 1px solid var(--border); border-radius: 50px; font-size: 12px; font-weight: 600; color: var(--gold); }
+    .icon-btn { width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--border); background: var(--navy-mid); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; cursor: pointer; transition: all var(--transition); }
+    .icon-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .hamburger-btn { display: none; width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--border); background: var(--navy-mid); align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 14px; }
+
+    .avatar-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(245,166,35,0.15); border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: var(--gold);
+      cursor: pointer;
+      background-size: cover; background-position: center;
+      flex-shrink: 0;
+    }
+
+    /* Pages */
+    .page { padding: 28px; display: none; }
+    .page.active { display: block; }
+    .page-header { margin-bottom: 24px; }
+    .page-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .page-sub { font-size: 14px; color: var(--text-muted); }
+
+    /* Cards */
+    .card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .card-header { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .card-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .card-title i { color: var(--gold); }
+    .card-body { padding: 20px; }
+
+    /* Stats grid */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+    .stat-card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 14px; }
+    .stat-card-value { font-size: 30px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .stat-card-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+    /* Tables */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .data-table td { padding: 13px 16px; font-size: 13px; border-bottom: 1px solid rgba(245,166,35,0.06); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(245,166,35,0.02); }
+
+    /* Pills */
+    .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 50px; }
+    .pill-active   { background: rgba(76,175,80,0.12); color: var(--success); }
+    .pill-pending  { background: rgba(255,152,0,0.12); color: var(--warn); }
+    .stage-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 50px; background: rgba(245,166,35,0.1); color: var(--gold); }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 600; border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: all var(--transition); }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-light); }
+    .btn-outline { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
+    .btn-outline:hover { background: var(--gold); color: var(--navy); }
+
+    /* Notification list */
+    .notif-list { display: flex; flex-direction: column; gap: 1px; }
+    .notif-item { display: flex; gap: 14px; padding: 14px 22px; border-bottom: 1px solid var(--border-subtle); transition: background var(--transition); }
+    .notif-item:hover { background: rgba(255,255,255,0.02); }
+    .notif-dot-outer { width: 36px; height: 36px; border-radius: 9px; background: rgba(245,166,35,0.1); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+    .notif-text { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+    .notif-time { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+    /* Forms */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .form-input { width: 100%; padding: 10px 14px; background: var(--navy); border: 1.5px solid var(--border); border-radius: var(--radius); color: var(--white); font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color var(--transition); }
+    .form-input:focus { border-color: var(--gold); }
+    .form-input:disabled { opacity: 0.5; }
+
+    /* ── PROFILE / SETTINGS LAYOUT (was missing entirely) ── */
+    .profile-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+    .profile-avatar-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .profile-avatar-big {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(245,166,35,0.15);
+      border: 3px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; color: var(--gold);
+      margin: 0 auto 16px;
+      position: relative; cursor: pointer;
+      background-size: cover; background-position: center;
+    }
+    .avatar-edit-badge {
+      position: absolute; bottom: 0; right: 0;
+      width: 24px; height: 24px;
+      background: var(--gold); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: var(--navy);
+    }
+    .profile-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .profile-email { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+
+    .profile-form-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .profile-section-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .pf-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .pf-input {
+      width: 100%; padding: 10px 14px;
+      background: var(--navy);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--white); font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color var(--transition);
+      resize: vertical;
+    }
+    .pf-input:focus { border-color: var(--gold); }
+    .pf-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; font-size: 13px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); transform: translateY(20px); opacity: 0; transition: all 0.3s ease; z-index: 9999; max-width: 300px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(76,175,80,0.4); }
+    .toast.success i { color: var(--success); }
+    .toast.error i { color: var(--error); }
+
+
+        .file-upload-area {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; background: var(--navy-mid);
+      border: 1.5px dashed var(--border); border-radius: var(--radius);
+      cursor: pointer; transition: border-color var(--transition);
+    }
+    .file-upload-area:hover { border-color: var(--gold); }
+    .file-upload-area i { color: var(--gold); font-size: 20px; }
+    .file-upload-text { font-size: 13px; color: var(--text-muted); }
+    .file-upload-preview {
+      display: none; width: 60px; height: 60px;
+      border-radius: var(--radius); background-size: cover; background-position: center;
+      border: 1px solid var(--border);
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 500;
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-close { width: 28px; height: 28px; border-radius: 7px; background: var(--navy-light); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 12px; transition: all var(--transition); }
+    .modal-close:hover { border-color: var(--gold); color: var(--gold); }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* ── STAGE PIPELINE ── */
+    .pipeline-step-item { display: flex; gap: 16px; align-items: flex-start; position: relative; }
+    .pipeline-step-item:not(:last-child) .ps-dot-wrap::after { content: ''; position: absolute; left: 50%; top: 32px; bottom: -16px; width: 2px; background: var(--border); transform: translateX(-50%); }
+    .ps-dot-wrap { position: relative; width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; z-index: 1; }
+    .ps-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .ps-dot.done { background: rgba(76,175,80,0.2); border: 2px solid var(--success); color: var(--success); }
+    .ps-dot.current { background: rgba(245,166,35,0.2); border: 2px solid var(--gold); color: var(--gold); }
+    .ps-dot.pending { background: var(--navy-light); border: 2px solid var(--border); color: var(--text-muted); }
+    .ps-info { padding: 4px 0 20px; }
+    .ps-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; color: var(--white); }
+    .ps-desc { font-size: 12px; color: var(--text-muted); }
+    .ps-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 50px; margin-top: 4px; }
+    .tag-done-c { background: rgba(76,175,80,0.12); color: var(--success); }
+    .tag-current-c { background: rgba(245,166,35,0.12); color: var(--gold); }
+    .tag-pending-c { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+    @media (max-width: 900px) {
+        
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .hamburger-btn { display: flex; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">
+        <img src="logo2.png" alt="Dekay Driving School Logo" style="width: 55px; height: 48px; border-radius: 8px;" />
+      </div>
+      <div>
+        <div class="sidebar-brand-name">Dekay School</div>
+        <div class="sidebar-brand-sub">Instructor Portal</div>
+        <div class="instructor-badge"><i class="fas fa-id-card"></i> Instructor</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <button class="nav-item active" onclick="showPage('dashboard', this)"><i class="fas fa-th-large"></i> Dashboard</button>
+      <button class="nav-item" onclick="showPage('students', this)"><i class="fas fa-users"></i> My Students</button>
+      <button class="nav-item" onclick="showPage('attendance', this)"><i class="fas fa-calendar-check"></i>Student Attendance</button>
+      <button class="nav-item" onclick="showPage('myAttendance', this)"><i class="fas fa-user-check"></i> My Attendance</button>
+      <button class="nav-item" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes</button>
+      <div class="nav-section-label">Account</div>
+      <button class="nav-item" onclick="showPage('settings', this)"><i class="fas fa-user-cog"></i> Settings</button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="handleLogout()" style="color:var(--error)"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="instructor-chip"><i class="fas fa-chalkboard-teacher"></i> <span id="instructorName">Instructor</span></div>
+        <button class="icon-btn" onclick="showPage('notifications', null)"><i class="fas fa-bell"></i></button>
+        <div class="avatar-btn" id="instructorAvatarBtn" onclick="showPage('settings', null)"></div>
+      </div>
+    </header>
+
+    <!-- ═══ DASHBOARD PAGE ═══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">Welcome, <span id="dashInstructorName" style="color:var(--gold)">Instructor</span> 👋</div>
+        <div class="page-sub" id="dashDateLine">Manage your students and track progress</div>
+      </div>
+
+      <!-- Check-in card for instructor's own class attendance -->
+      <div id="instructorCheckinCard" style="display:none; background: linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%); border: 1px solid var(--gold); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+        <div>
+          <h3 style="font-size:17px; font-weight:700; margin-bottom:4px;" id="instructorCheckinTitle"><i class="fas fa-map-pin" style="color:var(--gold);margin-right:6px"></i> Session in progress</h3>
+          <p style="font-size:13px; color:var(--text-muted);" id="instructorCheckinDesc">Your class is active — tap to mark your attendance.</p>
+        </div>
+        <button id="instructorCheckinBtn" onclick="markInstructorAttendance()" style="padding:12px 24px; background:var(--gold); color:var(--navy); border:none; border-radius:var(--radius); font-size:14px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:8px; transition:all var(--transition); white-space:nowrap;">
+          <i class="fas fa-check-circle"></i> Mark attendance
+        </button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(76,175,80,0.1)"><i class="fas fa-users" style="color:var(--success)"></i></div>
+          <div class="stat-card-value" id="statStudents">—</div>
+          <div class="stat-card-label">Total students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-calendar-check" style="color:var(--gold)"></i></div>
+          <div class="stat-card-value" id="statAttendanceRate">—</div>
+          <div class="stat-card-label">Attendance rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(100,181,246,0.1)"><i class="fas fa-tasks" style="color:var(--info)"></i></div>
+          <div class="stat-card-value" id="statAvgScore">—</div>
+          <div class="stat-card-label">Avg quiz score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(255,152,0,0.1)"><i class="fas fa-chart-line" style="color:var(--warn)"></i></div>
+          <div class="stat-card-value" id="statStageProgress">—</div>
+          <div class="stat-card-label">Stage completion</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 320px; gap:20px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-bell"></i> Recent notifications</div>
+          </div>
+          <div id="dashNotifList" class="notif-list">
+            <div style="padding:20px; color:var(--text-muted); font-size:13px; text-align:center;">Loading…</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-calendar-alt"></i> Upcoming sessions</div></div>
+          <div class="card-body" id="upcomingSessions">
+            <div style="text-align:center;color:var(--text-muted);font-size:13px;">No upcoming sessions scheduled.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MY STUDENTS ═══ -->
+    <div class="page" id="page-students">
+      <div class="page-header">
+        <div class="page-title">My Students</div>
+        <div class="page-sub">Students assigned to your courses</div>
+      </div>
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Course</th><th>Stage</th><th>Attendance</th><th>Quiz avg</th><th>Actions</th></tr></thead>
+            <tbody id="studentsTableBody"><tr><td colspan="5" style="text-align:center;padding:32px;">Loading students…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ATTENDANCE ═══ -->
+    <div class="page" id="page-attendance">
+      <div class="page-header">
+        <div class="page-title">Attendance Records</div>
+        <div class="page-sub">Session attendance for your students</div>
+      </div>
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Date</th><th>Course</th><th>Class Title</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="attendanceTableBody"><tr><td colspan="6" style="text-align:center;padding:32px;">Loading attendance…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ QUIZZES ═══ -->
+    <div class="page" id="page-quizzes">
+      <div class="page-header">
+        <div class="page-title">Quiz Performance</div>
+        <div class="page-sub">Average scores of your students on each quiz</div>
+      </div>
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Quiz title</th><th>Students taken</th><th>Average score</th><th>Pass rate</th></tr></thead>
+            <tbody id="quizStatsTableBody"><tr><td colspan="4" style="text-align:center;padding:32px;">Loading quiz data…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MY ATTENDANCE (Instructor self check-in) ═══ -->
+    <div class="page" id="page-myAttendance">
+      <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div class="page-title">My Attendance</div>
+          <div class="page-sub">Mark your attendance after completing a class session</div>
+        </div>
+        <button class="btn btn-gold" onclick="openMyAttendanceModal()"><i class="fas fa-plus"></i> Mark Attendance</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid" style="margin-bottom:20px;">
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(76,175,80,0.1)"><i class="fas fa-calendar-check" style="color:var(--success)"></i></div>
+          <div class="stat-card-value" id="myAttPresent">—</div>
+          <div class="stat-card-label">Sessions attended</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(239,83,80,0.1)"><i class="fas fa-calendar-times" style="color:var(--error)"></i></div>
+          <div class="stat-card-value" id="myAttAbsent">—</div>
+          <div class="stat-card-label">Sessions missed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-percentage" style="color:var(--gold)"></i></div>
+          <div class="stat-card-value" id="myAttRate">—</div>
+          <div class="stat-card-label">Attendance rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(100,181,246,0.1)"><i class="fas fa-clock" style="color:var(--info)"></i></div>
+          <div class="stat-card-value" id="myAttTotal">—</div>
+          <div class="stat-card-label">Total records</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Session type</th><th>Course</th><th>Notes</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="myAttendanceTableBody">
+              <tr><td colspan="6" style="text-align:center;padding:32px;">Loading your attendance…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MARK MY ATTENDANCE MODAL ═══ -->
+    <div class="modal-overlay" id="myAttendanceModal">
+      <div class="modal" style="max-width:480px">
+        <div class="modal-header">
+          <div class="modal-title">Mark My Attendance</div>
+          <button class="modal-close" onclick="closeModal('myAttendanceModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Date <span style="color:var(--gold)">*</span></label>
+            <input type="date" id="myAttDate" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Session type <span style="color:var(--gold)">*</span></label>
+            <select id="myAttSessionType" class="form-input" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
+              <option value="In-person Practical">In-person Practical</option>
+              <option value="In-person Theory">In-person Theory</option>
+              <option value="Online Class">Online Class</option>
+              <option value="Mock Test">Mock Test</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Course</label>
+            <select id="myAttCourse" class="form-input" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
+              <option value="">Select course…</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes (optional)</label>
+            <textarea id="myAttNotes" class="form-input" rows="2" placeholder="Any additional notes…" style="resize:vertical;"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('myAttendanceModal')">Cancel</button>
+          <button class="btn btn-gold" onclick="submitMyAttendance()"><i class="fas fa-check"></i> Submit</button>
+        </div>
+      </div>
+    </div>
+
+    
+        <!-- ═══ SETTINGS (read‑only except profile picture) ═══ -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div class="page-title">Account Settings</div>
+        <div class="page-sub">View your personal and professional details – only your profile picture can be changed</div>
+      </div>
+
+      <div class="profile-grid" style="grid-template-columns: 280px 1fr; gap: 24px;">
+        <!-- LEFT: Avatar card (upload still works) -->
+        <div class="profile-avatar-card">
+          <div class="profile-avatar-big" id="profileAvatarBig" onclick="viewProfileImage()">
+            <span id="avatarInitials">--</span>
+            <div class="avatar-edit-badge" onclick="event.stopPropagation(); document.getElementById('avatarUpload').click();"><i class="fas fa-camera"></i></div>
+          </div>
+          <input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="uploadInstructorAvatar(this)" />
+          <div class="profile-name" id="instructorFullName">Loading…</div>
+          <div class="profile-email" id="instructorEmail">—</div>
+                    <div style="margin-top:20px; font-size:12px; color:var(--text-muted); line-height:1.6;" id="instructorProfileHint">Tap the camera icon to upload your profile picture. You can only set it once.</div>
+
+          <!-- Assigned Courses -->
+          <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <div style="font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">
+              <i class="fas fa-book" style="margin-right: 6px;"></i> Assigned Courses
+            </div>
+            <div id="assignedCoursesContainer" style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="text-align:center; color:var(--text-muted); padding:12px; font-size:12px;">
+                <i class="fas fa-spinner fa-spin"></i> Loading…
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Read‑only details -->
+        <div class="profile-form-card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-user"></i> Personal & Professional Details</div></div>
+          <div class="card-body">
+            <!-- Basic Info -->
+            <div class="profile-section-title">Basic info</div>
+            <div class="pf-row">
+              <div class="pf-group"><label>First name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewFirstName">—</div></div>
+              <div class="pf-group"><label>Last name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewLastName">—</div></div>
+            </div>
+            <div class="pf-row">
+              <div class="pf-group"><label>Phone number</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewPhone">—</div></div>
+              <div class="pf-group"><label>Date of birth</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewDob">—</div></div>
+            </div>
+            <div class="pf-group"><label>Email address</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewEmail">—</div></div>
+
+            <!-- Professional Details -->
+            <div class="profile-section-title" style="margin-top:24px;">Professional details</div>
+            <div class="pf-group"><label>Qualifications</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius); white-space: pre-wrap;" id="viewQualifications">—</div></div>
+            <div class="pf-group"><label>Certifications</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius); white-space: pre-wrap;" id="viewCertifications">—</div></div>
+            <div class="pf-group"><label>Years of experience</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewExperience">—</div></div>
+
+            <!-- Ghana Card Images (view‑only) -->
+            <div class="profile-section-title" style="margin-top:24px;">Ghana Card</div>
+            <div class="pf-row">
+              <div class="pf-group">
+                <label>Front side</label>
+                <div id="viewFrontImage" style="margin-top:4px;">
+                  <img id="currentFrontImg" src="" style="max-width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox(this.src)" />
+                  <div style="font-size:11px; color:var(--text-muted);">Click image to enlarge</div>
+                </div>
+              </div>
+              <div class="pf-group">
+                <label>Back side</label>
+                <div id="viewBackImage" style="margin-top:4px;">
+                  <img id="currentBackImg" src="" style="max-width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox(this.src)" />
+                  <div style="font-size:11px; color:var(--text-muted);">Click image to enlarge</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guarantor -->
+            <div class="profile-section-title" style="margin-top:24px;">Guarantor</div>
+            <div class="pf-row">
+              <div class="pf-group"><label>Full name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewGuarantorName">—</div></div>
+              <div class="pf-group"><label>Email</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewGuarantorEmail">—</div></div>
+            </div>
+            <div class="pf-group"><label>Phone number</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewGuarantorPhone">—</div></div>
+
+            <!-- References -->
+            <div class="profile-section-title" style="margin-top:24px;">References</div>
+            <div class="pf-row">
+              <div class="pf-group"><label>Reference 1 – Name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef1Name">—</div></div>
+              <div class="pf-group"><label>Email</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef1Email">—</div></div>
+            </div>
+            <div class="pf-group"><label>Phone</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef1Phone">—</div></div>
+
+            <div class="pf-row" style="margin-top:12px;">
+              <div class="pf-group"><label>Reference 2 – Name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef2Name">—</div></div>
+              <div class="pf-group"><label>Email</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef2Email">—</div></div>
+            </div>
+            <div class="pf-group"><label>Phone</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef2Phone">—</div></div>
+
+            <div style="margin-top:20px; font-size:12px; color:var(--gold); text-align:center;">
+              <i class="fas fa-lock"></i> Your profile information is managed by the school administration
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+  <!-- LIGHTBOX -->
+  <div id="imageLightbox" style="position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; cursor:pointer;" onclick="closeLightbox()">
+    <button style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:1px solid var(--border); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--white); font-size:16px; cursor:pointer; z-index:1;" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+    <img id="lightboxImage" src="" style="max-width:90vw; max-height:90vh; border-radius:var(--radius-lg); border:2px solid var(--gold); cursor:default;" onclick="event.stopPropagation()" />
+  </div>
+
+  <!-- STUDENT BIO MODAL -->
+  <div id="studentBioModal" class="modal-overlay">
+    <div class="modal" style="max-width: 650px;">
+      <div class="modal-header">
+        <div class="modal-title" id="studentBioTitle">Student Profile</div>
+        <button class="modal-close" onclick="closeStudentBioModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="studentBioBody">
+        <!-- Content will be injected dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeStudentBioModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTRUCTOR STUDENT STAGE MODAL -->
+  <div id="instrStageModal" class="modal-overlay">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <div class="modal-title" id="instrStageModalTitle">Update Training Stage</div>
+        <button class="modal-close" onclick="closeModal('instrStageModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="instrStageModalBody">
+        <!-- Pipeline injected here -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('instrStageModal')">Cancel</button>
+        <button class="btn btn-gold" onclick="saveInstructorStudentStage()"><i class="fas fa-save"></i> Save stage</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
+      authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
+      projectId: "dekaydrivingschool-6933c",
+      storageBucket: "dekaydrivingschool-6933c.firebasestorage.app",
+      messagingSenderId: "1017266487810",
+      appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Cloudinary configuration (same as student portal)
+    const CLOUDINARY_CLOUD = "drs2xpwho";
+    const CLOUDINARY_PRESET = "instructor_avatars";   // create this unsigned preset in Cloudinary
+
+    // ----- Toast helper (defined FIRST to avoid ReferenceError) -----
+
+
+    function showToast(msg, type = "success") {
+      const t = document.getElementById("toast");
+      if (!t) return;
+      t.className = "toast " + (type === "success" ? "success" : "error");
+      const icon = t.querySelector("i");
+      if (icon) icon.className = type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+      const msgSpan = document.getElementById("toastMsg");
+      if (msgSpan) msgSpan.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 3500);
+    }
+
+    // Convert 24h time (HH:MM) to 12h AM/PM format
+    function formatTime(timeStr) {
+      if (!timeStr) return '';
+      const [h, m] = timeStr.split(':');
+      let hour = parseInt(h);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      if (hour === 0) hour = 12;
+      else if (hour > 12) hour -= 12;
+      return `${hour}:${m} ${ampm}`;
+    }
+
+    let currentUser = null;
+    let instructorData = null;
+    let myStudents = [];
+    let attendanceRecords = [];
+    let dashboardLoaded = false;
+
+    let authGuardDone = false;
+    onAuthStateChanged(auth, async (user) => {
+      if (authGuardDone) return;
+      authGuardDone = true;
+
+      try {
+        if (!user) {
+          window.location.href = "/login";
+          return;
+        }
+
+        const snap = await getDoc(doc(db, "instructors", user.uid));
+
+        if (!snap.exists()) {
+          showToast("Your instructor account is not registered. Please contact the school.", "error");
+          return;
+        }
+
+        const data = snap.data();
+        if (data.status !== "active") {
+          showToast("Your account is pending approval. Please wait for the admin to activate it.", "error");
+          return;
+        }
+
+        if (dashboardLoaded) return;
+
+        currentUser = user;
+        instructorData = data;
+        document.getElementById("instructorName").textContent = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim() || "Instructor";
+        document.getElementById("dashInstructorName").textContent = instructorData.firstName || "Instructor";
+        document.getElementById("dashDateLine").textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+        // Populate read‑only view
+        document.getElementById("viewFirstName").textContent = instructorData.firstName || '—';
+        document.getElementById("viewLastName").textContent = instructorData.lastName || '—';
+        document.getElementById("viewEmail").textContent = currentUser.email;
+        document.getElementById("viewPhone").textContent = instructorData.phone || '—';
+        document.getElementById("viewDob").textContent = instructorData.dob || '—';
+        document.getElementById("viewQualifications").textContent = instructorData.qualifications || '—';
+        document.getElementById("viewCertifications").textContent = instructorData.certifications || '—';
+        document.getElementById("viewExperience").textContent = instructorData.experience ? `${instructorData.experience} years` : '—';
+
+        // Load guarantor
+        if (instructorData.guarantor) {
+          document.getElementById("viewGuarantorName").textContent = instructorData.guarantor.name || '—';
+          document.getElementById("viewGuarantorEmail").textContent = instructorData.guarantor.email || '—';
+          document.getElementById("viewGuarantorPhone").textContent = instructorData.guarantor.phone || '—';
+        }
+        // Load references
+        if (instructorData.references && instructorData.references.length >= 2) {
+          document.getElementById("viewRef1Name").textContent = instructorData.references[0].name || '—';
+          document.getElementById("viewRef1Email").textContent = instructorData.references[0].email || '—';
+          document.getElementById("viewRef1Phone").textContent = instructorData.references[0].phone || '—';
+          document.getElementById("viewRef2Name").textContent = instructorData.references[1].name || '—';
+          document.getElementById("viewRef2Email").textContent = instructorData.references[1].email || '—';
+          document.getElementById("viewRef2Phone").textContent = instructorData.references[1].phone || '—';
+        }
+        // Load Ghana Card images preview (read‑only)
+        if (instructorData.ghCardFront) {
+          document.getElementById("currentFrontImg").src = instructorData.ghCardFront;
+          document.getElementById("currentFrontImg").style.display = "block";
+        } else {
+          document.getElementById("currentFrontImg").style.display = "none";
+          // Show a placeholder text
+          document.getElementById("viewFrontImage").innerHTML += '<div style="font-size:12px; color:var(--text-muted);">No front image</div>';
+        }
+        if (instructorData.ghCardBack) {
+          document.getElementById("currentBackImg").src = instructorData.ghCardBack;
+          document.getElementById("currentBackImg").style.display = "block";
+        } else {
+          document.getElementById("currentBackImg").style.display = "none";
+          document.getElementById("viewBackImage").innerHTML += '<div style="font-size:12px; color:var(--text-muted);">No back image</div>';
+        }
+
+        const initials = (instructorData.firstName?.[0] || '') + (instructorData.lastName?.[0] || '') || '--';
+        document.getElementById("avatarInitials").textContent = initials;
+        document.getElementById("instructorFullName").textContent = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim() || "Instructor";
+        document.getElementById("instructorEmail").textContent = currentUser.email;
+
+        // Set up the topbar avatar button
+        const avatarBtn = document.getElementById("instructorAvatarBtn");
+        if (avatarBtn) {
+          avatarBtn.textContent = initials;
+          if (instructorData.profilePhoto) {
+            avatarBtn.style.backgroundImage = `url(${instructorData.profilePhoto})`;
+            avatarBtn.style.backgroundSize = "cover";
+            avatarBtn.style.backgroundPosition = "center";
+            avatarBtn.textContent = "";
+          }
+        }
+
+        if (instructorData.profilePhoto) {
+          document.getElementById("profileAvatarBig").style.backgroundImage = `url(${instructorData.profilePhoto})`;
+          document.getElementById("profileAvatarBig").style.backgroundSize = "cover";
+          document.getElementById("avatarInitials").style.display = "none";
+          // Hide the camera badge — photo is locked once uploaded
+          const badge = document.querySelector(".avatar-edit-badge");
+          if (badge) badge.style.display = "none";
+          // Disable the file input
+          const uploadInput = document.getElementById("avatarUpload");
+          if (uploadInput) uploadInput.disabled = true;
+          // Update hint text
+          const hint = document.querySelector(".profile-avatar-card div[style]");
+          window.currentInstructorAvatarUrl = instructorData.profilePhoto;
+        } else {
+          window.currentInstructorAvatarUrl = null;
+        }
+
+        try {
+          await loadMyStudents();
+          await loadInstructorClasses();   // load classes FIRST so attendance can show class titles
+          await loadAttendanceRecords();
+          await loadQuizStats();
+          await loadNotifications();
+          await loadAssignedCourses();
+          await loadMyAttendance();
+          // loadInstructorClasses already called above — skip duplicate
+          updateDashboardStats();
+          checkInstructorClassSession();   // show check-in card if eligible
+        } catch (err) {
+          console.error("Error loading dashboard data:", err);
+          showToast("Could not load all data. Some features may be unavailable. Please refresh.", "error");
+        } finally {
+          dashboardLoaded = true;
+        }
+      } catch (err) {
+        console.error("Critical error in auth guard:", err);
+        showToast("An error occurred. Please refresh the page.", "error");
+      }
+    });
+
+        async function loadMyStudents() {
+      try {
+        const instructorFullName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
+        
+        // First try the new "instructors" array field
+        let q;
+        try {
+          q = query(collection(db, "users"), where("role", "==", "student"), where("instructors", "array-contains", instructorFullName));
+          const snaps = await getDocs(q);
+          myStudents = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch(e) {
+          // If array-contains index doesn't exist, fall back to old query
+          console.warn("array-contains query failed, falling back:", e.message);
+          myStudents = [];
+          
+          // Fallback: query by old instructor field first, then merge with array-contains if available
+          const oldQ = query(collection(db, "users"), where("role", "==", "student"), where("instructor", "==", instructorFullName));
+          const oldSnaps = await getDocs(oldQ);
+          myStudents = oldSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        const tbody = document.getElementById("studentsTableBody");
+        if (!myStudents.length) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;">No students assigned to you yet.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = myStudents.map(s => {
+          const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email;
+          const attRate = s.attendanceRate || '—';
+          const avgQuiz = s.avgQuizScore || '—';
+          return `<tr>
+            <td><div style="font-weight:600">${name}</div><div style="font-size:11px;color:var(--text-muted)">${s.email}</div></td>
+            <td><span class="stage-pill">${s.courseType || 'Manual'}</span></td>
+            <td><span class="stage-pill">Stage ${s.trainingStage || 1}</span></td>
+            <td>${attRate}%</td>
+            <td>${avgQuiz}%</td>
+            <td>
+              <button class="btn btn-outline" style="font-size:11px;padding:5px 10px;" onclick="openInstructorStudentStageModal('${s.id}','${escapeHtml(name)}',${s.trainingStage || 1},${s.stageOneDone || s.status === 'active' ? 'true' : 'false'})">
+                <i class="fas fa-route"></i> Stages
+              </button>
+            </td>
+          </tr>`;
+        }).join('');
+      } catch (err) {
+        console.error("Error loading students:", err);
+        document.getElementById("studentsTableBody").innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;">Could not load students due to permission error.</td></tr>`;
+        myStudents = [];
+      }
+    }
+
+    async function loadAttendanceRecords() {
+      if (myStudents.length === 0) { renderAttendanceTable([]); return; }
+      const studentIds = myStudents.map(s => s.id);
+      const allAttSnap = await getDocs(collection(db, "attendance"));
+      attendanceRecords = allAttSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter(rec => studentIds.includes(rec.studentId))
+        .sort((a,b) => (b.date?.toDate?.() || 0) - (a.date?.toDate?.() || 0));
+      renderAttendanceTable(attendanceRecords);
+    }
+
+    function renderAttendanceTable(records) {
+      const tbody = document.getElementById("attendanceTableBody");
+      if (!records.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = records.map(rec => {
+        const student = myStudents.find(s => s.id === rec.studentId);
+        const sName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown';
+        let dateTimeStr = '';
+        if (rec.date?.toDate) {
+          const d = rec.date.toDate();
+          const dateStr = d.toLocaleDateString('en-GB');
+          let hours = d.getHours();
+          const minutes = d.getMinutes().toString().padStart(2, '0');
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12 || 12;
+          const timeStr = `${hours}:${minutes} ${ampm}`;
+          dateTimeStr = `${dateStr} at ${timeStr}`;
+        } else {
+          dateTimeStr = rec.date || '—';
+        }
+        const date = dateTimeStr;
+        const pillClass = rec.status === 'present' ? 'pill-active' : rec.status === 'excused' ? 'pill-pending' : '';
+        // Get course from student data
+        const courseName = student ? (student.courseType || '—') : '—';
+        // Get class title from allClasses lookup
+        let classTitle = '—';
+        if (rec.classId && allInstructorClasses && allInstructorClasses.length > 0) {
+          const foundClass = allInstructorClasses.find(c => c.id === rec.classId);
+          if (foundClass) classTitle = foundClass.title || '—';
+        }
+        return `<tr>
+          <td><div style="font-weight:600">${sName}</div></td>
+          <td>${date}</td>
+          <td style="font-size:12px;">${escapeHtml(courseName)}</td>
+          <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
+          <td><span class="pill ${pillClass}">${rec.status}</span></td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn btn-icon toggle-present" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${rec.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="instructorToggleAttendance('${rec.id}', 'present')"><i class="fas fa-check"></i></button>
+            <button class="btn btn-icon toggle-absent" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${rec.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="instructorToggleAttendance('${rec.id}', 'absent')"><i class="fas fa-times"></i></button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── TOGGLE STUDENT ATTENDANCE STATUS ──
+    window.instructorToggleAttendance = async function(recordId, newStatus) {
+      const record = attendanceRecords.find(r => r.id === recordId);
+      if (!record) return showToast("Record not found.", "error");
+      const student = myStudents.find(s => s.id === record.studentId);
+      const sName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Student';
+      const statusLabel = newStatus === 'present' ? 'present' : 'absent';
+      
+      if (!confirm(`Mark ${sName} as ${statusLabel}?`)) return;
+      
+      try {
+        await updateDoc(doc(db, "attendance", recordId), { status: newStatus });
+        // Update local data
+        const localRecord = attendanceRecords.find(r => r.id === recordId);
+        if (localRecord) localRecord.status = newStatus;
+        // Re-render the table
+        renderAttendanceTable(attendanceRecords);
+        showToast(`${sName} marked as ${statusLabel} ✓`, "success");
+      } catch(e) {
+        console.error("Toggle error:", e);
+        showToast("Failed to update status.", "error");
+      }
+    };
+
+    async function loadQuizStats() {
+      if (myStudents.length === 0) {
+        document.getElementById("quizStatsTableBody").innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;">No students assigned.</td></tr>`;
+        return;
+      }
+      const quizzesSnap = await getDocs(collection(db, "quizzes"));
+      const quizzes = quizzesSnap.docs.map(d => ({ id: d.id, title: d.data().title }));
+      const allResults = [];
+      for (const student of myStudents) {
+        const snap = await getDoc(doc(db, "quizResults", student.id));
+        if (snap.exists()) {
+          const results = snap.data();
+          for (const [quizId, score] of Object.entries(results)) allResults.push({ quizId, studentId: student.id, score });
+        }
+      }
+      const quizStats = quizzes.map(quiz => {
+        const relevant = allResults.filter(r => r.quizId === quiz.id);
+        const avgScore = relevant.length ? Math.round(relevant.reduce((a,b) => a + b.score, 0) / relevant.length) : 0;
+        const passed = relevant.filter(r => r.score >= 60).length;
+        const passRate = relevant.length ? Math.round((passed / relevant.length) * 100) : 0;
+        return { title: quiz.title, taken: relevant.length, avgScore, passRate };
+      }).filter(q => q.taken > 0);
+      const tbody = document.getElementById("quizStatsTableBody");
+      if (!quizStats.length) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;">No quiz attempts yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = quizStats.map(q => `<tr><td>${q.title}</td><td>${q.taken}</td><td>${q.avgScore}%</td><td>${q.passRate}%</td></tr>`).join('');
+    }
+
+    // ── LOAD ASSIGNED COURSES ──
+        // ── LOAD ASSIGNED COURSES ──
+    async function loadAssignedCourses() {
+      const container = document.getElementById("assignedCoursesContainer");
+      if (!container) return;
+
+      try {
+        // Normalize assignedCourses — handle array or plain object from Firestore
+        let assignedCourses = instructorData.assignedCourses || [];
+        if (assignedCourses && typeof assignedCourses === 'object' && !Array.isArray(assignedCourses)) {
+          assignedCourses = Object.values(assignedCourses);
+        }
+        if (!Array.isArray(assignedCourses)) assignedCourses = [];
+        assignedCourses = assignedCourses.filter(c => c && typeof c === 'string' && c.trim().length > 0);
+
+        if (assignedCourses.length === 0) {
+          container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:12px; font-size:12px;">No courses assigned yet.<br>Contact admin.</div>';
+          return;
+        }
+
+        // Icon map by course name keywords — no Firestore read needed
+        const iconMap = {
+          'manual': 'fa-car', 'automatic': 'fa-car',
+          'motorcycle': 'fa-motorcycle', 'bus': 'fa-bus',
+          'truck': 'fa-truck', 'hgv': 'fa-truck'
+        };
+
+        const getIcon = (name) => {
+          const lower = name.toLowerCase();
+          for (const [key, icon] of Object.entries(iconMap)) {
+            if (lower.includes(key)) return icon;
+          }
+          return 'fa-book';
+        };
+
+        container.innerHTML = assignedCourses.map(courseName => {
+          const trimmedName = courseName.trim();
+          const icon = getIcon(trimmedName);
+          return `
+            <div style="background: var(--navy); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas ${icon}" style="color: var(--gold); font-size: 16px; width: 20px; text-align: center;"></i>
+                <div style="font-weight: 600; font-size: 13px;">${escapeHtml(trimmedName)}</div>
+              </div>
+            </div>`;
+        }).join('');
+
+      } catch(e) {
+        console.error("❌ Error loading assigned courses:", e);
+        container.innerHTML = '<div style="text-align:center; color: var(--error); padding:12px; font-size:12px;">Error loading courses.</div>';
+      }
+    }
+
+    // ── HTML ESCAPE HELPER ──
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    async function loadNotifications() {
+      try {
+        const q = query(collection(db, "instructorNotifications"), where("instructorId", "==", currentUser.uid));
+        const snaps = await getDocs(q);
+        let notifs = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+        notifs.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+        const container = document.getElementById("dashNotifList");
+        if (!notifs.length) {
+          container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">No notifications yet.</div>`;
+          return;
+        }
+        container.innerHTML = notifs.map(n => {
+          const date = n.createdAt?.toDate();
+          let timeStr = '';
+          if (date) {
+            const formattedDate = date.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+            let hours = date.getHours();
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            const formattedTime = `${hours}:${minutes} ${ampm}`;
+            timeStr = `${formattedDate} at ${formattedTime}`;
+          }
+          return `<div class="notif-item"><div class="notif-dot-outer"><i class="fas ${n.icon || 'fa-bell'}"></i></div><div><div class="notif-text">${n.message}</div><div class="notif-time">${timeStr}</div></div></div>`;
+        }).join('');
+      } catch(e) {
+        console.error("Error loading notifications:", e);
+        const container = document.getElementById("dashNotifList");
+        if (container) container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Could not load notifications.</div>`;
+      }
+    }
+
+    // ══════════════════════════════════════════
+    // INSTRUCTOR SELF-ATTENDANCE FUNCTIONS
+    // ══════════════════════════════════════════
+    let myAttendanceRecords = [];
+
+    async function loadMyAttendance() {
+      try {
+        // Try with composite index first
+        const q = query(
+          collection(db, "instructorAttendance"),
+          where("instructorId", "==", currentUser.uid),
+          orderBy("date", "desc")
+        );
+        const snaps = await getDocs(q);
+        myAttendanceRecords = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch(e) {
+        // If index doesn't exist yet, fall back to query without ordering
+        console.warn("⚠️ Missing index, falling back to unordered query:", e.message);
+        try {
+          const fallbackQ = query(
+            collection(db, "instructorAttendance"),
+            where("instructorId", "==", currentUser.uid)
+          );
+          const snaps = await getDocs(fallbackQ);
+          myAttendanceRecords = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+          // Sort manually in memory
+          myAttendanceRecords.sort((a, b) => {
+            const da = a.date?.toDate ? a.date.toDate() : new Date(a.date || 0);
+            const db2 = b.date?.toDate ? b.date.toDate() : new Date(b.date || 0);
+            return db2 - da;
+          });
+        } catch(e2) {
+          console.error("Error loading my attendance:", e2);
+          document.getElementById("myAttendanceTableBody").innerHTML = 
+            `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--error);">Could not load attendance. Check console.</td></tr>`;
+          return;
+        }
+      }
+      renderMyAttendanceTable();
+      updateMyAttendanceStats();
+    }
+
+    function renderMyAttendanceTable() {
+      const tbody = document.getElementById("myAttendanceTableBody");
+      if (!myAttendanceRecords.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records yet. Click "Mark Attendance" to add one.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = myAttendanceRecords.map(r => {
+        let dateTimeStr = '';
+        if (r.date?.toDate) {
+          const d = r.date.toDate();
+          const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+          let hours = d.getHours();
+          const minutes = d.getMinutes().toString().padStart(2, '0');
+          const seconds = d.getSeconds().toString().padStart(2, '0');
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12 || 12;
+          const timeStr = `${hours}:${minutes}:${seconds} ${ampm}`;
+          dateTimeStr = `${dateStr} at ${timeStr}`;
+        } else if (r.timestamp?.toDate) {
+          // Fallback to timestamp field if date is missing time
+          const d = r.timestamp.toDate();
+          const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+          let hours = d.getHours();
+          const minutes = d.getMinutes().toString().padStart(2, '0');
+          const seconds = d.getSeconds().toString().padStart(2, '0');
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12 || 12;
+          const timeStr = `${hours}:${minutes}:${seconds} ${ampm}`;
+          dateTimeStr = `${dateStr} at ${timeStr}`;
+        } else if (typeof r.date === 'string') {
+          dateTimeStr = r.date;
+        } else {
+          dateTimeStr = '—';
+        }
+        const date = dateTimeStr;
+        const pillClass = r.status === 'present' ? 'pill-active' : 'pill-pending';
+        return `<tr>
+          <td style="font-weight:500;">${date}</td>
+          <td><span class="stage-pill">${r.sessionType || '—'}</span></td>
+          <td style="color:var(--text-muted);">${r.course || '—'}</td>
+          <td style="color:var(--text-muted);font-size:12px;">${r.notes || '—'}</td>
+          <td><span class="pill ${pillClass}">${r.status || 'present'}</span></td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleMyAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
+            <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleMyAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── TOGGLE MY ATTENDANCE STATUS ──
+    window.toggleMyAttendanceStatus = async function(recordId, newStatus) {
+  const record = myAttendanceRecords.find(r => r.id === recordId);
+  if (!record) return showToast("Record not found.", "error");
+  const statusLabel = newStatus === 'present' ? 'present' : 'absent';
+  
+  // Open modal instead of confirm()
+  openAttendanceConfirmModal(recordId, newStatus, record);
+};
+
+    function updateMyAttendanceStats() {
+      const total = myAttendanceRecords.length;
+      const present = myAttendanceRecords.filter(r => r.status === 'present').length;
+      const absent = total - present;
+      const rate = total ? Math.round((present / total) * 100) : 0;
+
+      document.getElementById("myAttPresent").textContent = present;
+      document.getElementById("myAttAbsent").textContent = absent;
+      document.getElementById("myAttRate").textContent = rate + '%';
+      document.getElementById("myAttTotal").textContent = total;
+    }
+
+    window.openMyAttendanceModal = function() {
+      // Set today's date
+      document.getElementById("myAttDate").value = new Date().toISOString().split('T')[0];
+      // Populate course dropdown from assigned courses
+      const courseSelect = document.getElementById("myAttCourse");
+      courseSelect.innerHTML = '<option value="">Select course…</option>';
+      const assignedCourses = instructorData.assignedCourses || [];
+      let courses = assignedCourses;
+      if (courses && typeof courses === 'object' && !Array.isArray(courses)) {
+        courses = Object.values(courses);
+      }
+      if (Array.isArray(courses)) {
+        courses.filter(c => c).forEach(c => {
+          courseSelect.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+        });
+      }
+      openModal("myAttendanceModal");
+    };
+
+    window.submitMyAttendance = async function() {
+  const date = document.getElementById("myAttDate").value;
+  const sessionType = document.getElementById("myAttSessionType").value;
+  const course = document.getElementById("myAttCourse").value;
+  const notes = document.getElementById("myAttNotes").value.trim();
+
+  if (!date || !sessionType) {
+    showToast("Date and session type are required.", "error");
+    return;
+  }
+
+  try {
+    const instructorName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
+    const currentTime = new Date(); // Use a different variable name
+    // Parse the date input as local time (not UTC) by splitting manually
+    const [yr, mo, dy] = date.split('-').map(Number);
+    // Use full current time with the selected date
+    const fullDateTime = new Date(yr, mo - 1, dy, currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds());
+    await addDoc(collection(db, "instructorAttendance"), {
+      instructorId: currentUser.uid,
+      instructorName: instructorName,
+      date: fullDateTime,
+      timestamp: serverTimestamp(),
+      sessionType: sessionType,
+      course: course || null,
+      notes: notes || null,
+      status: "present",
+      createdAt: serverTimestamp()
+    });
+
+    closeModal("myAttendanceModal");
+    showToast("Attendance marked ✓", "success");
+    await loadMyAttendance();
+  } catch(e) {
+    console.error("Error submitting attendance:", e);
+    showToast("Failed to save. Try again.", "error");
+  }
+};
+
+      // ── MODAL HELPERS (exposed globally) ──
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("open");
+  }
+  
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("open");
+    // Hide instructor dropdown when closing student detail modal
+    if (id === "studentDetailModal") {
+      const panel = document.getElementById("instructorDropdown");
+      if (panel) panel.style.display = "none";
+      const coursePanel = document.getElementById("courseDropdown");
+      if (coursePanel) coursePanel.style.display = "none";
+    }
+  }
+  
+  // ✅ Expose both functions globally
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+
+    // ══════════════════════════════════════════
+    // INSTRUCTOR CLASS CHECK-IN
+    // ══════════════════════════════════════════
+    let allInstructorClasses = [];
+
+    function computeClassStatus(cls) {
+      const start = new Date(`${cls.date}T${cls.time}`);
+      const end   = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+      const now   = new Date();
+      if (now < start) return 'upcoming';
+      if (now >= start && now <= end) return 'ongoing';
+      return 'completed';
+    }
+
+    async function loadInstructorClasses() {
+      try {
+        const instructorName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
+        const q = query(collection(db, "classes"), where("instructorName", "==", instructorName));
+        const snaps = await getDocs(q);
+        allInstructorClasses = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderUpcomingSessions();
+      } catch(e) {
+        console.error("Error loading instructor classes:", e);
+        allInstructorClasses = [];
+      }
+    }
+
+    function renderUpcomingSessions() {
+      const container = document.getElementById("upcomingSessions");
+      if (!container) return;
+      
+      const now = new Date();
+      const upcoming = allInstructorClasses
+        .filter(cls => {
+          const start = new Date(`${cls.date}T${cls.time}`);
+          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+          return end > now;
+        })
+        .sort((a, b) => {
+          const da = new Date(`${a.date}T${a.time}`);
+          const db = new Date(`${b.date}T${b.time}`);
+          return da - db;
+        })
+        .slice(0, 5);
+      
+      if (upcoming.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No upcoming sessions scheduled.</div>';
+        return;
+      }
+      
+      container.innerHTML = upcoming.map(cls => {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+        const timeStr = formatTime(cls.time);
+        const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
+        return `
+          <div style="padding:8px 0;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:12px;flex-shrink:0;">
+              <i class="fas ${modeIcon}"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(cls.title)}</div>
+              <div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeStr}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function checkInstructorClassSession() {
+      const card = document.getElementById("instructorCheckinCard");
+      const btn = document.getElementById("instructorCheckinBtn");
+      if (!card || !btn) return;
+
+      const now = new Date();
+      const todayStr = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0');
+      const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+
+      // Find eligible class (started and within 48h of end)
+      const sortedClasses = [...allInstructorClasses].sort((a, b) => {
+        const da = new Date(`${a.date}T${a.time}`);
+        const db = new Date(`${b.date}T${b.time}`);
+        return db - da;
+      });
+
+      const eligibleClass = sortedClasses.find(cls => {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+        const timeSinceEnd = now - end;
+        return now >= start && (now <= end || timeSinceEnd < FORTY_EIGHT_HOURS);
+      });
+
+      // Check if already marked attendance today
+      const alreadyMarked = myAttendanceRecords.some(r => {
+        let rDate = r.date;
+        if (r.date?.toDate) rDate = r.date.toDate().toISOString().split('T')[0];
+        else if (typeof r.date === 'string') rDate = r.date;
+        return rDate === todayStr && r.status === 'present';
+      });
+
+      if (eligibleClass && !alreadyMarked) {
+        card.style.display = "flex";
+        card.style.opacity = "1";
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
+        btn.style.background = 'var(--gold)';
+        btn.style.color = 'var(--navy)';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+
+        const classStatus = computeClassStatus(eligibleClass);
+        const titleEl = document.getElementById("instructorCheckinTitle");
+        const descEl = document.getElementById("instructorCheckinDesc");
+
+        const timeStr = formatTime(eligibleClass.time);
+        if (classStatus === 'ongoing') {
+          if (titleEl) titleEl.innerHTML = '<i class="fas fa-map-pin" style="color:var(--gold);margin-right:6px"></i> Session in progress';
+          if (descEl) descEl.innerHTML = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> at ${timeStr} is in progress — tap to mark your attendance.`;
+        } else {
+          if (titleEl) titleEl.innerHTML = '<i class="fas fa-clock" style="color:var(--gold);margin-right:6px"></i> Mark attendance';
+          if (descEl) descEl.innerHTML = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> at ${timeStr} has ended — you can still mark attendance (within 48 hours).`;
+        }
+      } else if (eligibleClass && alreadyMarked) {
+        card.style.display = "flex";
+        card.style.opacity = "0.6";
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i> Attendance marked';
+        btn.style.background = 'rgba(76,175,80,0.15)';
+        btn.style.color = 'var(--success)';
+        btn.style.border = '1px solid var(--success)';
+        btn.style.cursor = 'default';
+
+        const titleEl = document.getElementById("instructorCheckinTitle");
+        const descEl = document.getElementById("instructorCheckinDesc");
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success);margin-right:6px"></i> Attendance marked';
+        if (descEl) descEl.innerHTML = `<strong style="color:var(--success)">${escapeHtml(eligibleClass.title || 'Class')}</strong> — you've already checked in today.`;
+      } else {
+        card.style.display = "none";
+        card.style.opacity = "1";
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
+        btn.style.background = 'var(--gold)';
+        btn.style.color = 'var(--navy)';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+      }
+    }
+
+    // ── INSTRUCTOR CHECK-IN BUTTON ──
+    window.markInstructorAttendance = async function() {
+      const btn = document.getElementById("instructorCheckinBtn");
+      if (!btn) return;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Marking…';
+
+      try {
+        const now = new Date();
+        const dateStr = now.getFullYear() + '-' +
+          String(now.getMonth() + 1).padStart(2, '0') + '-' +
+          String(now.getDate()).padStart(2, '0');
+
+        const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+
+        // Find eligible class
+        const sortedClasses = [...allInstructorClasses].sort((a, b) => {
+          const da = new Date(`${a.date}T${a.time}`);
+          const db = new Date(`${b.date}T${b.time}`);
+          return db - da;
+        });
+
+        const eligibleClass = sortedClasses.find(cls => {
+          const start = new Date(`${cls.date}T${cls.time}`);
+          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+          const timeSinceEnd = now - end;
+          return now >= start && (now <= end || timeSinceEnd < FORTY_EIGHT_HOURS);
+        });
+
+        let sessionType = "Class";
+        let course = null;
+        if (eligibleClass) {
+          sessionType = eligibleClass.mode === 'online' ? 'Online Class' : 'In-person Class';
+          course = eligibleClass.courseName || null;
+        }
+
+        const instructorName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
+        await addDoc(collection(db, "instructorAttendance"), {
+          instructorId: currentUser.uid,
+          instructorName: instructorName,
+          date: now,
+          timestamp: serverTimestamp(),
+          sessionType: sessionType,
+          course: course,
+          notes: eligibleClass ? `Class: ${eligibleClass.title || 'Untitled'}` : null,
+          status: "present",
+          createdAt: serverTimestamp()
+        });
+
+        // Update card to completed state
+        const card = document.getElementById("instructorCheckinCard");
+        if (card) card.style.opacity = "0.6";
+        btn.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i> Attendance marked';
+        btn.style.background = 'rgba(76,175,80,0.15)';
+        btn.style.color = 'var(--success)';
+        btn.style.border = '1px solid var(--success)';
+        btn.style.cursor = 'default';
+
+        const titleEl = document.getElementById("instructorCheckinTitle");
+        const descEl = document.getElementById("instructorCheckinDesc");
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success);margin-right:6px"></i> Attendance marked';
+        if (descEl && eligibleClass) {
+          const timeStr = formatTime(eligibleClass.time);
+          descEl.innerHTML = `<strong style="color:var(--success)">${escapeHtml(eligibleClass.title || 'Class')}</strong> at ${timeStr} — you've already checked in today.`;
+        }
+
+        showToast("Attendance marked ✓", "success");
+        await loadMyAttendance();
+      } catch(e) {
+        console.error(e);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
+        btn.style.background = 'var(--gold)';
+        btn.style.color = 'var(--navy)';
+        btn.style.border = 'none';
+        showToast("Could not mark attendance. Try again.", "error");
+      }
+    };
+
+    function updateDashboardStats() {
+      document.getElementById("statStudents").textContent = myStudents.length;
+      const presentCount = attendanceRecords.filter(r => r.status === 'present').length;
+      const totalAtt = attendanceRecords.length;
+      const attRate = totalAtt ? Math.round((presentCount / totalAtt) * 100) : 0;
+      document.getElementById("statAttendanceRate").textContent = `${attRate}%`;
+      let totalScore = 0, scoreCount = 0;
+      myStudents.forEach(s => { if (s.avgQuizScore) { totalScore += s.avgQuizScore; scoreCount++; } });
+      const avgScore = scoreCount ? Math.round(totalScore / scoreCount) : 0;
+      document.getElementById("statAvgScore").textContent = `${avgScore}%`;
+      const avgStage = myStudents.length ? Math.round(myStudents.reduce((a,b) => a + (b.trainingStage || 1), 0) / myStudents.length) : 1;
+      document.getElementById("statStageProgress").textContent = `Stage ${avgStage}`;
+    }
+
+       window.updateInstructorProfile = async function() {
+      const firstName = document.getElementById("settingsFirstName").value.trim();
+      const lastName = document.getElementById("settingsLastName").value.trim();
+      const phone = document.getElementById("settingsPhone").value.trim();
+      const dob = document.getElementById("settingsDob").value;
+      const qualifications = document.getElementById("settingsQualifications").value.trim();
+      const certifications = document.getElementById("settingsCertifications").value.trim();
+      const experience = parseInt(document.getElementById("settingsExperience").value) || 0;
+
+      // Guarantor
+      const guarantor = {
+        name: document.getElementById("settingsGuarantorName").value.trim(),
+        email: document.getElementById("settingsGuarantorEmail").value.trim(),
+        phone: document.getElementById("settingsGuarantorPhone").value.trim()
+      };
+      // References
+      const references = [
+        {
+          name: document.getElementById("settingsRef1Name").value.trim(),
+          email: document.getElementById("settingsRef1Email").value.trim(),
+          phone: document.getElementById("settingsRef1Phone").value.trim()
+        },
+        {
+          name: document.getElementById("settingsRef2Name").value.trim(),
+          email: document.getElementById("settingsRef2Email").value.trim(),
+          phone: document.getElementById("settingsRef2Phone").value.trim()
+        }
+      ];
+
+      if (!firstName || !lastName) {
+        showToast("First and last name are required", "error");
+        return;
+      }
+
+      try {
+        await updateDoc(doc(db, "instructors", currentUser.uid), {
+          firstName, lastName, phone, dob,
+          qualifications, certifications, experience,
+          guarantor, references
+        });
+        // Update local data
+        instructorData = {
+          ...instructorData,
+          firstName, lastName, phone, dob,
+          qualifications, certifications, experience,
+          guarantor, references
+        };
+        // Update UI
+        document.getElementById("instructorName").textContent = `${firstName} ${lastName}`;
+        document.getElementById("dashInstructorName").textContent = firstName;
+        document.getElementById("instructorFullName").textContent = `${firstName} ${lastName}`;
+        showToast("Profile updated successfully", "success");
+        // Reload dependent data
+        await loadMyStudents();
+        await loadAttendanceRecords();
+        await loadQuizStats();
+        updateDashboardStats();
+      } catch(e) {
+        console.error("Update error:", e);
+        showToast("Update failed. Check your permissions.", "error");
+      }
+    };
+
+    window.uploadInstructorAvatar = async function(input) {
+      const file = input.files[0]; if (!file) return;
+      showToast("Uploading photo…", "success");
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", "instructor_avatars");
+      try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        const url = data.secure_url;
+        await updateDoc(doc(db, "instructors", currentUser.uid), { profilePhoto: url });
+        window.currentInstructorAvatarUrl = url;
+        document.getElementById("profileAvatarBig").style.backgroundImage = `url(${url})`;
+        document.getElementById("profileAvatarBig").style.backgroundSize = "cover";
+        document.getElementById("avatarInitials").style.display = "none";
+        // Hide the camera badge — photo is now locked
+        const badge = document.querySelector(".avatar-edit-badge");
+        if (badge) badge.style.display = "none";
+        // Disable the file input
+        const uploadInput = document.getElementById("avatarUpload");
+        if (uploadInput) uploadInput.disabled = true;
+        // Also update topbar avatar
+        const avatarBtn = document.getElementById("instructorAvatarBtn");
+        if (avatarBtn) {
+          avatarBtn.style.backgroundImage = `url(${url})`;
+          avatarBtn.style.backgroundSize = "cover";
+          avatarBtn.style.backgroundPosition = "center";
+          avatarBtn.textContent = "";
+        }
+        showToast("Profile photo updated ✓", "success");
+      } catch(e) {
+        console.error(e);
+        showToast("Upload failed. Try again.", "error");
+      }
+    };
+
+        // Upload Ghana Card front
+    window.uploadGhCardFront = async function(input) {
+      const file = input.files[0];
+      if (!file) return;
+      showToast("Uploading front side…", "success");
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", "ghcard_uploads");   // your existing unsigned preset
+      try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        const url = data.secure_url;
+        await updateDoc(doc(db, "instructors", currentUser.uid), { ghCardFront: url });
+        instructorData.ghCardFront = url;
+        // Update preview
+        document.getElementById("currentFrontImg").src = url;
+        document.getElementById("currentFrontImage").style.display = "block";
+        showToast("Front side updated ✓", "success");
+      } catch(e) {
+        console.error(e);
+        showToast("Upload failed. Try again.", "error");
+      }
+      input.value = ''; // allow re-upload same file
+    };
+
+        // ── ATTENDANCE CONFIRMATION MODAL ──
+    let pendingToggleData = null;
+
+    window.openAttendanceConfirmModal = function(recordId, newStatus, record) {
+      pendingToggleData = { recordId, newStatus, record };
+      const statusLabel = newStatus === 'present' ? 'present' : 'absent';
+      const dateStr = record.date?.toDate 
+        ? record.date.toDate().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })
+        : (record.date || 'Unknown date');
+      
+      document.getElementById("confirmMessage").innerHTML = `
+        <div style="text-align: center; padding: 8px 0;">
+          <div style="font-size: 32px; margin-bottom: 12px;">
+            <i class="fas ${newStatus === 'present' ? 'fa-check-circle' : 'fa-times-circle'}" 
+               style="color: ${newStatus === 'present' ? 'var(--success)' : 'var(--error)'}"></i>
+          </div>
+          <p style="margin-bottom: 8px;">Mark your attendance for</p>
+          <p style="font-weight: 700; color: var(--gold); margin-bottom: 12px;">${dateStr}</p>
+          <p>as <strong style="color: ${newStatus === 'present' ? 'var(--success)' : 'var(--error)'}">${statusLabel.toUpperCase()}</strong>?</p>
+        </div>
+      `;
+      document.getElementById("confirmActionBtn").className = `btn ${newStatus === 'present' ? 'btn-gold' : 'btn-outline'}`;
+      document.getElementById("confirmActionBtn").innerHTML = newStatus === 'present' ? '<i class="fas fa-check"></i> Mark Present' : '<i class="fas fa-times"></i> Mark Absent';
+      openModal("attendanceConfirmModal");
+    };
+
+    window.closeAttendanceConfirmModal = function() {
+      closeModal("attendanceConfirmModal");
+      pendingToggleData = null;
+    };
+
+    window.executeAttendanceToggle = async function() {
+      if (!pendingToggleData) return;
+      
+      const { recordId, newStatus } = pendingToggleData;
+      closeAttendanceConfirmModal();
+      
+      try {
+        await updateDoc(doc(db, "instructorAttendance", recordId), { status: newStatus });
+        // Update local data
+        const localRecord = myAttendanceRecords.find(r => r.id === recordId);
+        if (localRecord) localRecord.status = newStatus;
+        // Re-render
+        renderMyAttendanceTable();
+        updateMyAttendanceStats();
+        showToast(`Marked as ${newStatus === 'present' ? 'present' : 'absent'} ✓`, "success");
+      } catch(e) {
+        console.error("Toggle error:", e);
+        showToast("Failed to update status. Insufficient permissions.", "error");
+      } finally {
+        pendingToggleData = null;
+      }
+    };
+
+    // Upload Ghana Card back
+    window.uploadGhCardBack = async function(input) {
+      const file = input.files[0];
+      if (!file) return;
+      showToast("Uploading back side…", "success");
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", "ghcard_uploads");   // your existing unsigned preset
+      try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        const url = data.secure_url;
+        await updateDoc(doc(db, "instructors", currentUser.uid), { ghCardBack: url });
+        instructorData.ghCardBack = url;
+        document.getElementById("currentBackImg").src = url;
+        document.getElementById("currentBackImage").style.display = "block";
+        showToast("Back side updated ✓", "success");
+      } catch(e) {
+        console.error(e);
+        showToast("Upload failed. Try again.", "error");
+      }
+      input.value = '';
+    };
+
+    window.openLightbox = function(imageUrl) {
+      if (!imageUrl) return;
+      const lightbox = document.getElementById('imageLightbox');
+      if (!lightbox) return;
+      document.getElementById('lightboxImage').src = imageUrl;
+      lightbox.style.display = 'flex';
+    };
+
+    window.closeLightbox = function() {
+      const lightbox = document.getElementById('imageLightbox');
+      if (lightbox) lightbox.style.display = 'none';
+    };
+
+    window.viewProfileImage = function() {
+      if (window.currentInstructorAvatarUrl) {
+        openLightbox(window.currentInstructorAvatarUrl);
+      } else {
+        showToast("No profile picture yet. Upload one using the camera icon.", "error");
+      }
+    };
+
+    // ── INSTRUCTOR STAGE PIPELINE ──
+    let instrStageStudentId = null;
+    let instrCurrentStage = 1;
+
+      // ── BUILD STAGE PIPELINE FOR INSTRUCTOR ──
+  function buildInstrStagePipeline(stage, progressData, studentId) {
+    const stages = [
+      { label: "Registration", desc: "Enrolled and profile set up", stage: 1 },
+      { label: "Theory lessons", desc: "Watch all video modules", stage: 2 },
+      { label: "Theory test", desc: "Pass the online quiz (60%+)", stage: 3 },
+      { label: "Practical lessons", desc: "Behind-the-wheel training", stage: 4 },
+      { label: "Assessment", desc: "Mock DVLA test (70%+)", stage: 5 },
+      { label: "DVLA Ready", desc: "Ready for official test", stage: 6 }
+    ];
+
+    const dvlaReady = stage >= 6 || progressData?.dvlaReady === true;
+
+    return stages.map(s => {
+      const st = s.stage;
+      const status = getStageStatus(st, progressData, stage);
+      
+      let dotClass = 'pending';
+      let tagClass = 'pending-c';
+      let label = 'Locked';
+      
+      if (status.status === 'done') {
+        dotClass = 'done';
+        tagClass = 'done-c';
+        label = '✓ Complete';
+      } else if (status.status === 'current') {
+        dotClass = 'current';
+        tagClass = 'current-c';
+        label = '▶ In Progress';
+      }
+      
+      // Instructors can only update stages 2-5
+      const isClickable = st >= 2 && st <= 5;
+      const clickAttr = isClickable ? `onclick="setInstrStudentStage('${studentId}', ${st})"` : '';
+      
+      // Stage 6 is read-only for instructors
+      if (st === 6) {
+        const dotClass = dvlaReady ? 'done' : 'pending';
+        const tagClass = dvlaReady ? 'done-c' : 'pending-c';
+        const label = dvlaReady ? '✓ DVLA Ready 🏆' : 'Admin Only';
+        
+        return `
+          <div class="pipeline-step-item" style="cursor:default;">
+            <div class="ps-dot-wrap">
+              <div class="ps-dot ${dotClass}">${dvlaReady ? '<i class="fas fa-check"></i>' : st}</div>
+            </div>
+            <div class="ps-info">
+              <div class="ps-title">${s.label} ${dvlaReady ? '🏆' : ''}</div>
+              <div class="ps-desc">${s.desc}</div>
+              <span class="ps-tag tag-${tagClass}">${label}</span>
+              ${dvlaReady ? `<div style="font-size:9px;color:var(--text-muted);margin-top:2px;">Approved by Admin</div>` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="pipeline-step-item" style="cursor:${isClickable ? 'pointer' : 'default'};">
+          <div class="ps-dot-wrap">
+            <div class="ps-dot ${dotClass}" ${clickAttr}>
+              ${dotClass === 'done' ? '<i class="fas fa-check"></i>' : st}
+            </div>
+          </div>
+          <div class="ps-info">
+            <div class="ps-title">${s.label}</div>
+            <div class="ps-desc">${s.desc}</div>
+            <span class="ps-tag tag-${tagClass}">${label}</span>
+            ${status.approvedBy ? `<div style="font-size:9px;color:var(--text-muted);margin-top:2px;">by ${status.approvedBy}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+    // ── SET STUDENT STAGE (Instructor – Stages 2-5 only) ──
+  window.setInstrStudentStage = async function(studentId, targetStage) {
+    if (!studentId || targetStage < 2 || targetStage > 5) {
+      showToast("Instructors can only set stages 2-5.", "error");
+      return;
+    }
+    
+    // Confirm with instructor
+    if (!confirm(`Mark Stage ${targetStage} as complete for this student?`)) return;
+    
+    try {
+      const userRef = doc(db, "users", studentId);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+      
+      const user = userSnap.data();
+      const currentStage = user.trainingStage || 1;
+      
+      // Don't allow going backwards
+      if (targetStage <= currentStage) {
+        showToast(`Student is already at Stage ${currentStage} or beyond.`, "error");
+        return;
+      }
+      
+      // Update user
+      await updateDoc(userRef, { trainingStage: targetStage });
+      
+      // Update stageProgress
+      const instructorName = document.getElementById("instructorName").textContent;
+      await updateStageCompletion(
+        studentId, 
+        targetStage, 
+        true, 
+        currentUser.uid, 
+        "instructor", 
+        instructorName
+      );
+      
+      showToast(`Stage ${targetStage} completed ✓`, "success");
+      
+      await loadMyStudents();
+      updateDashboardStats();
+    } catch(e) {
+      console.error(e);
+      showToast("Could not update stage.", "error");
+    }
+  };
+
+    window.instrSetStage = function(stageNum) {
+      instrCurrentStage = stageNum;
+      const s = myStudents.find(st => st.id === instrStageStudentId);
+      const stageOneDone = s?.stageOneDone || s?.status === 'active';
+      const wrapper = document.querySelector('#instrStageModalBody .instr-pipeline-wrap');
+      if (wrapper) wrapper.innerHTML = buildInstrStagePipeline(stageNum, stageOneDone);
+    };
+
+    window.openInstructorStudentStageModal = function(studentId, studentName, currentStage, stageOneDone) {
+      instrStageStudentId = studentId;
+      instrCurrentStage = currentStage;
+      document.getElementById("instrStageModalTitle").textContent = `Training Stages — ${studentName}`;
+      document.getElementById("instrStageModalBody").innerHTML = `
+        <div class="instr-pipeline-wrap">
+          ${buildInstrStagePipeline(currentStage, stageOneDone)}
+        </div>
+      `;
+      openModal("instrStageModal");
+    };
+
+    window.saveInstructorStudentStage = async function() {
+      if (!instrStageStudentId) return;
+      // Clamp to 2–5 max for instructor
+      const stageToSave = Math.min(Math.max(instrCurrentStage, 1), 5);
+      try {
+        await updateDoc(doc(db, "users", instrStageStudentId), { trainingStage: stageToSave });
+        // Update local data
+        const localStudent = myStudents.find(s => s.id === instrStageStudentId);
+        if (localStudent) localStudent.trainingStage = stageToSave;
+        closeModal("instrStageModal");
+        await loadMyStudents();
+        showToast(`Stage updated to Stage ${stageToSave} ✓`, "success");
+      } catch(e) {
+        console.error(e);
+        showToast("Could not update stage. Try again.", "error");
+      }
+    };
+
+    window.handleLogout = async function() {
+      await signOut(auth);
+      window.location.replace("/login");
+    };
+
+    function showPage(name, btn) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(`page-${name}`).classList.add("active");
+      document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      const titles = { dashboard: "Dashboard", students: "My Students", attendance: "Attendance", myAttendance: "My Attendance", quizzes: "Quizzes", settings: "Settings" };
+      document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
+      if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
+    }
+    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
+
+    window.closeStudentBioModal = function() {
+      document.getElementById("studentBioModal").classList.remove("open");
+    };
+
+    window.showPage = showPage;
+    window.toggleSidebar = toggleSidebar;
+    window.showToast = showToast;
+
+
+      // ══════════════════════════════════════
+  // STAGE PROGRESS HELPER FUNCTIONS
+  // ══════════════════════════════════════
+  
+  // ── GET STAGE PROGRESS ──
+  async function getStageProgress(studentId) {
+    try {
+      const snap = await getDoc(doc(db, "stageProgress", studentId));
+      if (snap.exists()) {
+        return snap.data();
+      }
+      // Create default if doesn't exist
+      const defaultProgress = {
+        studentId: studentId,
+        currentStage: 1,
+        stages: {},
+        dvlaReady: false,
+        dvlaReadyAt: null,
+        updatedAt: serverTimestamp()
+      };
+      for (let i = 1; i <= 6; i++) {
+        defaultProgress.stages[i] = {
+          completed: false,
+          completedAt: null,
+          approvedBy: null,
+          approverRole: null,
+          approverName: null
+        };
+      }
+      await setDoc(doc(db, "stageProgress", studentId), defaultProgress);
+      return defaultProgress;
+    } catch(e) {
+      console.error("Error getting stage progress:", e);
+      return null;
+    }
+  }
+
+  // ── UPDATE STAGE COMPLETION ──
+  async function updateStageCompletion(studentId, stageNumber, completed, approverId, approverRole, approverName, extraData = {}) {
+    try {
+      const progressRef = doc(db, "stageProgress", studentId);
+      const progressSnap = await getDoc(progressRef);
+      const data = progressSnap.exists() ? progressSnap.data() : null;
+      
+      // Calculate new current stage
+      let currentStage = stageNumber;
+      if (completed) {
+        // If completing a stage, advance to next stage
+        const allCompleted = [];
+        for (let i = 1; i <= 6; i++) {
+          const isCompleted = data ? data.stages?.[i]?.completed : false;
+          if (i === stageNumber) {
+            allCompleted.push(true);
+          } else {
+            allCompleted.push(isCompleted);
+          }
+        }
+        // Find first incomplete stage
+        let nextStage = 1;
+        for (let i = 1; i <= 6; i++) {
+          if (!allCompleted[i-1]) {
+            nextStage = i;
+            break;
+          }
+          if (i === 6 && allCompleted[5]) {
+            nextStage = 7; // All stages complete
+          }
+        }
+        currentStage = nextStage > 6 ? 6 : nextStage;
+      }
+      
+      const updates = {
+        [`stages.${stageNumber}.completed`]: completed,
+        [`stages.${stageNumber}.completedAt`]: completed ? serverTimestamp() : null,
+        [`stages.${stageNumber}.approvedBy`]: completed ? approverId : null,
+        [`stages.${stageNumber}.approverRole`]: completed ? approverRole : null,
+        [`stages.${stageNumber}.approverName`]: completed ? approverName : null,
+        currentStage: Math.min(currentStage, 6),
+        updatedAt: serverTimestamp()
+      };
+      
+      // Add extra data if provided
+      if (extraData.lessonsWatched !== undefined) {
+        updates[`stages.${stageNumber}.lessonsWatched`] = extraData.lessonsWatched;
+      }
+      if (extraData.totalLessons !== undefined) {
+        updates[`stages.${stageNumber}.totalLessons`] = extraData.totalLessons;
+      }
+      if (extraData.quizScore !== undefined) {
+        updates[`stages.${stageNumber}.quizScore`] = extraData.quizScore;
+      }
+      if (extraData.practicalHours !== undefined) {
+        updates[`stages.${stageNumber}.practicalHours`] = extraData.practicalHours;
+      }
+      if (extraData.assessmentScore !== undefined) {
+        updates[`stages.${stageNumber}.assessmentScore`] = extraData.assessmentScore;
+      }
+      
+      // If Stage 6 completed, set DVLA Ready
+      if (stageNumber === 6 && completed) {
+        updates.dvlaReady = true;
+        updates.dvlaReadyAt = serverTimestamp();
+      }
+      
+      await updateDoc(progressRef, updates);
+      return true;
+    } catch(e) {
+      console.error("Error updating stage completion:", e);
+      return false;
+    }
+  }
+
+  // ── GET STAGE STATUS (for display) ──
+  function getStageStatus(stageNumber, progressData, trainingStage) {
+    const stage = progressData?.stages?.[stageNumber];
+    const currentStage = progressData?.currentStage || trainingStage || 1;
+    
+    if (stage?.completed) {
+      return {
+        status: 'done',
+        label: '✓ Complete',
+        completedAt: stage.completedAt,
+        approvedBy: stage.approverName,
+        approverRole: stage.approverRole
+      };
+    }
+    
+    if (stageNumber === currentStage) {
+      return { status: 'current', label: '▶ In Progress' };
+    }
+    
+    if (stageNumber < currentStage) {
+      return { status: 'done', label: '✓ Complete' };
+    }
+    
+    return { status: 'pending', label: 'Locked' };
+  }
+
+  </script>
+
+    <!-- CONFIRM ATTENDANCE STATUS MODAL -->
+  <div id="attendanceConfirmModal" class="modal-overlay">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <div class="modal-title" id="confirmModalTitle">Confirm Status Change</div>
+        <button class="modal-close" onclick="closeAttendanceConfirmModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="confirmModalBody">
+        <p id="confirmMessage">Are you sure you want to mark yourself as present?</p>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button class="btn btn-outline" onclick="closeAttendanceConfirmModal()">Cancel</button>
+        <button class="btn btn-gold" id="confirmActionBtn" onclick="executeAttendanceToggle()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

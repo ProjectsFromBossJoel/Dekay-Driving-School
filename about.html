@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us | Dekay Driving School</title>
+  <link rel="icon" type="image/x-icon" href="img/logo2.png" />
+  <meta name="description" content="Learn about Dekay Driving School — Ghana's trusted driving school at Ablekuma NIC Junction, Accra. Our story, instructors, and values." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --navy:#0A1628;--navy-mid:#12223F;--navy-light:#1C3259;
+      --gold:#F5A623;--gold-light:#FAC75A;
+      --white:#FFFFFF;--text-muted:#8B9AB0;--text-light:#C8D4E3;
+      --border:rgba(245,166,35,0.2);--radius:12px;--radius-lg:20px;
+      --shadow:0 4px 24px rgba(0,0,0,0.18);--transition:0.3s ease;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);line-height:1.6;overflow-x:hidden;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 5%;height:72px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,22,40,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:background var(--transition);}
+    nav.scrolled{background:var(--navy);box-shadow:0 2px 20px rgba(0,0,0,0.4);}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .nav-logo-icon{width:40px;height:40px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--navy);}
+    .nav-logo-text .name{font-size:15px;font-weight:700;color:var(--white);letter-spacing:0.5px;}
+    .nav-logo-text .tagline{font-size:10px;color:var(--gold);font-weight:500;letter-spacing:1px;text-transform:uppercase;}
+    .nav-links{display:flex;align-items:center;gap:32px;list-style:none;}
+    .nav-links a{text-decoration:none;color:var(--text-light);font-size:14px;font-weight:500;transition:color var(--transition);}
+    .nav-links a:hover,.nav-links a.active{color:var(--gold);}
+    .nav-cta{display:flex;align-items:center;gap:12px;}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:var(--radius);font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:all var(--transition);font-family:'Inter',sans-serif;}
+    .btn-primary{background:var(--gold);color:var(--navy);}
+    .btn-primary:hover{background:var(--gold-light);transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,166,35,0.35);}
+    .btn-outline{background:transparent;color:var(--white);border:1.5px solid rgba(255,255,255,0.3);}
+    .btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+    .btn-lg{padding:14px 32px;font-size:15px;border-radius:14px;}
+    .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none;}
+    .hamburger span{display:block;width:24px;height:2px;background:var(--white);border-radius:2px;}
+    .mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;bottom:0;background:var(--navy);z-index:999;padding:32px 5%;flex-direction:column;gap:24px;}
+    .mobile-menu.open{display:flex;}
+    .mobile-menu a{text-decoration:none;color:var(--text-light);font-size:18px;font-weight:500;padding-bottom:16px;border-bottom:1px solid var(--border);}
+
+    .page-header{padding:140px 5% 80px;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(245,166,35,0.07) 0%,transparent 70%),linear-gradient(135deg,#0A1628 0%,#12223F 100%);text-align:center;position:relative;overflow:hidden;}
+    .page-header-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,166,35,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,166,35,0.04) 1px,transparent 1px);background-size:60px 60px;}
+    .page-header-content{position:relative;z-index:2;}
+    .breadcrumb{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:20px;}
+    .breadcrumb a{color:var(--gold);text-decoration:none;}
+    .breadcrumb i{font-size:10px;}
+    .page-header h1{font-size:clamp(32px,5vw,52px);font-weight:700;line-height:1.1;letter-spacing:-1px;margin-bottom:16px;}
+    .page-header h1 span{color:var(--gold);}
+    .page-header p{font-size:17px;color:var(--text-light);max-width:540px;margin:0 auto;line-height:1.7;}
+
+    section{padding:80px 5%;}
+    .section-label{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+    .section-label::before{content:'';display:block;width:24px;height:2px;background:var(--gold);}
+    .section-title{font-size:clamp(26px,4vw,40px);font-weight:700;line-height:1.2;margin-bottom:16px;letter-spacing:-0.5px;}
+    .section-title span{color:var(--gold);}
+    .section-sub{font-size:16px;color:var(--text-muted);max-width:520px;line-height:1.7;}
+
+    /* STATS STRIP */
+    .stats-strip{background:var(--gold);padding:48px 5%;}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center;}
+    .stat-item{}
+    .stat-num{font-size:40px;font-weight:700;color:var(--navy);line-height:1;}
+    .stat-label{font-size:13px;color:var(--navy);opacity:0.75;margin-top:6px;font-weight:500;}
+
+    /* STORY */
+    .story-section{}
+    .story-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+    .story-text p{font-size:15px;color:var(--text-muted);line-height:1.8;margin-bottom:18px;}
+    .story-text p:last-child{margin-bottom:0;}
+    .story-visual{display:flex;flex-direction:column;gap:16px;}
+    .story-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;display:flex;gap:16px;align-items:flex-start;transition:border-color var(--transition);}
+    .story-card:hover{border-color:var(--gold);}
+    .story-card-icon{width:44px;height:44px;background:rgba(245,166,35,0.12);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px;flex-shrink:0;}
+    .story-card h4{font-size:15px;font-weight:600;margin-bottom:4px;}
+    .story-card p{font-size:13px;color:var(--text-muted);line-height:1.6;}
+
+    /* VALUES */
+    .values-section{background:var(--navy-mid);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+    .values-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:52px;}
+    .value-card{background:var(--navy);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px 24px;position:relative;overflow:hidden;transition:all var(--transition);}
+    .value-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--gold);transform:scaleX(0);transition:transform var(--transition);}
+    .value-card:hover{border-color:var(--gold);transform:translateY(-4px);}
+    .value-card:hover::after{transform:scaleX(1);}
+    .value-num{font-size:48px;font-weight:700;color:rgba(245,166,35,0.08);line-height:1;margin-bottom:12px;}
+    .value-icon{width:52px;height:52px;background:rgba(245,166,35,0.1);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gold);margin-bottom:16px;}
+    .value-title{font-size:18px;font-weight:700;margin-bottom:10px;}
+    .value-desc{font-size:14px;color:var(--text-muted);line-height:1.7;}
+
+    /* TEAM */
+    .team-section{}
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:52px;}
+    .team-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 20px;text-align:center;transition:all var(--transition);}
+    .team-card:hover{border-color:var(--gold);transform:translateY(-4px);}
+    .team-avatar{width:80px;height:80px;border-radius:50%;background:rgba(245,166,35,0.12);border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:var(--gold);margin:0 auto 16px;}
+    .team-name{font-size:17px;font-weight:700;margin-bottom:4px;}
+    .team-role{font-size:13px;color:var(--gold);font-weight:600;margin-bottom:10px;}
+    .team-bio{font-size:13px;color:var(--text-muted);line-height:1.6;}
+    .team-cert{display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:11px;color:var(--text-muted);background:rgba(245,166,35,0.08);padding:4px 10px;border-radius:50px;}
+    .team-cert i{color:var(--gold);font-size:10px;}
+
+    /* MILESTONES */
+    .milestones-section{background:var(--navy-mid);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+    .timeline{position:relative;margin-top:52px;padding-left:32px;}
+    .timeline::before{content:'';position:absolute;left:0;top:8px;bottom:0;width:2px;background:var(--border);}
+    .timeline-item{position:relative;margin-bottom:40px;}
+    .timeline-item:last-child{margin-bottom:0;}
+    .timeline-dot{position:absolute;left:-39px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--gold);border:3px solid var(--navy-mid);box-shadow:0 0 0 3px rgba(245,166,35,0.2);}
+    .timeline-year{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:6px;}
+    .timeline-title{font-size:16px;font-weight:600;margin-bottom:6px;}
+    .timeline-desc{font-size:13px;color:var(--text-muted);line-height:1.6;max-width:560px;}
+
+    /* CTA */
+    .cta-section{text-align:center;}
+    .cta-box{max-width:600px;margin:0 auto;}
+    .cta-box h2{font-size:clamp(28px,4vw,42px);font-weight:700;margin-bottom:16px;letter-spacing:-0.5px;}
+    .cta-box p{font-size:16px;color:var(--text-muted);margin-bottom:36px;}
+    .cta-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;}
+
+    footer{background:#060F1E;border-top:1px solid var(--border);padding:52px 5% 28px;}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;}
+    .footer-desc{font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:20px;}
+    .footer-socials{display:flex;gap:10px;}
+    .social-btn{width:36px;height:36px;border-radius:8px;background:var(--navy-mid);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px;text-decoration:none;transition:all var(--transition);}
+    .social-btn:hover{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+    .footer-col h4{font-size:13px;font-weight:600;color:var(--white);letter-spacing:1px;text-transform:uppercase;margin-bottom:18px;}
+    .footer-links{list-style:none;display:flex;flex-direction:column;gap:10px;}
+    .footer-links a{font-size:13px;color:var(--text-muted);text-decoration:none;transition:color var(--transition);display:flex;align-items:center;gap:6px;}
+    .footer-links a:hover{color:var(--gold);}
+    .footer-links a i{font-size:11px;}
+    .footer-bottom{border-top:1px solid var(--border);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+    .footer-bottom p{font-size:12px;color:var(--text-muted);}
+    .footer-bottom-links{display:flex;gap:20px;}
+    .footer-bottom-links a{font-size:12px;color:var(--text-muted);text-decoration:none;}
+    .footer-bottom-links a:hover{color:var(--gold);}
+
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.6s ease,transform 0.6s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+
+    @media(max-width:900px){.story-grid{grid-template-columns:1fr;}.values-grid{grid-template-columns:1fr 1fr;}.stats-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:1fr 1fr;}}
+    @media(max-width:640px){.nav-links,.nav-cta{display:none;}.hamburger{display:flex;}.values-grid{grid-template-columns:1fr;}.stats-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:1fr;}.footer-bottom{flex-direction:column;text-align:center;}}
+  </style>
+</head>
+<body>
+
+  <nav id="navbar">
+    <a href="index.html" class="nav-logo">
+      <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 100px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+      <div class="nav-logo-text"><div class="name">Dekay Driving School</div><div class="tagline">Ablekuma · Accra</div></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="courses.html">Courses</a></li>
+      <li><a href="about.html" class="active">About</a></li>
+      <li><a href="faqs.html">FAQs</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="login.html" class="btn btn-outline">Login</a>
+      <a href="contact.html" class="btn btn-primary"><i class="fas fa-phone-alt"></i> Book a Lesson</a>
+    </div>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a><a href="courses.html">Courses</a><a href="about.html">About</a>
+    <a href="faqs.html">FAQs</a><a href="contact.html">Contact</a>
+    <a href="login.html" style="color:var(--gold)">Login</a>
+    <a href="contact.html" class="btn btn-primary" style="text-align:center">Book a Lesson</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-grid"></div>
+    <div class="page-header-content">
+      <div class="breadcrumb"><a href="index.html">Home</a><i class="fas fa-chevron-right"></i><span>About</span></div>
+      <h1>Built on <span>Trust</span>, Driven by Results</h1>
+      <p>For over 8 years, Dekay Driving School has turned nervous beginners into confident, licensed drivers on Accra's roads.</p>
+    </div>
+  </div>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="stats-grid">
+      <div class="stat-item reveal"><div class="stat-num">500+</div><div class="stat-label">Graduates licensed</div></div>
+      <div class="stat-item reveal" style="transition-delay:0.1s"><div class="stat-num">98%</div><div class="stat-label">First-time pass rate</div></div>
+      <div class="stat-item reveal" style="transition-delay:0.2s"><div class="stat-num">8+</div><div class="stat-label">Years of training</div></div>
+      <div class="stat-item reveal" style="transition-delay:0.3s"><div class="stat-num">5</div><div class="stat-label">Licence types offered</div></div>
+    </div>
+  </div>
+
+  <!-- OUR STORY -->
+  <section class="story-section">
+    <div class="story-grid">
+      <div class="story-text reveal">
+        <div class="section-label">Our story</div>
+        <h2 class="section-title">From one car to <span>Accra's most trusted school</span></h2>
+        <p>Dekay Driving School started with a single vehicle and one simple belief: that every Ghanaian deserves patient, professional driving instruction — not rushed lessons and crossed fingers at the DVLA gate.</p>
+        <p>What began at Ablekuma NIC Junction as a small operation quickly grew into one of Accra's most trusted driving programmes. Word spread not because of advertising, but because our graduates passed. First time. Every time.</p>
+        <p>Today we offer five licence types, a digital student portal with video lessons and quizzes, and we accompany every student to their DVLA test day. The mission hasn't changed — only the scale.</p>
+      </div>
+      <div class="story-visual reveal" style="transition-delay:0.15s">
+        <div class="story-card">
+          <div class="story-card-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div><h4>Ablekuma NIC Junction</h4><p>Our home base — central, accessible from Kaneshie, Dansoman, and all of central Accra.</p></div>
+        </div>
+        <div class="story-card">
+          <div class="story-card-icon"><i class="fas fa-shield-alt"></i></div>
+          <div><h4>DVLA-certified instructors</h4><p>Every instructor holds a current DVLA certification and has taught on Accra roads for at least 3 years.</p></div>
+        </div>
+        <div class="story-card">
+          <div class="story-card-icon"><i class="fas fa-mobile-alt"></i></div>
+          <div><h4>Digital student portal</h4><p>Theory videos, quizzes, attendance tracking and progress monitoring — all on your phone.</p></div>
+        </div>
+        <div class="story-card">
+          <div class="story-card-icon"><i class="fas fa-hands-helping"></i></div>
+          <div><h4>We go to DVLA with you</h4><p>Every student is escorted on their test day by one of our instructors. This is included — no extra charge.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALUES -->
+  <section class="values-section">
+    <div class="reveal" style="text-align:center;">
+      <div class="section-label" style="justify-content:center;">What we stand for</div>
+      <h2 class="section-title">Our <span>values</span></h2>
+      <p class="section-sub" style="margin:0 auto;">Everything we do at Dekay comes back to these three commitments.</p>
+    </div>
+    <div class="values-grid">
+      <div class="value-card reveal">
+        <div class="value-num">01</div>
+        <div class="value-icon"><i class="fas fa-heart"></i></div>
+        <div class="value-title">Patience above everything</div>
+        <p class="value-desc">Learning to drive is stressful. Our instructors are trained to meet every student where they are — no rushing, no judgment, no shortcuts.</p>
+      </div>
+      <div class="value-card reveal" style="transition-delay:0.1s">
+        <div class="value-num">02</div>
+        <div class="value-icon"><i class="fas fa-star"></i></div>
+        <div class="value-title">Results you can measure</div>
+        <p class="value-desc">A 98% first-time pass rate is not a marketing claim. It is the outcome of a structured programme, proper preparation, and an honest assessment of when a student is truly ready.</p>
+      </div>
+      <div class="value-card reveal" style="transition-delay:0.2s">
+        <div class="value-num">03</div>
+        <div class="value-icon"><i class="fas fa-lock"></i></div>
+        <div class="value-title">Transparency always</div>
+        <p class="value-desc">You'll always know your progress, your attendance record, and your next step — through the student portal and through honest conversations with your instructor.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="team-section">
+    <div class="reveal" style="text-align:center;margin-bottom:0;">
+      <div class="section-label" style="justify-content:center;">The people</div>
+      <h2 class="section-title">Meet our <span>team</span></h2>
+      <p class="section-sub" style="margin:0 auto;">Certified, experienced, and genuinely invested in every student's success.</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar">DK</div>
+        <div class="team-name">Mr. Dekay Kofi</div>
+        <div class="team-role">Founder & Head Instructor</div>
+        <p class="team-bio">Over 12 years of professional driving instruction in Accra. Founded Dekay Driving School with a mission to raise the standard of driver education in Ghana.</p>
+        <div class="team-cert"><i class="fas fa-certificate"></i> DVLA Certified</div>
+      </div>
+      <div class="team-card reveal" style="transition-delay:0.1s">
+        <div class="team-avatar">EA</div>
+        <div class="team-name">Emmanuel Agyei</div>
+        <div class="team-role">Senior Instructor — Commercial</div>
+        <p class="team-bio">Specialist in bus and truck training. Former commercial driver with 8 years of teaching experience across Accra and Kumasi routes.</p>
+        <div class="team-cert"><i class="fas fa-certificate"></i> DVLA Certified — HGV</div>
+      </div>
+      <div class="team-card reveal" style="transition-delay:0.2s">
+        <div class="team-avatar">AB</div>
+        <div class="team-name">Abena Boateng</div>
+        <div class="team-role">Instructor — Manual & Automatic</div>
+        <p class="team-bio">Known for her calm teaching style and patience with beginners. Specialises in helping students who have previously struggled at other schools.</p>
+        <div class="team-cert"><i class="fas fa-certificate"></i> DVLA Certified</div>
+      </div>
+      <div class="team-card reveal" style="transition-delay:0.3s">
+        <div class="team-avatar">KM</div>
+        <div class="team-name">Kwabena Mensah</div>
+        <div class="team-role">Instructor — Motorcycle</div>
+        <p class="team-bio">Motorcycle specialist with a background in road safety education. Runs our safety-first bike programme from controlled environment to live road.</p>
+        <div class="team-cert"><i class="fas fa-certificate"></i> DVLA Certified — Motorcycle</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MILESTONES -->
+  <section class="milestones-section">
+    <div class="reveal">
+      <div class="section-label">Our journey</div>
+      <h2 class="section-title">Key <span>milestones</span></h2>
+      <p class="section-sub">How Dekay grew from one car at Ablekuma into a full-service driving school.</p>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2016</div>
+        <div class="timeline-title">Dekay Driving School founded</div>
+        <p class="timeline-desc">Mr. Dekay Kofi opens the school at Ablekuma NIC Junction with one vehicle and a simple vision: patient, professional driver training for every Ghanaian.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2018</div>
+        <div class="timeline-title">Commercial licence programme launched</div>
+        <p class="timeline-desc">Growing demand from logistics and transport workers leads to the introduction of bus and truck training, with Emmanuel Agyei joining as commercial specialist.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2020</div>
+        <div class="timeline-title">100th graduate licensed</div>
+        <p class="timeline-desc">A milestone year — our 100th student receives their DVLA licence. The 98% first-time pass rate is established as a school benchmark.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2023</div>
+        <div class="timeline-title">Motorcycle programme & fleet expansion</div>
+        <p class="timeline-desc">We add motorcycle training and expand the vehicle fleet. Kwabena Mensah joins as dedicated motorcycle instructor.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2026</div>
+        <div class="timeline-title">Digital student portal launched</div>
+        <p class="timeline-desc">Dekay goes digital — online video lessons, quizzes, attendance tracking, and a full student progress dashboard accessible from any phone.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-box reveal">
+      <div class="section-label" style="justify-content:center;">Join us</div>
+      <h2>Ready to train with <span style="color:var(--gold)">Dekay?</span></h2>
+      <p>Book a free consultation and we'll help you pick the right course and get started right away.</p>
+      <div class="cta-actions">
+        <a href="contact.html" class="btn btn-primary btn-lg"><i class="fas fa-calendar-check"></i> Book a free lesson</a>
+        <a href="courses.html" class="btn btn-outline btn-lg">View courses</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="margin-bottom:16px;display:inline-flex">
+          <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 65px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+          <div class="nav-logo-text"><div class="name">Dekay Driving School</div><div class="tagline">Ablekuma · Accra</div></div>
+        </a>
+        <p class="footer-desc">Professional driving training for manual, automatic, motorcycle, bus and truck licences. Located at Ablekuma NIC Junction, Accra.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Quick links</h4><ul class="footer-links"><li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Courses</a></li><li><a href="about.html"><i class="fas fa-chevron-right"></i> About us</a></li><li><a href="faqs.html"><i class="fas fa-chevron-right"></i> FAQs</a></li><li><a href="contact.html"><i class="fas fa-chevron-right"></i> Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Courses</h4><ul class="footer-links"><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Manual</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Automatic</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Motorcycle</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Commercial bus</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Heavy goods</a></li></ul></div>
+      <div class="footer-col"><h4>Contact</h4><ul class="footer-links"><li><a href="tel:0274211566"><i class="fas fa-phone"></i> 0274 211 566</a></li><li><a href="tel:0269824898"><i class="fas fa-phone"></i> 0269 824 898</a></li><li><a href="https://wa.me/233274211566"><i class="fab fa-whatsapp"></i> WhatsApp</a></li><li><a href="https://www.google.com/maps?q=Dekay+Driving+School+Ablekuma+Accra+Ghana"><i class="fas fa-map-marker-alt"></i> Ablekuma NIC Junction</a></li><li><a href="login.html"><i class="fas fa-user"></i> Student portal</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;width:100%;">
+        <div style="font-size:12px;color:var(--text-muted);flex:1;text-align:left;">
+          &copy; 2026 Dekay Driving School. All rights reserved.
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);flex:1;text-align:center;">
+          Designed &amp; Maintained by
+          <a href="https://myportfolio-theta-topaz-43.vercel.app/" target="_blank" style="color:var(--gold);text-decoration:none;font-weight:600;transition:color 0.3s ease;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Prince Antwi Wiafe</a>
+        </div>
+        <div style="display:flex;gap:16px;flex:1;justify-content:flex-end;align-items:center;">
+          <a href="#" style="font-size:12px;color:var(--text-muted);text-decoration:none;transition:color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Privacy policy</a>
+          <span style="color:var(--text-muted);">|</span>
+          <a href="#" style="font-size:12px;color:var(--text-muted);text-decoration:none;transition:color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Terms of use</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const navbar=document.getElementById('navbar');
+    window.addEventListener('scroll',()=>{navbar.classList.toggle('scrolled',window.scrollY>40);});
+    document.getElementById('hamburger').addEventListener('click',()=>{document.getElementById('mobileMenu').classList.toggle('open');});
+    const observer=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+  </script>
+</body>
+</html>

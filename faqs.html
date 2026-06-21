@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQs | Dekay Driving School</title>
+  <link rel="icon" type="image/x-icon" href="img/logo2.png" />
+  <meta name="description" content="Frequently asked questions about Dekay Driving School — courses, enrolment, student portal, DVLA, attendance, and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --navy: #0A1628; --navy-mid: #12223F; --navy-light: #1C3259;
+      --gold: #F5A623; --gold-light: #FAC75A; --gold-dark: #C47F0A;
+      --white: #FFFFFF; --text-muted: #8B9AB0; --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2); --radius: 12px; --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.18); --transition: 0.3s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); line-height: 1.6; overflow-x: hidden; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 0 5%; height: 72px; display: flex; align-items: center; justify-content: space-between; background: rgba(10,22,40,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); transition: background var(--transition); }
+    nav.scrolled { background: var(--navy); box-shadow: 0 2px 20px rgba(0,0,0,0.4); }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon { width: 40px; height: 40px; background: var(--gold); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--navy); }
+    .nav-logo-text .name { font-size: 15px; font-weight: 700; color: var(--white); letter-spacing: 0.5px; }
+    .nav-logo-text .tagline { font-size: 10px; color: var(--gold); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--text-light); font-size: 14px; font-weight: 500; transition: color var(--transition); }
+    .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+    .nav-cta { display: flex; align-items: center; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: var(--radius); font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border: none; transition: all var(--transition); font-family: 'Inter', sans-serif; }
+    .btn-primary { background: var(--gold); color: var(--navy); }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,166,35,0.35); }
+    .btn-outline { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.3); }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-lg { padding: 14px 32px; font-size: 15px; border-radius: 14px; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--white); border-radius: 2px; transition: all var(--transition); }
+    .mobile-menu { display: none; position: fixed; top: 72px; left: 0; right: 0; bottom: 0; background: var(--navy); z-index: 999; padding: 32px 5%; flex-direction: column; gap: 24px; }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { text-decoration: none; color: var(--text-light); font-size: 18px; font-weight: 500; padding-bottom: 16px; border-bottom: 1px solid var(--border); transition: color var(--transition); }
+    .mobile-menu a:hover { color: var(--gold); }
+
+    /* PAGE HEADER */
+    .page-header { padding: 140px 5% 80px; background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(245,166,35,0.07) 0%, transparent 70%), linear-gradient(135deg, #0A1628 0%, #12223F 100%); text-align: center; position: relative; overflow: hidden; }
+    .page-header-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(245,166,35,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(245,166,35,0.04) 1px, transparent 1px); background-size: 60px 60px; }
+    .page-header-content { position: relative; z-index: 2; }
+    .breadcrumb { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    .breadcrumb a { color: var(--gold); text-decoration: none; }
+    .breadcrumb i { font-size: 10px; }
+    .page-header h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 700; line-height: 1.1; letter-spacing: -1px; margin-bottom: 16px; }
+    .page-header h1 span { color: var(--gold); }
+    .page-header p { font-size: 17px; color: var(--text-light); max-width: 540px; margin: 0 auto 36px; line-height: 1.7; }
+
+    /* SEARCH */
+    .faq-search-wrap { max-width: 480px; margin: 0 auto; position: relative; }
+    .faq-search { width: 100%; padding: 14px 20px 14px 48px; background: var(--navy-light); border: 1.5px solid var(--border); border-radius: 50px; color: var(--white); font-size: 14px; font-family: 'Inter', sans-serif; outline: none; transition: border-color var(--transition); }
+    .faq-search::placeholder { color: var(--text-muted); }
+    .faq-search:focus { border-color: var(--gold); }
+    .faq-search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px; }
+
+    /* FAQ SECTION */
+    .faq-section { padding: 80px 5%; }
+    .faq-layout { display: grid; grid-template-columns: 220px 1fr; gap: 48px; align-items: start; }
+
+    /* SIDEBAR CATEGORIES */
+    .faq-sidebar { position: sticky; top: 96px; }
+    .faq-sidebar h4 { font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+    .faq-cat-list { display: flex; flex-direction: column; gap: 4px; list-style: none; }
+    .faq-cat-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--text-muted); background: transparent; border: none; cursor: pointer; transition: all var(--transition); font-family: 'Inter', sans-serif; text-align: left; }
+    .faq-cat-btn i { font-size: 13px; width: 16px; }
+    .faq-cat-btn:hover { color: var(--gold); background: rgba(245,166,35,0.06); }
+    .faq-cat-btn.active { color: var(--gold); background: rgba(245,166,35,0.1); font-weight: 600; }
+    .faq-cat-count { margin-left: auto; font-size: 11px; background: rgba(245,166,35,0.12); color: var(--gold); padding: 2px 7px; border-radius: 50px; }
+
+    /* ACCORDION */
+    .faq-group { margin-bottom: 48px; }
+    .faq-group-title { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .faq-group-title i { font-size: 14px; }
+
+    .faq-item { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; overflow: hidden; transition: border-color var(--transition); }
+    .faq-item.open { border-color: var(--gold); }
+    .faq-item.hidden { display: none; }
+
+    .faq-question {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 22px; cursor: pointer; gap: 16px;
+      background: var(--navy-mid); transition: background var(--transition);
+    }
+    .faq-question:hover { background: rgba(245,166,35,0.05); }
+    .faq-item.open .faq-question { background: rgba(245,166,35,0.06); }
+    .faq-question span { font-size: 15px; font-weight: 600; color: var(--white); line-height: 1.4; }
+    .faq-icon { width: 28px; height: 28px; border-radius: 50%; background: rgba(245,166,35,0.1); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 12px; flex-shrink: 0; transition: all var(--transition); }
+    .faq-item.open .faq-icon { background: var(--gold); color: var(--navy); transform: rotate(45deg); }
+
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+    .faq-item.open .faq-answer { max-height: 400px; }
+    .faq-answer-inner { padding: 0 22px 20px; font-size: 14px; color: var(--text-muted); line-height: 1.8; }
+    .faq-answer-inner a { color: var(--gold); text-decoration: none; }
+    .faq-answer-inner a:hover { text-decoration: underline; }
+    .faq-answer-inner strong { color: var(--text-light); }
+
+    .no-results { text-align: center; padding: 60px 20px; color: var(--text-muted); display: none; }
+    .no-results i { font-size: 40px; color: var(--border); margin-bottom: 16px; display: block; }
+    .no-results h3 { font-size: 18px; color: var(--text-light); margin-bottom: 8px; }
+
+    /* STILL HAVE Q */
+    .still-section { background: var(--navy-mid); border-top: 1px solid var(--border); padding: 80px 5%; text-align: center; }
+    .still-box { max-width: 560px; margin: 0 auto; }
+    .still-box h2 { font-size: clamp(24px, 3.5vw, 36px); font-weight: 700; margin-bottom: 12px; }
+    .still-box h2 span { color: var(--gold); }
+    .still-box p { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.7; }
+    .still-contacts { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .still-contact-btn { display: flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: var(--radius); background: var(--navy); border: 1px solid var(--border); text-decoration: none; transition: all var(--transition); }
+    .still-contact-btn:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .still-contact-btn i { color: var(--gold); font-size: 18px; }
+    .still-contact-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .still-contact-value { font-size: 14px; font-weight: 600; color: var(--white); }
+
+    /* FOOTER */
+    footer { background: #060F1E; border-top: 1px solid var(--border); padding: 52px 5% 28px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .footer-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+    .footer-socials { display: flex; gap: 10px; }
+    .social-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--navy-mid); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; text-decoration: none; transition: all var(--transition); }
+    .social-btn:hover { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+    .footer-col h4 { font-size: 13px; font-weight: 600; color: var(--white); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color var(--transition); display: flex; align-items: center; gap: 6px; }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-links a i { font-size: 11px; }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-bottom p { font-size: 12px; color: var(--text-muted); }
+    .footer-bottom-links { display: flex; gap: 20px; }
+    .footer-bottom-links a { font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color var(--transition); }
+    .footer-bottom-links a:hover { color: var(--gold); }
+
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 800px) { .faq-layout { grid-template-columns: 1fr; } .faq-sidebar { position: static; } .faq-cat-list { flex-direction: row; flex-wrap: wrap; } .faq-cat-btn { padding: 7px 14px; } .footer-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .nav-links, .nav-cta { display: none; } .hamburger { display: flex; } .footer-grid { grid-template-columns: 1fr; } .footer-bottom { flex-direction: column; text-align: center; } }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar">
+    <a href="index.html" class="nav-logo">
+      <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 100px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+      <div class="nav-logo-text">
+        <div class="name">Dekay Driving School</div>
+        <div class="tagline">Ablekuma · Accra</div>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="courses.html">Courses</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="faqs.html" class="active">FAQs</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="login.html" class="btn btn-outline">Login</a>
+      <a href="contact.html" class="btn btn-primary"><i class="fas fa-phone-alt"></i> Book a Lesson</a>
+    </div>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a>
+    <a href="courses.html">Courses</a>
+    <a href="about.html">About</a>
+    <a href="faqs.html">FAQs</a>
+    <a href="contact.html">Contact</a>
+    <a href="login.html" style="color:var(--gold)">Login</a>
+    <a href="contact.html" class="btn btn-primary" style="text-align:center">Book a Lesson</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-grid"></div>
+    <div class="page-header-content">
+      <div class="breadcrumb"><a href="index.html">Home</a><i class="fas fa-chevron-right"></i><span>FAQs</span></div>
+      <h1>Frequently Asked <span>Questions</span></h1>
+      <p>Everything you need to know about training at Dekay — from enrolment to your DVLA test day.</p>
+      <div class="faq-search-wrap">
+        <i class="fas fa-search faq-search-icon"></i>
+        <input type="text" class="faq-search" id="faqSearch" placeholder="Search a question…" />
+      </div>
+    </div>
+  </div>
+
+  <section class="faq-section">
+    <div class="faq-layout">
+
+      <!-- SIDEBAR -->
+      <aside class="faq-sidebar reveal">
+        <h4>Categories</h4>
+        <ul class="faq-cat-list">
+          <li><button class="faq-cat-btn active" data-cat="all"><i class="fas fa-th"></i> All questions <span class="faq-cat-count">21</span></button></li>
+          <li><button class="faq-cat-btn" data-cat="enrolment"><i class="fas fa-user-plus"></i> Enrolment <span class="faq-cat-count">5</span></button></li>
+          <li><button class="faq-cat-btn" data-cat="courses"><i class="fas fa-graduation-cap"></i> Courses <span class="faq-cat-count">5</span></button></li>
+          <li><button class="faq-cat-btn" data-cat="portal"><i class="fas fa-mobile-alt"></i> Student portal <span class="faq-cat-count">4</span></button></li>
+          <li><button class="faq-cat-btn" data-cat="attendance"><i class="fas fa-calendar-check"></i> Attendance <span class="faq-cat-count">3</span></button></li>
+          <li><button class="faq-cat-btn" data-cat="dvla"><i class="fas fa-id-card"></i> DVLA & licence <span class="faq-cat-count">4</span></button></li>
+        </ul>
+      </aside>
+
+      <!-- ACCORDION -->
+      <div id="faqContent">
+        <div class="no-results" id="noResults">
+          <i class="fas fa-search"></i>
+          <h3>No questions found</h3>
+          <p>Try a different search term or <a href="contact.html" style="color:var(--gold)">ask us directly</a>.</p>
+        </div>
+
+        <!-- ENROLMENT -->
+        <div class="faq-group reveal" data-group="enrolment">
+          <div class="faq-group-title"><i class="fas fa-user-plus"></i> Enrolment</div>
+
+          <div class="faq-item" data-cat="enrolment">
+            <div class="faq-question"><span>How do I sign up to Dekay Driving School?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Call or WhatsApp us on <strong>0274 211 566</strong> to get started. We'll book a free consultation, discuss the right course for you, and create your student account. You can also <a href="contact.html">fill in our contact form</a> and we'll call you back.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="enrolment">
+            <div class="faq-question"><span>What documents do I need to register?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">You'll need a <strong>valid Ghana card or passport</strong>, a <strong>passport-size photo</strong> (or we can take one at the school), and proof of address. For commercial licences (bus, truck), you'll also need your existing car licence.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="enrolment">
+            <div class="faq-question"><span>Is there an age requirement?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Yes. You must be <strong>at least 18 years old</strong> to enrol in any driving course, in line with DVLA Ghana regulations. There is no upper age limit.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="enrolment">
+            <div class="faq-question"><span>Can I start at any time or are there fixed intake dates?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">We run a <strong>rolling intake</strong> — you can begin as soon as your registration is complete and your first payment is made. No waiting for a new cohort to start.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="enrolment">
+            <div class="faq-question"><span>What payment methods do you accept?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">We accept <strong>cash, Mobile Money (MTN, Vodafone, AirtelTigo)</strong>, and bank transfer. A deposit is required to secure your spot. Speak to us about instalment options if needed.</div></div>
+          </div>
+        </div>
+
+        <!-- COURSES -->
+        <div class="faq-group reveal" data-group="courses">
+          <div class="faq-group-title"><i class="fas fa-graduation-cap"></i> Courses</div>
+
+          <div class="faq-item" data-cat="courses">
+            <div class="faq-question"><span>Which course should I choose — manual or automatic?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">If you want flexibility to drive <strong>any car</strong>, including older Ghanaian vehicles, choose <strong>Manual</strong>. If you mainly drive modern cars in the city, <strong>Automatic</strong> is quicker and easier. Note: an automatic licence restricts you to automatic vehicles only. When in doubt, go manual.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="courses">
+            <div class="faq-question"><span>How many lessons are in each course?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">The number of lessons depends on your course type and how quickly you progress. Most students attend <strong>3 sessions per week</strong>. Sessions are typically 1–1.5 hours each. Our instructors will let you know when you're ready to move to the next stage.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="courses">
+            <div class="faq-question"><span>Do I need any driving experience before joining?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner"><strong>No experience needed</strong> for any of our personal courses (manual, automatic, motorcycle). For commercial courses (bus, truck), you must hold a valid car licence first, as required by DVLA Ghana.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="courses">
+            <div class="faq-question"><span>What vehicles will I train in?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Our fleet includes <strong>saloon cars</strong> for manual and automatic training, <strong>motorcycles</strong> for the bike course, and appropriate <strong>commercial vehicles</strong> for bus and truck trainees. All vehicles are regularly serviced and insured.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="courses">
+            <div class="faq-question"><span>Can I switch courses once I've started?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Yes, in most cases. Speak to our admin team and we'll advise on any price difference or additional requirements. Switching from automatic to manual will require starting practical lessons from the beginning.</div></div>
+          </div>
+        </div>
+
+        <!-- PORTAL -->
+        <div class="faq-group reveal" data-group="portal">
+          <div class="faq-group-title"><i class="fas fa-mobile-alt"></i> Student Portal</div>
+
+          <div class="faq-item" data-cat="portal">
+            <div class="faq-question"><span>What can I do in the student portal?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Your portal gives you access to: <strong>theory video lessons</strong>, <strong>online quizzes</strong> with instant scores, your <strong>attendance log</strong>, <strong>progress tracking</strong> through the 6 training stages, <strong>notifications</strong> from your instructor, and your <strong>profile and training status</strong>.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="portal">
+            <div class="faq-question"><span>How do I log in to the student portal?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Visit <a href="login.html">our login page</a> and enter your email and password. Your login credentials are created when you register. If you've forgotten your password, use the "Forgot password" link on the login page to reset it via email.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="portal">
+            <div class="faq-question"><span>Can I watch the theory videos on my phone?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Yes — the portal is <strong>fully mobile-friendly</strong>. Watch lessons, complete quizzes, and check your attendance from any smartphone, tablet, or computer. You just need an internet connection.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="portal">
+            <div class="faq-question"><span>Will the school see how much of each video I've watched?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Yes. The portal tracks your <strong>video completion percentage</strong> for each lesson (e.g., "watched 70%"). This helps your instructor know which topics to revisit with you in practical sessions. It's not about catching you out — it's about making sure no learning gaps are missed.</div></div>
+          </div>
+        </div>
+
+        <!-- ATTENDANCE -->
+        <div class="faq-group reveal" data-group="attendance">
+          <div class="faq-group-title"><i class="fas fa-calendar-check"></i> Attendance</div>
+
+          <div class="faq-item" data-cat="attendance">
+            <div class="faq-question"><span>How do I mark my own attendance?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">On your lesson day, log into your <strong>student portal</strong> and tap <strong>"Mark Attendance"</strong> from your dashboard. This opens a check-in form that's only active during scheduled session hours. The school can see your check-in in real time. Your instructor will also confirm it during the session.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="attendance">
+            <div class="faq-question"><span>What if I miss a session?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Absences are logged automatically if you don't check in. Please <strong>call or WhatsApp us</strong> ahead of time if you can't make a session. Our admin team can reschedule missed lessons — though this may extend your overall course duration depending on availability.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="attendance">
+            <div class="faq-question"><span>Can I see my full attendance history?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Yes. Your <strong>Attendance</strong> tab in the student portal shows a full log of every session — date, status (present / absent), and which stage you were at. Your instructor and admin team can see the same log.</div></div>
+          </div>
+        </div>
+
+        <!-- DVLA -->
+        <div class="faq-group reveal" data-group="dvla">
+          <div class="faq-group-title"><i class="fas fa-id-card"></i> DVLA & Licence</div>
+
+          <div class="faq-item" data-cat="dvla">
+            <div class="faq-question"><span>When will I be ready for my DVLA test?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">Your instructor will advance you to <strong>"DVLA Ready"</strong> status in your portal after you complete practical lessons and pass the internal mock test. Most students reach this stage by the end of their course duration. We won't send you to DVLA until we're confident you'll pass.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="dvla">
+            <div class="faq-question"><span>Do you go with students to the DVLA test?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner"><strong>Yes.</strong> One of our instructors accompanies every student on their DVLA test day. We know the examiners and the common routes — this alone makes a significant difference to pass rates. This escort is included in your course fee.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="dvla">
+            <div class="faq-question"><span>What happens if I fail the DVLA test?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">We'll review what went wrong and offer <strong>refresher sessions</strong> to address any gaps. The DVLA requires a waiting period before you can re-sit. Additional sessions after a failed test may be charged separately — speak to us and we'll work out the best plan.</div></div>
+          </div>
+
+          <div class="faq-item" data-cat="dvla">
+            <div class="faq-question"><span>How long does it take to get my licence after passing?</span><div class="faq-icon"><i class="fas fa-plus"></i></div></div>
+            <div class="faq-answer"><div class="faq-answer-inner">After passing, DVLA Ghana typically issues a <strong>provisional licence receipt</strong> on the same day, and the physical licence within <strong>a few weeks</strong>. Processing times can vary. We'll advise you on the exact DVLA steps and documentation needed during your test day escort.</div></div>
+          </div>
+        </div>
+
+      </div><!-- end faqContent -->
+    </div>
+  </section>
+
+  <!-- STILL HAVE A QUESTION -->
+  <section class="still-section">
+    <div class="still-box reveal">
+      <div style="display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">
+        <span style="display:block;width:24px;height:2px;background:var(--gold)"></span>Get in touch
+      </div>
+      <h2>Still have a <span>question?</span></h2>
+      <p>Our team is available 7 days a week. Call, WhatsApp, or visit us at Ablekuma NIC Junction and we'll help you out directly.</p>
+      <div class="still-contacts">
+        <a href="tel:0274211566" class="still-contact-btn">
+          <i class="fas fa-phone"></i>
+          <div><div class="still-contact-label">Call us</div><div class="still-contact-value">0274 211 566</div></div>
+        </a>
+        <a href="tel:0269824898" class="still-contact-btn">
+          <i class="fas fa-phone"></i>
+          <div><div class="still-contact-label">Call us</div><div class="still-contact-value">0269 824 898</div></div>
+        </a>
+        <a href="https://wa.me/233274211566" class="still-contact-btn">
+          <i class="fab fa-whatsapp"></i>
+          <div><div class="still-contact-label">WhatsApp</div><div class="still-contact-value">Chat now</div></div>
+        </a>
+        <a href="contact.html" class="still-contact-btn">
+          <i class="fas fa-envelope"></i>
+          <div><div class="still-contact-label">Contact form</div><div class="still-contact-value">Send a message</div></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="margin-bottom:16px;display:inline-flex">
+          <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 65px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+          <div class="nav-logo-text"><div class="name">Dekay Driving School</div><div class="tagline">Ablekuma · Accra</div></div>
+        </a>
+        <p class="footer-desc">Professional driving training for manual, automatic, motorcycle, bus and truck licences. Located at Ablekuma NIC Junction, Accra.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Quick links</h4><ul class="footer-links"><li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Courses</a></li><li><a href="about.html"><i class="fas fa-chevron-right"></i> About us</a></li><li><a href="faqs.html"><i class="fas fa-chevron-right"></i> FAQs</a></li><li><a href="contact.html"><i class="fas fa-chevron-right"></i> Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Courses</h4><ul class="footer-links"><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Manual</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Automatic</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Motorcycle</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Commercial bus</a></li><li><a href="courses.html"><i class="fas fa-chevron-right"></i> Heavy goods</a></li></ul></div>
+      <div class="footer-col"><h4>Contact</h4><ul class="footer-links"><li><a href="tel:0274211566"><i class="fas fa-phone"></i> 0274 211 566</a></li><li><a href="tel:0269824898"><i class="fas fa-phone"></i> 0269 824 898</a></li><li><a href="https://wa.me/233274211566"><i class="fab fa-whatsapp"></i> WhatsApp</a></li><li><a href="https://www.google.com/maps?q=Dekay+Driving+School+Ablekuma+Accra+Ghana"><i class="fas fa-map-marker-alt"></i> Ablekuma NIC Junction</a></li><li><a href="login.html"><i class="fas fa-user"></i> Student portal</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;width:100%;">
+        <div style="font-size:12px;color:var(--text-muted);flex:1;text-align:left;">
+          &copy; 2026 Dekay Driving School. All rights reserved.
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);flex:1;text-align:center;">
+          Designed &amp; Maintained by
+          <a href="https://myportfolio-theta-topaz-43.vercel.app/" target="_blank" style="color:var(--gold);text-decoration:none;font-weight:600;transition:color 0.3s ease;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Prince Antwi Wiafe</a>
+        </div>
+        <div style="display:flex;gap:16px;flex:1;justify-content:flex-end;align-items:center;">
+          <a href="#" style="font-size:12px;color:var(--text-muted);text-decoration:none;transition:color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Privacy policy</a>
+          <span style="color:var(--text-muted);">|</span>
+          <a href="#" style="font-size:12px;color:var(--text-muted);text-decoration:none;transition:color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Terms of use</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 40); });
+    document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('mobileMenu').classList.toggle('open'); });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Accordion
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.addEventListener('click', () => {
+        const item = q.parentElement;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+
+    // Category filter
+    document.querySelectorAll('.faq-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.faq-cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cat = btn.dataset.cat;
+        document.querySelectorAll('.faq-group').forEach(g => {
+          const group = g.dataset.group;
+          g.style.display = (cat === 'all' || cat === group) ? '' : 'none';
+        });
+      });
+    });
+
+    // Search
+    document.getElementById('faqSearch').addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      let anyVisible = false;
+      document.querySelectorAll('.faq-item').forEach(item => {
+        const text = item.querySelector('.faq-question span').textContent.toLowerCase()
+          + item.querySelector('.faq-answer-inner').textContent.toLowerCase();
+        const match = !q || text.includes(q);
+        item.classList.toggle('hidden', !match);
+        if (match) anyVisible = true;
+      });
+      document.querySelectorAll('.faq-group').forEach(g => {
+        const visible = [...g.querySelectorAll('.faq-item')].some(i => !i.classList.contains('hidden'));
+        g.style.display = visible ? '' : 'none';
+      });
+      document.getElementById('noResults').style.display = anyVisible ? 'none' : 'block';
+      // reset category buttons
+      if (q) document.querySelectorAll('.faq-cat-btn').forEach(b => b.classList.remove('active'));
+    });
+  </script>
+</body>
+</html>

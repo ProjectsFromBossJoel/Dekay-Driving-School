@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Dekay Driving School</title>
+  <meta name="description" content="Sign in to your Dekay Driving School student portal or admin dashboard." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --navy: #0A1628;
+      --navy-mid: #12223F;
+      --navy-light: #1C3259;
+      --gold: #F5A623;
+      --gold-light: #FAC75A;
+      --gold-dark: #C47F0A;
+      --white: #FFFFFF;
+      --text-muted: #8B9AB0;
+      --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2);
+      --border-subtle: rgba(255,255,255,0.06);
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+      --transition: 0.25s ease;
+      --error: #EF5350;
+      --success: #4CAF50;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ── LEFT PANEL ── */
+      .left-panel {
+      width: 45%;
+      background: var(--navy-mid);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .left-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(245,166,35,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(245,166,35,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .left-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    .left-content { position: relative; z-index: 2; }
+
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-bottom: 64px; }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: var(--gold);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: var(--navy);
+    }
+    .brand-text .name { font-size: 16px; font-weight: 700; color: var(--white); }
+    .brand-text .tagline { font-size: 11px; color: var(--gold); font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; }
+
+    .left-heading {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+    .left-heading span { color: var(--gold); }
+
+    .left-sub {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 360px;
+      margin-bottom: 48px;
+    }
+
+    .feature-list { display: flex; flex-direction: column; gap: 16px; }
+    .feature-item {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 14px; color: var(--text-light);
+    }
+    .feature-dot {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(245,166,35,0.1);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .left-footer { position: relative; z-index: 2; margin-top: 24px; }
+    .left-footer-stats { display: flex; gap: 32px; }
+    .lf-stat .num { font-size: 22px; font-weight: 700; color: var(--gold); }
+    .lf-stat .lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+    }
+
+    .login-box { width: 100%; max-width: 420px; }
+
+    .login-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .login-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; }
+
+    /* Role toggle */
+    .role-toggle {
+      display: flex;
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+    .role-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .role-btn.active {
+      background: var(--gold);
+      color: var(--navy);
+    }
+    .role-btn i { font-size: 13px; }
+
+    /* Form */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; font-weight: 600; color: var(--text-light);
+      margin-bottom: 8px;
+    }
+    .form-label a { color: var(--gold); text-decoration: none; font-weight: 500; font-size: 12px; }
+    .form-label a:hover { text-decoration: underline; }
+
+    .input-wrap { position: relative; }
+    .form-input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--navy-mid);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-input::placeholder { color: var(--text-muted); }
+    .form-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245,166,35,0.1);
+    }
+    .form-input.error { border-color: var(--error); }
+    .input-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 14px; pointer-events: none;
+    }
+    .input-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 14px; cursor: pointer;
+      background: none; border: none; padding: 0;
+      transition: color var(--transition);
+    }
+    .input-toggle:hover { color: var(--gold); }
+
+    .error-msg {
+      font-size: 12px; color: var(--error);
+      margin-top: 6px;
+      display: none;
+      align-items: center; gap: 4px;
+    }
+    .error-msg.show { display: flex; }
+
+    .submit-btn {
+      width: 100%; padding: 14px;
+      background: var(--gold); color: var(--navy);
+      border: none; border-radius: var(--radius);
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-top: 4px;
+    }
+
+        .google-btn {
+      width: 100%; padding: 14px;
+      background: var(--white);
+      color: #333;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 20px;
+    }
+    .google-btn i { font-size: 18px; color: #4285F4; }
+    .google-btn:hover {
+      border-color: var(--gold);
+      background: #f1f3f4;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .google-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .submit-btn:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245,166,35,0.35);
+    }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0;
+      font-size: 12px; color: var(--text-muted);
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .back-link {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 13px; color: var(--text-muted);
+      text-decoration: none; margin-top: 24px;
+      transition: color var(--transition);
+    }
+    .back-link:hover { color: var(--gold); }
+
+    /* Reset form */
+    #resetForm { display: none; }
+
+    .reset-info {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: rgba(245,166,35,0.08);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-size: 13px; color: var(--text-muted); line-height: 1.6;
+    }
+    .reset-info i { color: var(--gold); margin-top: 2px; flex-shrink: 0; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      font-size: 14px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: var(--shadow);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      max-width: 320px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(76,175,80,0.4); }
+    .toast.success i { color: var(--success); }
+    .toast.error-toast { border-color: rgba(239,83,80,0.4); }
+    .toast.error-toast i { color: var(--error); }
+
+    /* Loading spinner */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(10,22,40,0.3);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .submit-btn.loading .btn-text { display: none; }
+    .submit-btn.loading .spinner { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .left-panel { display: none; }
+      .right-panel { padding: 40px 24px; }
+    }
+    @media (max-width: 400px) {
+      .right-panel { padding: 32px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-bg"></div>
+    <div class="left-grid"></div>
+    <div class="left-content">
+
+
+      <h1 class="left-heading">Your journey<br/>to the road<br/><span>starts here.</span></h1>
+      <p class="left-sub">Access your personal training dashboard — watch lessons, track your progress, mark attendance, and see exactly when you're DVLA ready.</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-dot"><i class="fas fa-play-circle"></i></div>
+          Video theory lessons at your own pace
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"><i class="fas fa-tasks"></i></div>
+          Online quizzes with instant scoring
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"><i class="fas fa-calendar-check"></i></div>
+          Attendance log & session tracking
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"><i class="fas fa-route"></i></div>
+          6-stage training pipeline overview
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"><i class="fas fa-bell"></i></div>
+          Notifications from your instructor
+        </div>
+      </div>
+    </div>
+
+    <div class="left-footer">
+      <div class="left-footer-stats">
+        <div class="lf-stat"><div class="num">500+</div><div class="lbl">Graduates</div></div>
+        <div class="lf-stat"><div class="num">98%</div><div class="lbl">Pass rate</div></div>
+        <div class="lf-stat"><div class="num">8+ yrs</div><div class="lbl">Training</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="login-box">
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <!-- School logo + name (centered, like register page) -->
+        <div style="text-align:center; margin-bottom:28px;">
+          <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 80px; margin-bottom: 12px; border-radius: 10px;" />
+          <div style="font-size: 18px; font-weight: 700; color: var(--white);">Dekay Driving School</div>
+          <div style="font-size: 11px; color: var(--gold); font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;">Ablekuma · Accra</div>
+        </div>
+
+        <div class="login-title">Welcome back</div>
+        <p class="login-sub">Sign in to continue to your portal</p>
+
+        <div class="role-toggle">
+          <button class="role-btn active" id="studentRoleBtn" onclick="setRole('student')">
+            <i class="fas fa-graduation-cap"></i> Student
+          </button>
+          <button class="role-btn" id="instructorRoleBtn" onclick="setRole('instructor')">
+            <i class="fas fa-chalkboard-teacher"></i> Instructor
+          </button>
+          <button class="role-btn" id="adminRoleBtn" onclick="setRole('admin')">
+            <i class="fas fa-shield-alt"></i> Admin
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <div class="input-wrap">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" />
+          </div>
+          <div class="error-msg" id="emailError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Password
+            <a href="#" onclick="showReset(); return false;">Forgot password?</a>
+          </label>
+          <div class="input-wrap">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" />
+            <button class="input-toggle" onclick="togglePass('loginPassword', this)" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="error-msg" id="passError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+        </div>
+
+        <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
+          <span class="btn-text"><i class="fas fa-sign-in-alt"></i> Sign in</span>
+          <div class="spinner"></div>
+        </button>
+
+        <div class="divider">or</div>
+                
+
+        <!-- Google Sign-In -->
+        <button class="google-btn" id="googleBtn" onclick="handleGoogleLogin()">
+          <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg> Sign in with Google
+        </button>
+
+
+        <div style="text-align:center; font-size:13px; color:var(--text-muted);">
+          Not enrolled yet?
+          <a href="contact.html" style="color:var(--gold); text-decoration:none; font-weight:600;"> Book a free lesson →</a>
+        </div>
+      </div>
+
+      <!-- RESET PASSWORD FORM -->
+      <div id="resetForm">
+        <div class="login-title">Reset password</div>
+        <p class="login-sub">We'll send a reset link to your email address</p>
+
+        <div class="reset-info">
+          <i class="fas fa-info-circle"></i>
+          Enter the email address linked to your Dekay student account. Check your inbox — including your spam folder.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <div class="input-wrap">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="resetEmail" class="form-input" placeholder="you@example.com" />
+          </div>
+          <div class="error-msg" id="resetEmailError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+        </div>
+
+        <button class="submit-btn" id="resetBtn" onclick="handleReset()">
+          <span class="btn-text"><i class="fas fa-paper-plane"></i> Send reset link</span>
+          <div class="spinner"></div>
+        </button>
+
+        <a href="#" class="back-link" onclick="showLogin(); return false;">
+          <i class="fas fa-arrow-left"></i> Back to sign in
+        </a>
+      </div>
+
+      <a href="index.html" class="back-link" style="margin-top:32px;">
+        <i class="fas fa-home"></i> Back to website
+      </a>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Action completed</span>
+  </div>
+
+  <!-- FIREBASE SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, deleteUser }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ── FIREBASE CONFIG ──
+   const firebaseConfig = {
+  apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
+  authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
+  projectId: "dekaydrivingschool-6933c",
+  storageBucket: "dekaydrivingschool-6933c.firebasestorage.app",
+  messagingSenderId: "1017266487810",
+  appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b",
+  measurementId: "G-QTR8V6LG85"
+};
+
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // Google Sign-In provider
+    const googleProvider = new GoogleAuthProvider();
+
+    // Expose to window for onclick handlers
+    window._firebaseAuth = auth;
+    window._firebaseDb   = db;
+    window._firebaseDoc  = doc;
+    window._firebaseGetDoc = getDoc;
+    window._signIn       = signInWithEmailAndPassword;
+    window._resetPass    = sendPasswordResetEmail;
+
+        
+        // Google Sign-In handler
+    window.handleGoogleLogin = async function() {
+      const btn = document.getElementById("googleBtn");
+      btn.disabled = true;
+      btn.style.opacity = "0.7";
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        // Check if user doc exists in Firestore
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (!snap.exists()) {
+          // ❌ No account – delete the auth user we just created
+          await deleteUser(user);
+          showToast("No account found. Please register first or contact the school.", "error");
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          return;
+        }
+
+        // Existing user – check if pending
+        if (snap.data().status === "pending") {
+          await signOut(auth);
+          showToast("Your account is pending approval.", "error");
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          return;
+        }
+
+        // ✅ All good – auth state observer will auto‑redirect
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        if (err.code === "auth/account-exists-with-different-credential") {
+          showToast("An account with this email already exists. Please use email/password login.", "error");
+        } else if (err.code !== "auth/popup-closed-by-user") {
+          showToast("Google sign‑in failed. Try again.", "error");
+        }
+      }
+    };
+
+    // Redirect if already signed in
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+      try {
+        // First check users collection (students/admins)
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          // Block pending students
+          if (userData.status === "pending") {
+            await signOut(auth);
+            return;
+          }
+          const role = userData.role;
+          if (role === "admin")   window.location.href = "/dashboard/admin";
+          else                    window.location.href = "/dashboard/student";
+          return;
+        }
+
+        // Not a student/admin – check instructors collection
+        const instructorSnap = await getDoc(doc(db, "instructors", user.uid));
+        if (instructorSnap.exists() && instructorSnap.data().status === "active") {
+          window.location.href = "/dashboard/instructor.html";
+          return;
+        }
+
+        // No valid account – sign out
+        await signOut(auth);
+      } catch(e) { /* stay on page */ }
+    });
+  </script>
+
+  <script>
+    let currentRole = "student";
+
+    function setRole(role) {
+      currentRole = role;
+      document.getElementById("studentRoleBtn").classList.toggle("active", role === "student");
+      document.getElementById("instructorRoleBtn").classList.toggle("active", role === "instructor");
+      document.getElementById("adminRoleBtn").classList.toggle("active", role === "admin");
+    }
+
+    function togglePass(id, btn) {
+      const inp = document.getElementById(id);
+      const icon = btn.querySelector("i");
+      if (inp.type === "password") {
+        inp.type = "text";
+        icon.className = "fas fa-eye-slash";
+      } else {
+        inp.type = "password";
+        icon.className = "fas fa-eye";
+      }
+    }
+
+    function showReset() {
+      document.getElementById("loginForm").style.display = "none";
+      document.getElementById("resetForm").style.display = "block";
+    }
+
+    function showLogin() {
+      document.getElementById("loginForm").style.display = "block";
+      document.getElementById("resetForm").style.display = "none";
+    }
+
+    function showToast(msg, type = "success") {
+      const t   = document.getElementById("toast");
+      const icon = t.querySelector("i");
+      t.className = "toast " + (type === "success" ? "success" : "error-toast");
+      icon.className = type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+      document.getElementById("toastMsg").textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 4000);
+    }
+
+    function setError(id, msg) {
+      const el = document.getElementById(id);
+      el.querySelector("span").textContent = msg;
+      el.classList.toggle("show", !!msg);
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const pass  = document.getElementById("loginPassword").value;
+      setError("emailError", ""); setError("passError", "");
+
+      if (!email) return setError("emailError", "Email address is required.");
+      if (!pass)  return setError("passError",  "Password is required.");
+
+      const btn = document.getElementById("loginBtn");
+      btn.disabled = true; btn.classList.add("loading");
+
+      try {
+        const cred = await window._signIn(window._firebaseAuth, email, pass);
+        
+        // First check users collection (students/admins)
+        let snap = await window._firebaseGetDoc(
+          window._firebaseDoc(window._firebaseDb, "users", cred.user.uid)
+        );
+
+        let redirectUrl = null;
+
+        if (snap.exists()) {
+          const userData = snap.data();
+          const role = userData.role;
+
+          // Role mismatch guard for student/admin
+          if (currentRole === "admin" && role !== "admin") {
+            throw new Error("not-admin");
+          }
+          if (currentRole === "student" && role !== "student") {
+            throw new Error("not-student");
+          }
+          // If toggle is instructor but the user is a student/admin, deny
+          if (currentRole === "instructor") {
+            throw new Error("not-instructor");
+          }
+          // Block pending students
+          if (userData.status === "pending") {
+            await window._firebaseAuth.signOut();
+            setError("passError", "Your account is pending approval.");
+            btn.disabled = false;
+            btn.classList.remove("loading");
+            showToast("Account pending approval", "error");
+            return;
+          }
+
+          redirectUrl = role === "admin" ? "/dashboard/admin" : "/dashboard/student";
+        } else {
+          // Not in users – must be an instructor (or nothing)
+          const instructorSnap = await window._firebaseGetDoc(
+            window._firebaseDoc(window._firebaseDb, "instructors", cred.user.uid)
+          );
+          if (instructorSnap.exists() && instructorSnap.data().status === "active") {
+            // If toggle is not "instructor", deny
+            if (currentRole !== "instructor") {
+              throw new Error("role-mismatch-instructor");
+            }
+            redirectUrl = "/dashboard/instructor.html";
+          } else {
+            throw new Error("account-not-found");
+          }
+        }
+
+        if (!redirectUrl) throw new Error("account-not-found");
+
+        showToast("Signed in! Redirecting…");
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 800);
+
+      } catch(err) {
+        btn.disabled = false; btn.classList.remove("loading");
+        const code = err.code || err.message;
+        if (code.includes("user-not-found") || code.includes("wrong-password") || code.includes("invalid-credential") || code === "account-not-found") {
+          setError("passError", "Email or password is incorrect, or account not approved yet.");
+        } else if (code === "not-admin") {
+          setError("passError", "This account is not an admin account.");
+        } else if (code === "not-student") {
+          setError("passError", "This account is not a student account.");
+        } else if (code === "not-instructor") {
+          setError("passError", "Please select the Instructor role to log in.");
+        } else if (code === "role-mismatch-instructor") {
+          setError("passError", "This is an instructor account. Please select the Instructor role.");
+        } else if (code.includes("too-many-requests")) {
+          setError("passError", "Too many failed attempts. Please wait a moment.");
+        } else {
+          setError("passError", "Sign in failed. Check your connection and try again.");
+        }
+        showToast("Sign in failed", "error");
+      }
+    }
+
+    async function handleReset() {
+      const email = document.getElementById("resetEmail").value.trim();
+      setError("resetEmailError", "");
+      if (!email) return setError("resetEmailError", "Please enter your email address.");
+
+      const btn = document.getElementById("resetBtn");
+      btn.disabled = true; btn.classList.add("loading");
+
+      try {
+        await window._resetPass(window._firebaseAuth, email);
+        showToast("Reset email sent! Check your inbox.");
+        btn.disabled = false; btn.classList.remove("loading");
+        setTimeout(() => showLogin(), 2500);
+      } catch(err) {
+        btn.disabled = false; btn.classList.remove("loading");
+        setError("resetEmailError", "Could not send reset email. Check the address and try again.");
+        showToast("Reset failed", "error");
+      }
+    }
+
+    // Enter key support
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const resetVisible = document.getElementById("resetForm").style.display === "block";
+      if (resetVisible) handleReset();
+      else handleLogin();
+    });
+  </script>
+</body>
+</html>

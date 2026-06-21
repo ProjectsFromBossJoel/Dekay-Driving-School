@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dekay Driving School | Ablekuma, Accra</title>
+  <link rel="icon" type="image/x-icon" href="img/logo2.png" />
+  <meta name="description" content="Ghana's premier driving school at Ablekuma NIC Junction. Manual, automatic, motorcycle and bus lessons. Book your lesson today." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --navy: #0A1628;
+      --navy-mid: #12223F;
+      --navy-light: #1C3259;
+      --gold: #F5A623;
+      --gold-light: #FAC75A;
+      --gold-dark: #C47F0A;
+      --white: #FFFFFF;
+      --off-white: #F8F6F1;
+      --text-muted: #8B9AB0;
+      --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2);
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.18);
+      --transition: 0.3s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+    }
+
+    img { max-width: 100%; }
+
+    .hero-content, .hero-subtitle, .section-sub, .course-desc, .sign-desc, .sign-photo-desc {
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0 5%;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,22,40,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      transition: background var(--transition);
+    }
+
+    nav.scrolled {
+      background: var(--navy);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+
+    nav {
+      gap: 12px;
+    }
+
+    .nav-logo-icon {
+      width: 40px; height: 40px;
+      background: var(--gold);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--navy);
+    }
+
+    .nav-logo-text { line-height: 1.2; }
+    .nav-logo-text .name { font-size: 15px; font-weight: 700; color: var(--white); letter-spacing: 0.5px; }
+    .nav-logo-text .tagline { font-size: 10px; color: var(--gold); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-light);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color var(--transition);
+    }
+
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a.active { color: var(--gold); }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: var(--navy);
+    }
+    .btn-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245,166,35,0.35);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,0.3);
+    }
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .btn-gold-outline {
+      background: transparent;
+      color: var(--gold);
+      border: 1.5px solid var(--gold);
+    }
+    .btn-gold-outline:hover {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    .btn-lg { padding: 14px 32px; font-size: 15px; border-radius: 14px; }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px; height: 2px;
+      background: var(--white);
+      border-radius: 2px;
+      transition: all var(--transition);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px 5% 80px;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 100vw;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 60% 50%, rgba(245,166,35,0.07) 0%, transparent 70%),
+        linear-gradient(135deg, #0A1628 0%, #12223F 100%);
+    }
+
+    .hero-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245,166,35,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,166,35,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 640px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(245,166,35,0.12);
+      border: 1px solid rgba(245,166,35,0.3);
+      border-radius: 50px;
+      font-size: 13px;
+      color: var(--gold);
+      font-weight: 500;
+      margin-bottom: 28px;
+      text-decoration: none;
+      cursor: pointer;
+      animation: badge-breathe 2s ease-in-out infinite;
+      transition: background var(--transition), border-color var(--transition),
+                  box-shadow var(--transition), transform var(--transition);
+    }
+
+    .hero-badge:hover {
+      background: rgba(245,166,35,0.22);
+      border-color: var(--gold);
+      box-shadow: 0 0 18px rgba(245,166,35,0.3);
+      transform: translateY(-2px);
+      animation-play-state: paused;
+    }
+
+    .hero-badge i { font-size: 12px; }
+
+    @media (max-width: 380px) {
+      .hero-badge { font-size: 11.5px; padding: 5px 12px; }
+    }
+
+    @keyframes badge-breathe {
+      0%, 100% {
+        box-shadow: 0 0 0px rgba(245,166,35,0);
+        border-color: rgba(245,166,35,0.3);
+        background: rgba(245,166,35,0.12);
+      }
+      50% {
+        box-shadow: 0 0 14px rgba(245,166,35,0.35);
+        border-color: rgba(245,166,35,0.7);
+        background: rgba(245,166,35,0.2);
+      }
+    }
+
+    .hero h1 {
+      font-size: clamp(38px, 6vw, 64px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+
+    .hero h1 span { color: var(--gold); }
+
+    .hero-subtitle {
+      font-size: 17px;
+      color: var(--text-light);
+      line-height: 1.7;
+      margin-bottom: 36px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 52px;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat { text-align: left; }
+    .stat-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .hero-car {
+      position: absolute;
+      right: -20px;
+      bottom: 0;
+      width: 55%;
+      max-width: 700px;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .hero-float-card {
+      position: absolute;
+      right: 5%;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      width: 280px;
+      z-index: 2;
+    }
+
+    .float-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .float-card-icon {
+      width: 40px; height: 40px;
+      background: rgba(245,166,35,0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-size: 18px;
+    }
+    .float-card-title { font-size: 14px; font-weight: 600; }
+    .float-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .pipeline-mini {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .pipeline-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .step-dot.done { background: var(--gold); }
+    .step-dot.active { background: #4CAF50; box-shadow: 0 0 0 3px rgba(76,175,80,0.2); }
+    .step-dot.pending { background: var(--navy-light); border: 1px solid var(--text-muted); }
+    .step-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .step-label { color: var(--text-light); }
+    .step-label.active { color: #4CAF50; font-weight: 600; }
+    .step-label.done { color: var(--text-muted); }
+
+    /* ── SECTION COMMON ── */
+    section { padding: 90px 5%; }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 24px; height: 2px;
+      background: var(--gold);
+    }
+
+    .section-title {
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .section-title span { color: var(--gold); }
+
+    .section-sub {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.7;
+    }
+
+    .section-header { margin-bottom: 52px; }
+    .section-header.centered { text-align: center; }
+    .section-header.centered .section-label { justify-content: center; }
+    .section-header.centered .section-sub { margin: 0 auto; }
+
+    /* ── VIDEOS ── */
+    .videos-section {
+      background: var(--navy-mid);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .videos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .video-card {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+
+    .video-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+
+    .video-thumb {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: var(--navy-light);
+      overflow: hidden;
+    }
+
+    .video-thumb iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: none;
+    }
+
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10,22,40,0.4);
+      transition: opacity var(--transition);
+    }
+
+    .video-card:hover .video-overlay { opacity: 0; }
+
+    .play-btn {
+      width: 56px; height: 56px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+      font-size: 20px;
+      box-shadow: 0 4px 20px rgba(245,166,35,0.4);
+      transition: transform var(--transition);
+    }
+
+    .video-card:hover .play-btn { transform: scale(1.1); }
+
+    .video-info {
+      padding: 18px 20px;
+    }
+
+    .video-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      background: rgba(245,166,35,0.12);
+      color: var(--gold);
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .video-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .video-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .video-meta i { font-size: 11px; }
+
+    /* ── COURSES ── */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+    }
+
+    .course-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .course-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transition: transform var(--transition);
+    }
+
+    .course-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+
+    .course-card:hover::before { transform: scaleX(1); }
+
+    .course-icon {
+      width: 52px; height: 52px;
+      background: rgba(245,166,35,0.12);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+
+    .course-name {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .course-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .course-duration {
+      font-size: 12px;
+      color: var(--gold);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── WHY US ── */
+    .why-section {
+      background: var(--navy-mid);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .why-features { display: flex; flex-direction: column; gap: 24px; }
+
+    .why-feature {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      background: rgba(245,166,35,0.1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .feature-text h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .feature-text p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    .why-visual {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+    }
+
+    .visual-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pipeline-full {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .pipeline-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    .pipeline-item:not(:last-child) .pipeline-dot::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 32px;
+      bottom: -24px;
+      width: 2px;
+      background: var(--border);
+      transform: translateX(-50%);
+    }
+
+    .pipeline-dot {
+      position: relative;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--navy-light);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .pipeline-dot.active {
+      background: rgba(245,166,35,0.15);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .pipeline-info { padding-top: 4px; padding-bottom: 28px; }
+    .pipeline-info h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .pipeline-info p { font-size: 12px; color: var(--text-muted); }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .testimonial-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+    }
+
+    .stars { color: var(--gold); font-size: 14px; margin-bottom: 14px; letter-spacing: 2px; }
+
+    .testimonial-text {
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.7;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .author-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(245,166,35,0.15);
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--gold);
+    }
+
+    .author-name { font-size: 14px; font-weight: 600; }
+    .author-course { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── ROAD SIGNS ── */
+    .signs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .sign-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 18px;
+      text-align: center;
+      transition: all var(--transition);
+    }
+    .sign-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .sign-icon-box {
+      width: 72px; height: 72px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sign-icon-box svg { width: 100%; height: 100%; }
+    .sign-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .sign-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── ROAD SIGNS GALLERY (IMAGES) ── */
+    .signs-photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .sign-photo-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .sign-photo-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .sign-photo-wrap {
+      width: 100%;
+      aspect-ratio: 1/1;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .sign-photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .sign-photo-info { padding: 16px 14px 20px; }
+    .sign-photo-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .sign-photo-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── DVLA BADGE ── */
+    .dvla-section {
+      display: flex;
+      justify-content: center;
+    }
+    .dvla-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 420px;
+      padding: 40px 36px;
+      background: linear-gradient(135deg, rgba(245,166,35,0.06) 0%, rgba(245,166,35,0.02) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition);
+    }
+    .dvla-card:hover {
+      border-color: var(--gold);
+      box-shadow: var(--shadow);
+      transform: translateY(-3px);
+    }
+    .dvla-logo-wrap {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: var(--white);
+      padding: 8px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+      margin-bottom: 22px;
+    }
+    .dvla-logo-wrap img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+    }
+    .dvla-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .dvla-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 10px;
+    }
+    .dvla-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      background: var(--navy-mid);
+      border-top: 1px solid var(--border);
+    }
+
+    .cta-box {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .cta-box h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .cta-box p {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+    }
+
+    .cta-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .cta-contact {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+
+    .contact-item i { color: var(--gold); }
+    .contact-item:hover { color: var(--gold); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #060F1E;
+      border-top: 1px solid var(--border);
+      padding: 52px 5% 28px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-brand .nav-logo { margin-bottom: 16px; }
+
+    .footer-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .footer-socials {
+      display: flex;
+      gap: 10px;
+    }
+
+    .social-btn {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      text-decoration: none;
+      transition: all var(--transition);
+    }
+
+    .social-btn:hover {
+      background: var(--gold);
+      color: var(--navy);
+      border-color: var(--gold);
+    }
+
+    .footer-col h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer-links a:hover { color: var(--gold); }
+    .footer-links a i { font-size: 11px; }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-bottom p { font-size: 12px; color: var(--text-muted); }
+
+    .footer-bottom-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-bottom-links a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+
+    .footer-bottom-links a:hover { color: var(--gold); }
+
+    /* ── MOBILE NAV ── */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 72px; left: 0; right: 0; bottom: 0;
+      background: var(--navy);
+      z-index: 999;
+      padding: 32px 5%;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .mobile-menu.open { display: flex; }
+
+    .mobile-menu a {
+      text-decoration: none;
+      color: var(--text-light);
+      font-size: 18px;
+      font-weight: 500;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      transition: color var(--transition);
+    }
+
+    .mobile-menu a:hover { color: var(--gold); }
+
+
+            /* ── QR CODE CARD (CLICKABLE) ── */
+    .qr-card-link {
+      text-decoration: none;
+      cursor: pointer;
+      position: absolute;
+      right: 8%;
+      top: 18%;
+      width: 340px;
+      z-index: 2;
+      max-width: calc(45% - 40px);
+    }
+
+    /* Mobile-only inline QR card (inside hero-content) */
+    .qr-card-link-mobile {
+      display: none;
+      text-decoration: none;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 28px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 900px) {
+      .qr-card-link {
+        display: none; /* hide the absolute desktop one */
+      }
+      .qr-card-link-mobile {
+        display: block; /* show inline mobile one */
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      .qr-card {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .qr-card-inner { gap: 12px; justify-content: center; }
+      .qr-image-wrapper {
+        order: 3;
+        flex: 0 0 auto;
+        width: fit-content;
+        margin: 10px auto 0;
+      }
+      .qr-arrow { display: none; }
+    }
+
+    .qr-card {
+      background: linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.03) 100%);
+      border: 1px solid rgba(245,166,35,0.25);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      width: 415px;
+      max-width: 100%;
+      box-sizing: border-box;
+      backdrop-filter: blur(4px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .qr-card-link:hover .qr-card {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(245,166,35,0.15) 0%, rgba(245,166,35,0.06) 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(245,166,35,0.2);
+    }
+
+    .qr-card-link:active .qr-card {
+      transform: translateY(0);
+    }
+
+    .qr-card-inner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .qr-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(245,166,35,0.15);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: var(--gold);
+      transition: all 0.3s ease;
+    }
+
+    .qr-card-link:hover .qr-icon {
+      background: rgba(245,166,35,0.25);
+      transform: scale(1.05);
+    }
+
+    .qr-content {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .qr-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      transition: color 0.3s ease;
+    }
+
+    .qr-card-link:hover .qr-title {
+      color: var(--gold-light);
+    }
+
+    .qr-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .qr-image-wrapper {
+      background: var(--white);
+      padding: 6px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .qr-card-link:hover .qr-image-wrapper {
+      transform: scale(1.02);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+
+    .qr-image {
+      width: 90px;
+      height: 90px;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .qr-arrow {
+      width: 32px;
+      height: 32px;
+      background: rgba(245,166,35,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .qr-card-link:hover .qr-arrow {
+      background: var(--gold);
+      color: var(--navy);
+      transform: translateX(4px);
+    }
+
+    @media (max-width: 640px) {
+      .qr-card-inner {
+        justify-content: center;
+        text-align: center;
+      }
+      .qr-content {
+        text-align: center;
+      }
+      .qr-arrow {
+        display: none;
+      }
+    }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .lightbox.open { display: flex; }
+
+    .lightbox-img {
+      max-width: 90vw;
+      max-height: 88vh;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+      object-fit: contain;
+      animation: lb-in 0.25s ease;
+    }
+
+    @keyframes lb-in {
+      from { opacity: 0; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 18px; right: 22px;
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      color: var(--white);
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .lightbox-close:hover { background: var(--gold); color: var(--navy); }
+
+    .lightbox-caption {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10,22,40,0.85);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 8px 20px;
+      font-size: 13px;
+      color: var(--text-light);
+      white-space: nowrap;
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hero-float-card { display: none; }
+      .why-grid { grid-template-columns: 1fr; gap: 40px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      section { padding: 70px 6%; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-content { max-width: 100%; }
+      .hero-subtitle { max-width: 100%; }
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; flex-shrink: 0; }
+      nav { padding: 0 4%; }
+      .nav-logo img { width: 64px !important; flex-shrink: 0; }
+      .nav-logo-text { min-width: 0; overflow: hidden; }
+      .nav-logo-text .name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .nav-logo-text .tagline { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .hero { padding: 96px 6% 50px; min-height: auto; }
+      .hero h1 { font-size: 32px; letter-spacing: -0.5px; }
+      .hero-subtitle { font-size: 15px; margin-bottom: 28px; }
+      .hero-actions { margin-bottom: 36px; width: 100%; }
+      .hero-actions .btn { flex: 1 1 100%; justify-content: center; white-space: nowrap; }
+      .hero-stats { gap: 20px; row-gap: 16px; }
+      .stat-number { font-size: 22px; }
+      .stat-label { font-size: 11px; }
+
+      section { padding: 56px 6%; }
+      .section-header { margin-bottom: 32px; }
+      .section-title { font-size: 26px; }
+      .section-sub { font-size: 14px; }
+
+      .courses-grid,
+      .videos-grid,
+      .testimonials-grid,
+      .signs-grid,
+      .signs-photo-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+
+      .course-card { padding: 20px 16px; }
+      .video-info { padding: 14px 16px; }
+      .testimonial-card { padding: 22px 18px; }
+
+      .sign-card { padding: 18px 12px; }
+      .sign-icon-box { width: 56px; height: 56px; margin-bottom: 12px; }
+      .sign-name { font-size: 13.5px; }
+      .sign-desc { font-size: 11.5px; }
+
+      .sign-photo-wrap { padding: 12px; }
+      .sign-photo-info { padding: 12px 10px 16px; }
+      .sign-photo-name { font-size: 13.5px; }
+      .sign-photo-desc { font-size: 11.5px; }
+
+      .dvla-card { padding: 28px 22px; max-width: 100%; }
+      .dvla-logo-wrap { width: 90px; height: 90px; }
+      .dvla-title { font-size: 15.5px; }
+      .dvla-desc { font-size: 13px; }
+
+      .cta-box h2 { font-size: 28px; }
+      .cta-actions { flex-direction: column; }
+      .cta-actions .btn { width: 100%; justify-content: center; }
+      .cta-contact { flex-direction: column; align-items: center; gap: 14px; }
+
+      .footer-grid { grid-template-columns: 1fr; gap: 28px; text-align: left; }
+      .footer-bottom { flex-direction: column; text-align: center; gap: 10px; }
+      .footer-bottom > div { flex-direction: column !important; gap: 10px !important; }
+      .footer-bottom > div > div { text-align: center !important; }
+
+      .why-feature { gap: 14px; }
+      .feature-icon { width: 38px; height: 38px; font-size: 16px; }
+
+      .qr-card { padding: 14px 16px; }
+      .qr-image { width: 72px; height: 72px; }
+    }
+
+    @media (max-width: 480px) {
+      .nav-logo-text .name { font-size: 13px; }
+      .nav-logo img { width: 70px !important; }
+
+      .hero h1 { font-size: 27px; }
+      .hero-stats { justify-content: space-between; }
+      .stat { flex: 1 1 40%; }
+
+      .courses-grid,
+      .videos-grid,
+      .testimonials-grid,
+      .signs-grid,
+      .signs-photo-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+      .btn-lg { padding: 12px 22px; font-size: 14px; }
+      .section-title { font-size: 23px; }
+    }
+
+    @media (max-width: 380px) {
+      .signs-grid,
+      .signs-photo-grid,
+      .courses-grid,
+      .testimonials-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .videos-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap: 14px; }
+      .stat-number { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVIGATION ── -->
+  <nav id="navbar">
+    <a href="index.html" class="nav-logo">
+      <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 100px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+        
+      <div class="nav-logo-text">
+        <div class="name">Dekay Driving School</div>
+        <div class="tagline">Ablekuma · Accra</div>
+      </div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="courses.html">Courses</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="faqs.html">FAQs</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+
+    <div class="nav-cta">
+      <a href="login.html" class="btn btn-outline">Login</a>
+      <a href="contact.html" class="btn btn-primary"><i class="fas fa-phone-alt"></i> Book a Lesson</a>
+    </div>
+
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a>
+    <a href="courses.html">Courses</a>
+    <a href="about.html">About</a>
+    <a href="faqs.html">FAQs</a>
+    <a href="contact.html">Contact</a>
+    <a href="login.html" style="color:var(--gold)">Login</a>
+    <a href="contact.html" class="btn btn-primary" style="text-align:center">Book a Lesson</a>
+  </div>
+
+  <!-- ── HERO ── -->
+  <section class="hero" id="home">
+    <div class="hero-bg"></div>
+    <div class="hero-grid-lines"></div>
+
+    <div class="hero-content">
+      <a href="https://www.google.com/maps?q=Dekay+Driving+School+Ablekuma+Accra+Ghana"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="hero-badge"
+         style="text-decoration:none; cursor:pointer;">
+        <i class="fas fa-map-marker-alt"></i>
+        Ablekuma NIC Junction, Accra
+      </a>
+
+      <h1>
+        Learn to Drive<br />
+        with <span>Confidence</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Ghana's trusted driving school. Professional instructors, modern vehicles,
+        and a proven training system that takes you from beginner to DVLA-ready.
+      </p>
+
+      <!-- Mobile-only QR card -->
+      <a href="https://dekaydrivingschool-6933c.web.app/register" class="qr-card-link-mobile">
+        <div class="qr-card">
+          <div class="qr-card-inner">
+            <div class="qr-icon"><i class="fas fa-qrcode"></i></div>
+            <div class="qr-content">
+              <div class="qr-title">Scan or tap to register</div>
+              <div class="qr-subtitle">Access our student portal instantly</div>
+            </div>
+            <div class="qr-image-wrapper">
+              <img src="qr-code_dekaydrivingschool.png" alt="QR Code" class="qr-image" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://dekaydrivingschool.com/login'">
+            </div>
+            <div class="qr-arrow"><i class="fas fa-arrow-right"></i></div>
+          </div>
+        </div>
+      </a>
+
+      <div class="hero-actions">
+        <a href="contact.html" class="btn btn-primary btn-lg">
+          <i class="fas fa-calendar-check"></i> Book a Free Lesson
+        </a>
+        <a href="courses.html" class="btn btn-outline btn-lg">
+          View Courses <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-number">500+</div>
+          <div class="stat-label">Graduates</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">98%</div>
+          <div class="stat-label">Pass rate</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">5</div>
+          <div class="stat-label">Course types</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">8+</div>
+          <div class="stat-label">Years training</div>
+        </div>
+      </div>
+
+      
+    </div>
+
+    
+    <!-- QR Code Card (Clickable) -->
+    <a href="https://dekaydrivingschool-6933c.web.app/register" class="qr-card-link">
+      <div class="qr-card reveal">
+        <div class="qr-card-inner">
+          <div class="qr-icon"><i class="fas fa-qrcode"></i></div>
+          <div class="qr-content">
+            <div class="qr-title">Scan or tap to register</div>
+            <div class="qr-subtitle">Access our student portal instantly</div>
+          </div>
+          <div class="qr-image-wrapper">
+            <img src="qr-code_dekaydrivingschool.png" alt="QR Code" class="qr-image" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://dekaydrivingschool.com/login'">
+          </div>
+          <div class="qr-arrow"><i class="fas fa-arrow-right"></i></div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Floating status card -->
+    <div class="hero-float-card reveal">
+      <div class="float-card-header">
+        <div class="float-card-icon"><i class="fas fa-chart-line"></i></div>
+        <div>
+          <div class="float-card-title">Kwame A.</div>
+          <div class="float-card-sub">Manual Transmission</div>
+        </div>
+      </div>
+      <div class="pipeline-mini">
+        <div class="pipeline-step">
+          <div class="step-dot done"></div>
+          <span class="step-label done">Registration</span>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-dot done"></div>
+          <span class="step-label done">Theory lessons</span>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-dot done"></div>
+          <span class="step-label done">Theory test — 87%</span>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-dot active"></div>
+          <span class="step-label active">Practical lessons</span>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-dot pending"></div>
+          <span class="step-label">Assessment</span>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-dot pending"></div>
+          <span class="step-label">DVLA ready</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROMO VIDEOS ── -->
+  <section class="videos-section" id="videos">
+    <div class="section-header centered reveal">
+      <div class="section-label"><i class="fas fa-images"></i> Gallery</div>
+      <h2 class="section-title">See <span>Dekay</span> in action</h2>
+      <p class="section-sub">A glimpse into our training sessions, student moments and life at Dekay Driving School.</p>
+    </div>
+
+    <div class="videos-grid">
+      <div class="video-card reveal">
+        <div class="video-thumb">
+          <img src="img/carview7.jpg" alt="Welcome to Dekay Driving School" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">School</span>
+          <div class="video-title">Welcome to Dekay Driving School</div>
+          <div class="video-meta">
+          </div>
+        </div>
+      </div>
+
+      <div class="video-card reveal" style="transition-delay:0.1s">
+        <div class="video-thumb">
+          <img src="img/17.jpg" alt="Top 5 road safety tips for new drivers" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">One-on-one Session</span>
+          <div class="video-title">Top 5 road safety tips for new drivers</div>
+          <div class="video-meta">
+          </div>
+        </div>
+      </div>
+
+      <div class="video-card reveal" style="transition-delay:0.2s">
+        <div class="video-thumb">
+          <img src="img/4.jpg" alt="Ama's journey from zero to licensed driver" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">Safety Checks</span>
+          <div class="video-title">Testing safety checks before driving</div>
+          <div class="video-meta">
+          </div>
+        </div>
+      </div>
+    <div class="video-card reveal" style="transition-delay:0.3s">
+        <div class="video-thumb">
+          <img src="img/16.jpg" alt="Card 4 title" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">Practical Session</span>
+          <div class="video-title">Practical session on safety checks before driving</div>
+          <div class="video-meta">
+          </div>
+        </div>
+      </div>
+
+      <div class="video-card reveal" style="transition-delay:0.4s">
+        <div class="video-thumb">
+          <img src="img/12.jpg" alt="Card 5 title" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">Happy Reactions</span>
+          <div class="video-title">Ama's journey from zero to licensed driver</div>
+          <div class="video-meta">
+          </div>
+        </div>
+      </div>
+
+      <div class="video-card reveal" style="transition-delay:0.5s">
+        <div class="video-thumb">
+          <img src="img/9.jpg" alt="Card 6 title" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">Dekay Driving School</span>
+          <div class="video-title">We Drive To Arrive</div>
+          <div class="video-meta">
+          </div>
+        </div>
+      </div>
+
+      <div class="video-card reveal" style="transition-delay:0.5s">
+        <div class="video-thumb">
+          <img src="img/2.jpg" alt="Card 6 title" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">Discussion on Safety</span>
+          <div class="video-title">Discussing Road Safety Tips and Best Practices</div>
+          <div class="video-meta">
+          </div>
+        </div>
+      </div>
+
+      <div class="video-card reveal" style="transition-delay:0.5s">
+        <div class="video-thumb">
+          <img src="img/carview3.jpeg" alt="Card 6 title" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">Our Vehicles</span>
+          <div class="video-title">Our Fleet of Modern Vehicles</div>
+          <div class="video-meta">
+            
+        </div>
+      </div>
+
+    </div>
+
+    <div class="video-card reveal">
+        <div class="video-thumb">
+          <img src="img/13.jpg" alt="Welcome to Dekay Driving School" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="video-info">
+          <span class="video-tag">School</span>
+          <div class="video-title">Wide View of Dekay Driving School</div>
+          <div class="video-meta">
+          </div>
+        </div>
+      </div>
+
+  </section>
+
+  <!-- ── COURSES ── -->
+  <section id="courses">
+    <div class="section-header reveal">
+      <div class="section-label">What we teach</div>
+      <h2 class="section-title">Choose your <span>course</span></h2>
+      <p class="section-sub">We offer structured training for every type of licence — taught by certified, patient instructors.</p>
+    </div>
+
+    <div class="courses-grid">
+      <div class="course-card reveal">
+        <div class="course-icon"><i class="fas fa-car"></i></div>
+        <div class="course-name">Manual transmission</div>
+        <div class="course-desc">Master the clutch and gear system with our step-by-step manual driving programme.</div>
+        <div class="course-duration"><i class="fas fa-calendar-alt"></i> 4–6 weeks</div>
+      </div>
+
+      <div class="course-card reveal" style="transition-delay:0.08s">
+        <div class="course-icon"><i class="fas fa-cog"></i></div>
+        <div class="course-name">Automatic transmission</div>
+        <div class="course-desc">Smooth and simple — ideal for city driving in Accra's busy traffic conditions.</div>
+        <div class="course-duration"><i class="fas fa-calendar-alt"></i> 3–4 weeks</div>
+      </div>
+
+      <div class="course-card reveal" style="transition-delay:0.16s">
+        <div class="course-icon"><i class="fas fa-motorcycle"></i></div>
+        <div class="course-name">Motorcycle</div>
+        <div class="course-desc">Safety-first motorcycle training covering balance, road rules, and hazard awareness.</div>
+        <div class="course-duration"><i class="fas fa-calendar-alt"></i> 2–3 weeks</div>
+      </div>
+
+      <div class="course-card reveal" style="transition-delay:0.24s">
+        <div class="course-icon"><i class="fas fa-bus"></i></div>
+        <div class="course-name">Bus / commercial</div>
+        <div class="course-desc">Professional training for large passenger vehicles including trotro and charter buses.</div>
+        <div class="course-duration"><i class="fas fa-calendar-alt"></i> 6–8 weeks</div>
+      </div>
+
+      <div class="course-card reveal" style="transition-delay:0.32s">
+        <div class="course-icon"><i class="fas fa-truck"></i></div>
+        <div class="course-name">Truck / heavy goods</div>
+        <div class="course-desc">Heavy vehicle operation for freight and logistics — includes reversing and loading zones.</div>
+        <div class="course-duration"><i class="fas fa-calendar-alt"></i> 6–10 weeks</div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:40px;">
+      <a href="courses.html" class="btn btn-gold-outline btn-lg">View all courses &amp; pricing <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </section>
+
+  <!-- ── WHY US ── -->
+  <section class="why-section" id="why">
+    <div class="why-grid">
+      <div>
+        <div class="section-label reveal">Why choose us</div>
+        <h2 class="section-title reveal">Training that <span>actually works</span></h2>
+        <p class="section-sub reveal" style="margin-bottom:36px;">
+          We combine hands-on instruction with a digital student portal so you always know exactly where you stand.
+        </p>
+        <div class="why-features">
+          <div class="why-feature reveal">
+            <div class="feature-icon"><i class="fas fa-user-tie"></i></div>
+            <div class="feature-text">
+              <h4>Certified, patient instructors</h4>
+              <p>All our instructors are DVLA-certified with years of practical teaching experience on Accra roads.</p>
+            </div>
+          </div>
+          <div class="why-feature reveal">
+            <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+            <div class="feature-text">
+              <h4>Student portal access</h4>
+              <p>Track your progress, watch lessons, take quizzes, and see your attendance log online anytime.</p>
+            </div>
+          </div>
+          <div class="why-feature reveal">
+            <div class="feature-icon"><i class="fas fa-trophy"></i></div>
+            <div class="feature-text">
+              <h4>98% first-time pass rate</h4>
+              <p>Our structured programme prepares you thoroughly for both the theory and practical DVLA tests.</p>
+            </div>
+          </div>
+          <div class="why-feature reveal">
+            <div class="feature-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="feature-text">
+              <h4>Convenient Ablekuma location</h4>
+              <p>Easily accessible from Kaneshie, Dansoman, and central Accra. Right at Ablekuma NIC Junction.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-visual reveal">
+        <div class="visual-title"><i class="fas fa-route"></i> Training pipeline</div>
+        <div class="pipeline-full">
+          <div class="pipeline-item">
+            <div class="pipeline-dot active">1</div>
+            <div class="pipeline-info">
+              <h5>Registration</h5>
+              <p>Sign up, upload photo, choose your course type</p>
+            </div>
+          </div>
+          <div class="pipeline-item">
+            <div class="pipeline-dot active">2</div>
+            <div class="pipeline-info">
+              <h5>Theory lessons</h5>
+              <p>Watch video modules on road signs, rules and safety</p>
+            </div>
+          </div>
+          <div class="pipeline-item">
+            <div class="pipeline-dot active">3</div>
+            <div class="pipeline-info">
+              <h5>Theory test</h5>
+              <p>Online quiz in the student portal — pass to continue</p>
+            </div>
+          </div>
+          <div class="pipeline-item">
+            <div class="pipeline-dot active">4</div>
+            <div class="pipeline-info">
+              <h5>Practical lessons</h5>
+              <p>Behind-the-wheel training with your instructor</p>
+            </div>
+          </div>
+          <div class="pipeline-item">
+            <div class="pipeline-dot active">5</div>
+            <div class="pipeline-info">
+              <h5>Internal assessment</h5>
+              <p>Mock DVLA test to confirm you are road-ready</p>
+            </div>
+          </div>
+          <div class="pipeline-item">
+            <div class="pipeline-dot active">6</div>
+            <div class="pipeline-info" style="padding-bottom:0">
+              <h5>DVLA ready</h5>
+              <p>Head to DVLA with confidence — we go with you</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TESTIMONIALS ── -->
+  <section id="testimonials">
+    <div class="section-header centered reveal">
+      <div class="section-label">Student stories</div>
+      <h2 class="section-title">What our <span>graduates</span> say</h2>
+    </div>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"I had tried another school before and gave up. Dekay's instructors were so patient and the student portal helped me track everything. Passed first time!"</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">AA</div>
+          <div>
+            <div class="author-name">Akosua Asante</div>
+            <div class="author-course">Manual transmission</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal" style="transition-delay:0.1s">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"The QR attendance system is brilliant — no paper, no confusion. I could see my own log on my phone instantly. Very professional school."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">KO</div>
+          <div>
+            <div class="author-name">Kofi Osei</div>
+            <div class="author-course">Automatic transmission</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal" style="transition-delay:0.2s">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"I got my commercial bus licence after 7 weeks. The instructors knew exactly what the DVLA examiners look for. Worth every pesewa."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">YD</div>
+          <div>
+            <div class="author-name">Yaw Darkwa</div>
+            <div class="author-course">Commercial bus</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ROAD SAFETY SIGNS ── -->
+  <section id="road-signs">
+    <div class="section-header centered reveal">
+      <div class="section-label"><i class="fas fa-triangle-exclamation"></i> Know your signs</div>
+      <h2 class="section-title">Road safety &amp; <span>warning signs</span></h2>
+      <p class="section-sub">Every learner must recognise these signs before getting behind the wheel.</p>
+    </div>
+
+    <div class="signs-grid">
+      <div class="sign-card reveal">
+        <div class="sign-icon-box">
+          <svg viewBox="0 0 100 100"><polygon points="29,5 71,5 95,29 95,71 71,95 29,95 5,71 5,29" fill="#C0392B" stroke="#fff" stroke-width="3"/><text x="50" y="58" font-size="22" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial">STOP</text></svg>
+        </div>
+        <div class="sign-name">Stop</div>
+        <div class="sign-desc">Come to a complete stop, then proceed only when safe.</div>
+      </div>
+
+      <div class="sign-card reveal" style="transition-delay:0.05s">
+        <div class="sign-icon-box">
+          <svg viewBox="0 0 100 100"><polygon points="50,8 92,88 8,88" fill="#fff" stroke="#C0392B" stroke-width="8"/><text x="50" y="72" font-size="13" font-weight="700" fill="#0A1628" text-anchor="middle" font-family="Arial">GIVE WAY</text></svg>
+        </div>
+        <div class="sign-name">Give Way</div>
+        <div class="sign-desc">Slow down and let other traffic pass before proceeding.</div>
+      </div>
+
+      <div class="sign-card reveal" style="transition-delay:0.1s">
+        <div class="sign-icon-box">
+          <svg viewBox="0 0 100 100"><polygon points="50,8 92,88 8,88" fill="#FFD23F" stroke="#0A1628" stroke-width="4"/><g stroke="#0A1628" stroke-width="4"><line x1="35" y1="40" x2="35" y2="68"/><line x1="65" y1="40" x2="65" y2="68"/><line x1="35" y1="68" x2="50" y2="50"/><line x1="65" y1="68" x2="50" y2="50"/><circle cx="50" cy="32" r="5" fill="#0A1628"/></g></svg>
+        </div>
+        <div class="sign-name">Pedestrian Crossing</div>
+        <div class="sign-desc">Watch for people crossing and be ready to stop.</div>
+      </div>
+
+      <div class="sign-card reveal" style="transition-delay:0.15s">
+        <div class="sign-icon-box">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#fff" stroke="#C0392B" stroke-width="8"/><text x="50" y="60" font-size="28" font-weight="700" fill="#0A1628" text-anchor="middle" font-family="Arial">50</text></svg>
+        </div>
+        <div class="sign-name">Speed Limit</div>
+        <div class="sign-desc">Maximum speed allowed on that stretch of road, in km/h.</div>
+      </div>
+
+      <div class="sign-card reveal" style="transition-delay:0.2s">
+        <div class="sign-icon-box">
+          <svg viewBox="0 0 100 100"><polygon points="50,8 92,88 8,88" fill="#FFD23F" stroke="#0A1628" stroke-width="4"/><path d="M28,68 q11,-14 22,0 q11,-14 22,0" fill="none" stroke="#0A1628" stroke-width="4"/></svg>
+        </div>
+        <div class="sign-name">Slippery Road</div>
+        <div class="sign-desc">Reduce speed — road surface may be wet or slick.</div>
+      </div>
+
+      <div class="sign-card reveal" style="transition-delay:0.25s">
+        <div class="sign-icon-box">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#C0392B"/><rect x="20" y="42" width="60" height="16" fill="#fff"/></svg>
+        </div>
+        <div class="sign-name">No Entry</div>
+        <div class="sign-desc">Entry into this road or lane is strictly prohibited.</div>
+      </div>
+
+      <div class="sign-card reveal" style="transition-delay:0.3s">
+        <div class="sign-icon-box">
+          <svg viewBox="0 0 100 100"><polygon points="50,8 92,88 8,88" fill="#FFD23F" stroke="#0A1628" stroke-width="4"/><circle cx="50" cy="50" r="14" fill="none" stroke="#0A1628" stroke-width="4"/><circle cx="38" cy="46" r="3" fill="#0A1628"/><circle cx="62" cy="46" r="3" fill="#0A1628"/></svg>
+        </div>
+        <div class="sign-name">School Zone</div>
+        <div class="sign-desc">Slow down — children may be crossing nearby.</div>
+      </div>
+
+      <div class="sign-card reveal" style="transition-delay:0.35s">
+        <div class="sign-icon-box">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#1E5FCE" stroke="#fff" stroke-width="3"/><circle cx="50" cy="50" r="20" fill="none" stroke="#fff" stroke-width="6"/></svg>
+        </div>
+        <div class="sign-name">Roundabout</div>
+        <div class="sign-desc">Give way to traffic already circulating, then merge in.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ROAD SIGNS PHOTO GALLERY ── -->
+  <section id="road-signs-gallery" style="background: var(--navy-mid); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="section-header centered reveal">
+      <div class="section-label"><i class="fas fa-camera"></i> Photo gallery</div>
+      <h2 class="section-title">Real <span>road sign</span> photos</h2>
+      <p class="section-sub">Actual signs you'll encounter on Ghanaian roads during your lessons.</p>
+    </div>
+
+    <div class="signs-photo-grid">
+      <div class="sign-photo-card reveal">
+        <div class="sign-photo-wrap">
+          <img src="img/handbrake_is_pulling.jpg" alt="Handbrake is pulling sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Handbrake Is Pulling</div>
+          <div class="sign-photo-desc">Indicates that the handbrake is engaged.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.05s">
+        <div class="sign-photo-wrap">
+          <img src="img/engine_temperature_too_high-on.jpg" alt="Engine temperature too high sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Engine Temperature Too High</div>
+          <div class="sign-photo-desc">Warning: Engine temperature is excessively high.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.1s">
+        <div class="sign-photo-wrap">
+          <img src="img/side_airbag_got_problem.jpg" alt="Side airbag got problem sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Side Airbag Got Problem</div>
+          <div class="sign-photo-desc">Warning: Side airbag is not functioning properly.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.15s">
+        <div class="sign-photo-wrap">
+          <img src="img/low_fuel.jpg" alt="Low fuel sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Low Fuel</div>
+          <div class="sign-photo-desc">Warning: Fuel level is critically low.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.2s">
+        <div class="sign-photo-wrap">
+          <img src="img/speed_limit.jpg" alt="Speed limit sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Speed Limit</div>
+          <div class="sign-photo-desc">Maximum allowed speed for that road.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.25s">
+        <div class="sign-photo-wrap">
+          <img src="img/rough_road_sign.jfif" alt="Rough road sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Rough Road</div>
+          <div class="sign-photo-desc">Surface may be uneven or damaged.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.3s">
+        <div class="sign-photo-wrap">
+          <img src="img/right_hand_curve.jfif" alt="Right hand curve sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Right Hand Curve</div>
+          <div class="sign-photo-desc">Drive slowly and steer carefully around the curve.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.35s">
+        <div class="sign-photo-wrap">
+          <img src="img/reverse_bend.jfif" alt="Reverse bend sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Reverse Bend</div>
+          <div class="sign-photo-desc">Drive slowly and steer carefully around the curve.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.35s">
+        <div class="sign-photo-wrap">
+          <img src="img/no_parking_sign.jpg" alt="No parking sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">No Parking</div>
+          <div class="sign-photo-desc">Parking is prohibited in this area.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.35s">
+        <div class="sign-photo-wrap">
+          <img src="img/no-overtaking-traffic-sign-.jpg" alt="No overtaking sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">No Overtaking</div>
+          <div class="sign-photo-desc">Overtaking is prohibited in this area.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.35s">
+        <div class="sign-photo-wrap">
+          <img src="img/narrow_bridgesign.jfif" alt="Narrow bridge sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Narrow Bridge</div>
+          <div class="sign-photo-desc">Drive slowly and be prepared to stop.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.35s">
+        <div class="sign-photo-wrap">
+          <img src="img/rocks_fall_down.jfif" alt="Rocks falling down sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Rocks Falling Down</div>
+          <div class="sign-photo-desc">Be alert and drive cautiously.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.35s">
+        <div class="sign-photo-wrap">
+          <img src="img/no_left_turn_sign.jfif" alt="No left turn sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">No Left Turn</div>
+          <div class="sign-photo-desc">Left turns are prohibited in this area.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.35s">
+        <div class="sign-photo-wrap">
+          <img src="img/railway crossing with gate.jpg" alt="Railway crossing with gate sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Railway Crossing</div>
+          <div class="sign-photo-desc">Stop and proceed only when safe.</div>
+        </div>
+      </div>
+
+      <div class="sign-photo-card reveal" style="transition-delay:0.35s">
+        <div class="sign-photo-wrap">
+          <img src="img/child_parent_safety.jpg" alt="Child and parent safety sign photo" />
+        </div>
+        <div class="sign-photo-info">
+          <div class="sign-photo-name">Child and Parent Safety</div>
+          <div class="sign-photo-desc">Be alert and drive cautiously around children.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── DVLA RECOGNITION ── -->
+  <section class="dvla-section">
+    <div class="dvla-card reveal">
+      <div class="dvla-logo-wrap">
+        <img src="img/dvla_logo.jpg" alt="DVLA - Driver and Vehicle Licensing Authority Ghana" />
+      </div>
+      <div class="dvla-label">Recognized by</div>
+      <div class="dvla-title">Driver &amp; Vehicle Licensing Authority</div>
+      <p class="dvla-desc">Our curriculum is structured to meet DVLA Ghana's official testing standards, preparing every student for both theory and practical assessments.</p>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <div class="cta-box reveal">
+      <div class="section-label" style="justify-content:center">Get started today</div>
+      <h2>Ready to get your <span style="color:var(--gold)">licence?</span></h2>
+      <p>Join hundreds of drivers who trained with Dekay. Book your free consultation and we'll match you to the right course.</p>
+      <div class="cta-actions">
+        <a href="contact.html" class="btn btn-primary btn-lg"><i class="fas fa-calendar-check"></i> Book a free lesson</a>
+        <a href="login.html" class="btn btn-outline btn-lg"><i class="fas fa-user"></i> Login</a>
+      </div>
+      <div class="cta-contact">
+        <a href="tel:0274211566" class="contact-item"><i class="fas fa-phone"></i> 0274 211 566</a>
+        <a href="tel:0269824898" class="contact-item"><i class="fas fa-phone"></i> 0269 824 898</a>
+        <a href="https://wa.me/233274211566" class="contact-item"><i class="fab fa-whatsapp"></i> WhatsApp us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="margin-bottom:16px; display:inline-flex">
+          <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 65px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+          <div class="nav-logo-text">
+            <div class="name">Dekay Driving School</div>
+            <div class="tagline">Ablekuma · Accra</div>
+          </div>
+        </a>
+        <p class="footer-desc">Professional driving training for manual, automatic, motorcycle, bus and truck licences. Located at Ablekuma NIC Junction, Accra.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-btn" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          <a href="#" class="social-btn" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Quick links</h4>
+        <ul class="footer-links">
+          <li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Courses</a></li>
+          <li><a href="about.html"><i class="fas fa-chevron-right"></i> About us</a></li>
+          <li><a href="faqs.html"><i class="fas fa-chevron-right"></i> FAQs</a></li>
+          <li><a href="contact.html"><i class="fas fa-chevron-right"></i> Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Courses</h4>
+        <ul class="footer-links">
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Manual</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Automatic</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Motorcycle</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Commercial bus</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Heavy goods</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul class="footer-links">
+          <li><a href="tel:0274211566"><i class="fas fa-phone"></i> 0274 211 566</a></li>
+          <li><a href="tel:0269824898"><i class="fas fa-phone"></i> 0269 824 898</a></li>
+          <li><a href="https://wa.me/233274211566"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+          <li><a href="https://www.google.com/maps?q=Dekay+Driving+School+Ablekuma+Accra+Ghana"><i class="fas fa-map-marker-alt"></i> Ablekuma NIC Junction</a></li>
+          <li><a href="login.html"><i class="fas fa-user"></i> Student portal</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
+        <div style="font-size: 12px; color: var(--text-muted); flex: 1; text-align: left;">
+          &copy; 2026 Dekay Driving School. All rights reserved.
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); flex: 1; text-align: center;">
+          Designed &amp; Maintained by 
+          <a href="https://myportfolio-theta-topaz-43.vercel.app/" target="_blank" style="color: var(--gold); text-decoration: none; transition: color 0.3s ease; font-weight: 600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Prince Antwi Wiafe</a>
+        </div>
+        <div style="display: flex; gap: 16px; flex: 1; justify-content: flex-end; align-items: center;">
+          <a href="#" style="font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Privacy policy</a>
+          <span style="color: var(--text-muted);">|</span>
+          <a href="#" style="font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Terms of use</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── JAVASCRIPT ── -->
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lbClose"><i class="fas fa-times"></i></button>
+    <img class="lightbox-img" id="lbImg" src="" alt="" />
+    <div class="lightbox-caption" id="lbCaption"></div>
+  </div>
+
+  <script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('open');
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Lightbox
+    const lightbox  = document.getElementById('lightbox');
+    const lbImg     = document.getElementById('lbImg');
+    const lbCaption = document.getElementById('lbCaption');
+    const lbClose   = document.getElementById('lbClose');
+
+    document.querySelectorAll('.video-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const img     = card.querySelector('.video-thumb img');
+        const title   = card.querySelector('.video-title')?.textContent || '';
+        const tag     = card.querySelector('.video-tag')?.textContent || '';
+        lbImg.src     = img.src;
+        lbImg.alt     = img.alt;
+        lbCaption.textContent = tag ? `${tag} — ${title}` : title;
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      lbImg.src = '';
+      document.body.style.overflow = '';
+    }
+
+    lbClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', e => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  </script>
+
+</body>
+</html>

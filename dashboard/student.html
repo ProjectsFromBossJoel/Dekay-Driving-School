@@ -1,0 +1,3034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- To further prevent any cached page from being shown before the auth guard runs -->
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <title>Student Portal | Dekay Driving School</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --navy: #0A1628; --navy-mid: #12223F; --navy-light: #1C3259;
+      --gold: #F5A623; --gold-light: #FAC75A; --gold-dark: #C47F0A;
+      --white: #FFFFFF; --text-muted: #8B9AB0; --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2); --border-subtle: rgba(255,255,255,0.06);
+      --radius: 12px; --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.2);
+      --transition: 0.25s ease;
+      --success: #4CAF50; --error: #EF5350; --warn: #FF9800;
+      --sidebar: 240px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar);
+      background: var(--navy-mid);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      transition: transform var(--transition);
+    }
+
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 10px;
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+    }
+    .sidebar-brand-icon { width: 36px; height: 36px; background: var(--gold); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--navy); flex-shrink: 0; }
+    .sidebar-brand-name { font-size: 13px; font-weight: 700; color: var(--white); }
+    .sidebar-brand-sub { font-size: 10px; color: var(--gold); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+
+    .sidebar-nav { flex: 1; padding: 16px 10px; overflow-y: auto; }
+    .nav-section-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; padding: 0 10px; margin: 16px 0 8px; }
+    .nav-section-label:first-child { margin-top: 0; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      border: none; background: transparent; width: 100%; text-align: left;
+      font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+      position: relative;
+    }
+    .nav-item i { font-size: 14px; width: 18px; text-align: center; }
+    .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+    .nav-item.active { color: var(--gold); background: rgba(245,166,35,0.1); font-weight: 600; }
+    .nav-item .badge {
+      margin-left: auto; font-size: 10px; font-weight: 700;
+      background: var(--gold); color: var(--navy);
+      padding: 2px 7px; border-radius: 50px; min-width: 18px; text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 14px 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar);
+      flex: 1;
+      display: flex; flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(10,22,40,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .topbar-title { font-size: 17px; font-weight: 700; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+    .topbar-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-size: 12px; font-weight: 600;
+    }
+    .badge-active { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.3); }
+    .badge-pending { background: rgba(255,152,0,0.15); color: var(--warn); border: 1px solid rgba(255,152,0,0.3); }
+
+    .icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 9px; border: 1px solid var(--border);
+      background: var(--navy-mid);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 14px;
+      cursor: pointer; text-decoration: none;
+      transition: all var(--transition); position: relative;
+    }
+    .icon-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .icon-btn .notif-dot {
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--gold); border: 1.5px solid var(--navy-mid);
+    }
+
+    .avatar-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(245,166,35,0.15); border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: var(--gold);
+      cursor: pointer;
+    }
+
+    /* ── PAGE CONTENT ── */
+    .page { padding: 28px; display: none; }
+    .page.active { display: block; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+    }
+    .card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .card-title i { color: var(--gold); }
+    .card-body { padding: 22px; }
+    .card-action { font-size: 12px; font-weight: 600; color: var(--gold); text-decoration: none; display: flex; align-items: center; gap: 4px; transition: opacity var(--transition); }
+    .card-action:hover { opacity: 0.8; }
+
+    /* ── STAT GRID ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--gold); transform: scaleX(0); transition: transform var(--transition);
+    }
+    .stat-card:hover::after { transform: scaleX(1); }
+    .stat-card-label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .stat-card-label i { color: var(--gold); font-size: 12px; }
+    .stat-card-value { font-size: 28px; font-weight: 700; color: var(--white); line-height: 1; }
+    .stat-card-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+    /* ── PIPELINE ── */
+    .pipeline-steps { display: flex; flex-direction: column; gap: 0; }
+    .pipeline-step-item { display: flex; gap: 16px; align-items: flex-start; position: relative; }
+    .pipeline-step-item:not(:last-child) .ps-dot-wrap::after {
+      content: ''; position: absolute; left: 50%; top: 32px; bottom: -16px;
+      width: 2px; background: var(--border); transform: translateX(-50%);
+    }
+    .ps-dot-wrap { position: relative; width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; z-index: 1; }
+    .ps-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+    .ps-dot.done { background: rgba(76,175,80,0.2); border: 2px solid var(--success); color: var(--success); }
+    .ps-dot.current { background: rgba(245,166,35,0.2); border: 2px solid var(--gold); color: var(--gold); animation: pulse-dot 2s ease-in-out infinite; }
+    .ps-dot.pending { background: var(--navy-light); border: 2px solid var(--border); color: var(--text-muted); }
+    @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,0.3)} 50%{box-shadow:0 0 0 6px rgba(245,166,35,0)} }
+    .ps-info { padding: 4px 0 20px; }
+    .ps-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .ps-desc { font-size: 12px; color: var(--text-muted); }
+    .ps-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 50px; margin-top: 4px; }
+    .tag-done-c { background: rgba(76,175,80,0.12); color: var(--success); }
+    .tag-current-c { background: rgba(245,166,35,0.12); color: var(--gold); }
+    .tag-pending-c { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+    /* ── PROGRESS BAR ── */
+    .prog-bar-wrap { margin-bottom: 20px; }
+    .prog-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .prog-bar-track { height: 6px; background: var(--navy-light); border-radius: 50px; overflow: hidden; }
+    .prog-bar-fill { height: 100%; background: var(--gold); border-radius: 50px; transition: width 0.8s ease; }
+    .prog-bar-fill.green { background: var(--success); }
+
+    /* ── VIDEO GRID ── */
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .video-item {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all var(--transition); cursor: pointer;
+    }
+    .video-item:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .video-thumb {
+      position: relative; aspect-ratio: 16/9;
+      background: var(--navy-light);
+    }
+    .video-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .video-play-overlay {
+      position: absolute; inset: 0;
+      background: rgba(10,22,40,0.5);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity var(--transition);
+    }
+    .video-item:hover .video-play-overlay { opacity: 0; }
+    .play-circle { width: 48px; height: 48px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; color: var(--navy); font-size: 18px; }
+    .video-progress-strip { height: 3px; background: var(--navy-light); }
+    .video-progress-strip .fill { height: 100%; background: var(--gold); }
+    .video-info { padding: 14px; }
+    .video-tag { display: inline-block; padding: 2px 8px; background: rgba(245,166,35,0.1); color: var(--gold); border-radius: 50px; font-size: 10px; font-weight: 600; margin-bottom: 6px; }
+    .video-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .video-meta-row { font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; }
+
+    /* ── QUIZ CARD ── */
+    .quiz-list { display: flex; flex-direction: column; gap: 10px; }
+    .quiz-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--navy); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 18px;
+      transition: border-color var(--transition); gap: 12px;
+    }
+    .quiz-row:hover { border-color: var(--gold); }
+    .quiz-row-left { display: flex; align-items: center; gap: 12px; }
+    .quiz-icon { width: 36px; height: 36px; border-radius: 9px; background: rgba(245,166,35,0.1); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 14px; flex-shrink: 0; }
+    .quiz-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .quiz-desc { font-size: 11px; color: var(--text-muted); }
+    .quiz-score { font-size: 18px; font-weight: 700; color: var(--gold); text-align: right; line-height: 1; }
+    .quiz-score-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    .btn-sm {
+      padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: all var(--transition);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-sm-gold { background: var(--gold); color: var(--navy); }
+    .btn-sm-gold:hover { background: var(--gold-light); }
+    .btn-sm-outline { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
+    .btn-sm-outline:hover { background: var(--gold); color: var(--navy); }
+
+    /* ── ATTENDANCE TABLE ── */
+    .att-table { width: 100%; border-collapse: collapse; }
+    .att-table th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    .att-table td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(245,166,35,0.06); vertical-align: middle; }
+    .att-table tr:last-child td { border-bottom: none; }
+    .att-table tr:hover td { background: rgba(245,166,35,0.02); }
+    .att-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 50px; }
+    .att-pill.present { background: rgba(76,175,80,0.12); color: var(--success); }
+    .att-pill.absent { background: rgba(239,83,80,0.12); color: var(--error); }
+    .att-pill.excused { background: rgba(255,152,0,0.12); color: var(--warn); }
+
+    /* ── ATTENDANCE CHECK-IN ── */
+    .checkin-card {
+      background: linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .checkin-card-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .checkin-card-info p { font-size: 13px; color: var(--text-muted); }
+    .checkin-btn { padding: 12px 24px; background: var(--gold); color: var(--navy); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px; transition: all var(--transition); white-space: nowrap; }
+    .checkin-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .checkin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── NOTIFICATION PANEL ── */
+    .notif-list { display: flex; flex-direction: column; gap: 1px; }
+    .notif-item { display: flex; gap: 14px; padding: 14px 22px; border-bottom: 1px solid var(--border-subtle); transition: background var(--transition); cursor: pointer; }
+    .notif-item:hover { background: rgba(255,255,255,0.02); }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-dot-outer { width: 36px; height: 36px; border-radius: 9px; background: rgba(245,166,35,0.1); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+    .notif-dot-outer.system { background: rgba(33,150,243,0.1); color: #64B5F6; }
+    .notif-text { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+    .notif-time { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .notif-unread .notif-text { color: var(--white); font-weight: 500; }
+
+    /* ── QUIZ MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      transform: scale(0.96) translateY(10px);
+      transition: transform 0.25s ease;
+    }
+    .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+    .modal-header { padding: 22px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 17px; font-weight: 700; }
+    .modal-close { width: 28px; height: 28px; border-radius: 7px; background: var(--navy-light); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 12px; transition: all var(--transition); }
+    .modal-close:hover { border-color: var(--gold); color: var(--gold); }
+    .modal-body { padding: 24px; }
+
+    .quiz-q { margin-bottom: 24px; }
+    .quiz-q-text { font-size: 15px; font-weight: 600; margin-bottom: 14px; line-height: 1.5; }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      background: var(--navy); cursor: pointer;
+      font-size: 14px; color: var(--text-light);
+      transition: all var(--transition);
+    }
+    .quiz-option:hover { border-color: var(--gold); color: var(--white); }
+    .quiz-option.selected { border-color: var(--gold); background: rgba(245,166,35,0.1); color: var(--white); }
+    .quiz-option.correct { border-color: var(--success); background: rgba(76,175,80,0.1); color: var(--success); }
+    .quiz-option.wrong { border-color: var(--error); background: rgba(239,83,80,0.1); color: var(--error); }
+    .option-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid currentColor; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; font-weight: 700; }
+
+    .quiz-footer { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .quiz-progress-text { font-size: 13px; color: var(--text-muted); }
+    .quiz-result { text-align: center; padding: 32px 0; }
+    .quiz-result-score { font-size: 56px; font-weight: 700; color: var(--gold); line-height: 1; }
+    .quiz-result-label { font-size: 15px; color: var(--text-muted); margin-top: 6px; }
+    .quiz-result-msg { font-size: 14px; margin-top: 12px; padding: 12px 16px; border-radius: var(--radius); }
+
+    /* ── PROFILE PAGE ── */
+    .profile-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+    .profile-avatar-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px 24px; text-align: center; }
+    .profile-avatar-big { width: 80px; height: 80px; border-radius: 50%; background: rgba(245,166,35,0.15); border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: var(--gold); margin: 0 auto 16px; position: relative; cursor: pointer; }
+    .avatar-edit-badge { position: absolute; bottom: 0; right: 0; width: 24px; height: 24px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--navy); }
+    .profile-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .profile-email { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+    .profile-course-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(245,166,35,0.1); border: 1px solid var(--border); border-radius: 50px; font-size: 12px; font-weight: 600; color: var(--gold); }
+
+    .profile-form-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .profile-section-title { font-size: 13px; font-weight: 700; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 20px; }
+    .pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .pf-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .pf-input { width: 100%; padding: 10px 14px; background: var(--navy); border: 1.5px solid var(--border); border-radius: var(--radius); color: var(--white); font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color var(--transition); }
+    .pf-input:focus { border-color: var(--gold); }
+    .pf-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; font-size: 13px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); transform: translateY(20px); opacity: 0; transition: all 0.3s ease; z-index: 9999; max-width: 300px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(76,175,80,0.4); }
+    .toast.success i { color: var(--success); }
+    .toast.error i { color: var(--error); }
+
+    /* ── MOBILE ── */
+    .hamburger-btn { display: none; width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--border); background: var(--navy-mid); align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 14px; }
+
+
+        /* ── BUTTON ANIMATIONS ── */
+    .btn-animated {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-animated:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(245,166,35,0.35);
+    }
+    .btn-animated:active {
+      transform: translateY(0);
+    }
+    .btn-animated::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s;
+    }
+    .btn-animated:active::after {
+      width: 200px;
+      height: 200px;
+    }
+
+
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .hamburger-btn { display: flex; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .video-grid { grid-template-columns: 1fr; }
+      .pf-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">
+        <img src="logo2.png" alt="Dekay Driving School Logo" style="width: 55px; height: 40px; border-radius: 8px;" />
+      </div>
+      <div>
+        <div class="sidebar-brand-name">Dekay School</div>
+        <div class="sidebar-brand-sub">Student Portal</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <button class="nav-item active" onclick="showPage('dashboard', this)"><i class="fas fa-th-large"></i> Dashboard</button>
+      <button class="nav-item" onclick="showPage('lessons', this)"><i class="fas fa-play-circle"></i> Video Lessons</button>
+      <button class="nav-item" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes <span class="badge" id="quizBadge">2</span></button>
+      <button class="nav-item" onclick="showPage('attendance', this)"><i class="fas fa-calendar-check"></i> Attendance</button>
+      <button class="nav-item" onclick="showPage('progress', this)"><i class="fas fa-route"></i> My Progress</button>
+      <button class="nav-item" onclick="showPage('classes', this)"><i class="fas fa-chalkboard"></i> My Classes</button>
+      <button class="nav-item" onclick="showPage('resources', this)"><i class="fas fa-folder-open"></i> Resources</button>
+      <button class="nav-item" onclick="showPage('instructors', this)"><i class="fas fa-chalkboard-teacher"></i> My Instructors</button>
+            <button class="nav-item" onclick="showPage('certificates', this)"><i class="fas fa-certificate"></i> My Certificates</button>
+
+      <div class="nav-section-label">Account</div>
+      <button class="nav-item" onclick="showPage('notifications', this)"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notifBadge">3</span></button>
+      <button class="nav-item" onclick="showPage('profile', this)"><i class="fas fa-user-circle"></i> Profile</button>
+
+      <div class="nav-section-label">Help</div>
+      <a href="../faqs.html" class="nav-item"><i class="fas fa-question-circle"></i> FAQs</a>
+      <a href="../contact.html" class="nav-item"><i class="fas fa-headset"></i> Contact school</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="handleLogout()" style="color:var(--error)">
+        <i class="fas fa-sign-out-alt"></i> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-badge badge-active" id="statusBadge"><i class="fas fa-circle" style="font-size:7px"></i> <span id="statusText">Active</span></span>
+        <button class="icon-btn" onclick="showPage('notifications', document.querySelector('[onclick*=notifications]'))">
+          <i class="fas fa-bell"></i>
+          <div class="notif-dot" id="notifDot"></div>
+        </button>
+        <div class="avatar-btn" id="avatarBtn" onclick="showPage('profile', document.querySelector('[onclick*=profile]'))"></div>
+      </div>
+    </header>
+
+    <!-- ═══ DASHBOARD PAGE ═══ -->
+    <div class="page active" id="page-dashboard">
+      <div style="margin-bottom:20px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Welcome back, <span id="studentNameGreet" style="color:var(--gold)">Student</span> 👋</div>
+        <div style="font-size:14px; color:var(--text-muted)" id="dashDateLine">Loading your training status…</div>
+      </div>
+
+      <!-- Check-in card (only shown when session active) -->
+      <div class="checkin-card" id="checkinCard" style="display:none;">
+        <div class="checkin-card-info">
+          <h3><i class="fas fa-map-pin" style="color:var(--gold);margin-right:6px"></i> Session in progress</h3>
+          <p>Today's practical lesson is active — tap to mark your attendance.</p>
+        </div>
+        <button class="checkin-btn" id="checkinBtn" onclick="markAttendance()">
+          <i class="fas fa-check-circle"></i> Mark attendance
+        </button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-label"><i class="fas fa-calendar-check"></i> Attendance</div>
+          <div class="stat-card-value" id="dashAttendance">—</div>
+          <div class="stat-card-sub" id="dashAttSub">Loading…</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label"><i class="fas fa-tasks"></i> Quiz avg.</div>
+          <div class="stat-card-value" id="dashQuizAvg">—</div>
+          <div class="stat-card-sub">Average score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label"><i class="fas fa-play-circle"></i> Lessons</div>
+          <div class="stat-card-value" id="dashLessons">—</div>
+          <div class="stat-card-sub" id="dashLessonSub">Videos watched</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label"><i class="fas fa-route"></i> Stage</div>
+          <div class="stat-card-value" id="dashStage">—</div>
+          <div class="stat-card-sub">of 6 stages</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start;">
+        <!-- Recent notifications -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-bell"></i> Recent notifications</div>
+            <a href="#" class="card-action" onclick="showPage('notifications', null); return false;">All <i class="fas fa-arrow-right"></i></a>
+          </div>
+          <div id="dashNotifList" class="notif-list">
+            <div style="padding:20px; color:var(--text-muted); font-size:13px; text-align:center;">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Upcoming classes + Training stages -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- Upcoming classes -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-calendar-alt"></i> Ongoing & Upcoming classes</div>
+              <a href="#" class="card-action" onclick="showPage('classes', null); return false;">All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="card-body" id="dashUpcomingClasses" style="max-height:200px;overflow-y:auto;">
+              <div style="text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
+            </div>
+                      <!-- Training stage quick view -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-route"></i> Training stages</div>
+            </div>
+            <div class="card-body">
+              <div class="pipeline-steps" id="miniPipeline">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+          </div>
+
+                    <!-- Stage Unlock Button -->
+          <div id="stageUnlockContainer" style="display:none; margin-top:16px;">
+            <div class="card" style="border: 2px solid var(--gold); background: linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.02) 100%);">
+              <div class="card-body" style="text-align:center; padding:20px;">
+                <div style="font-size: 20px; margin-bottom: 8px;">🎓</div>
+                <div style="font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 4px;">Ready to start your theory lessons?</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">You've completed registration. Start learning the theory modules now!</div>
+                <button class="btn btn-gold btn-animated" onclick="unlockNextStage()" style="padding: 12px 32px; font-size: 15px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                  <i class="fas fa-play-circle"></i> Start Theory Lessons
+                </button>
+              </div>
+            </div>
+          </div>
+
+          </div>
+
+          <!-- Training stage quick view -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-route"></i> Training stages</div>
+            </div>
+            <div class="card-body">
+              <div class="pipeline-steps" id="miniPipeline">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LESSONS PAGE ═══ -->
+    <div class="page" id="page-lessons">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Video Lessons</div>
+        <div style="font-size:14px; color:var(--text-muted)">Watch theory modules at your own pace. Progress is tracked automatically.</div>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <div class="prog-bar-wrap">
+          <div class="prog-bar-label"><span>Overall completion</span><span id="lessonCompletePct">0%</span></div>
+          <div class="prog-bar-track"><div class="prog-bar-fill" id="lessonProgressBar" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="video-grid" id="videoGrid">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- ═══ QUIZZES PAGE ═══ -->
+    <div class="page" id="page-quizzes">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Quizzes</div>
+        <div style="font-size:14px; color:var(--text-muted)">Complete all quizzes to advance to practical lessons. Pass mark is 60%.</div>
+      </div>
+      <div class="quiz-list" id="quizList">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- ═══ ATTENDANCE PAGE ═══ -->
+    <div class="page" id="page-attendance">
+      <div style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Attendance</div>
+          <div style="font-size:14px; color:var(--text-muted)">Your full session history. Absent sessions may delay your course progress.</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-card-label"><i class="fas fa-check-circle"></i> Present</div><div class="stat-card-value" id="attPresent" style="color:var(--success)">—</div></div>
+        <div class="stat-card"><div class="stat-card-label"><i class="fas fa-times-circle"></i> Absent</div><div class="stat-card-value" id="attAbsent" style="color:var(--error)">—</div></div>
+        <div class="stat-card"><div class="stat-card-label"><i class="fas fa-calendar-alt"></i> Rate</div><div class="stat-card-value" id="attRate" style="color:var(--gold)">—</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-list"></i> Session history</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="att-table">
+            <thead><tr><th>Date</th><th>Course</th><th>Class Title</th><th>Instructor</th><th>Stage</th><th>Status</th></tr></thead>
+            <tbody id="attTableBody">
+              <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">Loading attendance records…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PROGRESS PAGE ═══ -->
+    <div class="page" id="page-progress">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">My Progress</div>
+        <div style="font-size:14px; color:var(--text-muted)">Your full 6-stage training pipeline. Each stage unlocks after the previous is complete.</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 280px; gap:24px; align-items:start;">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-route"></i> Training pipeline</div></div>
+          <div class="card-body">
+            <div class="pipeline-steps" id="fullPipeline"></div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="card">
+            <div class="card-body">
+              <div style="font-size:13px; font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:16px;">Overall progress</div>
+              <div style="font-size:40px; font-weight:700; color:var(--gold); margin-bottom:4px;" id="overallPct">0%</div>
+              <div style="font-size:12px; color:var(--text-muted);" id="overallSubtext">Stage 1 of 6</div>
+              <div class="prog-bar-track" style="margin-top:12px;"><div class="prog-bar-fill" id="overallBar" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div style="font-size:13px; font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px;">Next step</div>
+              <div id="nextStepCard" style="font-size:14px; color:var(--text-light); line-height:1.6;"></div>
+            </div>
+          </div>
+        </div>
+                <div id="progressUnlockContainer" style="display:none; margin-top:16px;">
+          <div class="card" style="border: 2px solid var(--gold); background: linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.02) 100%);">
+            <div class="card-body" style="text-align:center; padding:20px;">
+              <div style="font-size: 20px; margin-bottom: 8px;">🎓</div>
+              <div style="font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 4px;">Ready to start your theory lessons?</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">You've completed registration. Start learning the theory modules now!</div>
+              <button class="btn btn-gold btn-animated" onclick="unlockNextStage()" style="padding: 12px 32px; font-size: 15px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                <i class="fas fa-play-circle"></i> Start Theory Lessons
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MY CLASSES PAGE ═══ -->
+    <div class="page" id="page-classes">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">My Classes</div>
+        <div style="font-size:14px; color:var(--text-muted)">Scheduled classes for your enrolled course. Dates and times are in GMT.</div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+        <div class="search-input-wrap" style="flex:1; min-width:200px; position:relative;">
+          <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;"></i>
+          <input type="text" class="pf-input" id="classSearch" placeholder="Search classes…" oninput="filterMyClasses()" style="padding-left:36px;" />
+        </div>
+        <select id="classStatusFilter" onchange="filterMyClasses()" style="padding:10px 14px; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); font-size:13px; font-family:'Inter',sans-serif; outline:none; cursor:pointer; min-width:140px;">
+          <option value="">All statuses</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="ongoing">Ongoing</option>
+          <option value="completed">Completed</option>
+        </select>
+        <button class="btn-sm btn-sm-outline" onclick="resetClassFilters()" style="white-space:nowrap; padding:10px 16px;">
+          <i class="fas fa-undo"></i> Reset
+        </button>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table class="att-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Instructor</th>
+                <th>Date & Time</th>
+                <th>Duration</th>
+                <th>Mode</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentClassesTableBody">
+              <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">Loading classes…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RESOURCES PAGE ═══ -->
+    <div class="page" id="page-resources">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Resources</div>
+        <div style="font-size:14px; color:var(--text-muted)">Course materials and documents from your classes.</div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+        <div class="search-input-wrap" style="flex:1; min-width:200px; position:relative;">
+          <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;"></i>
+          <input type="text" class="pf-input" id="resourceSearch" placeholder="Search by title or instructor…" oninput="filterMyResources()" style="padding-left:36px;" />
+        </div>
+        <button class="btn-sm btn-sm-outline" onclick="resetResourceFilters()" style="white-space:nowrap; padding:10px 16px;">
+          <i class="fas fa-undo"></i> Reset
+        </button>
+      </div>
+
+      <!-- Course Cards Grid -->
+      <div class="video-grid" id="resourcesCourseGrid">
+        <div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading resources…</div>
+      </div>
+    </div>
+
+    <!-- ═══ RESOURCES MODAL ═══ -->
+    <div id="resourcesModal" class="modal-overlay">
+      <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+          <div class="modal-title" id="resourcesModalTitle">Class Resources</div>
+          <button class="modal-close" onclick="closeResourcesModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="resourcesModalBody">
+          <!-- Content injected -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeResourcesModal()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MY INSTRUCTORS PAGE ═══ -->
+    <div class="page" id="page-instructors">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">My Instructors</div>
+        <div style="font-size:14px; color:var(--text-muted)">All instructors who have taught you or are currently assigned.</div>
+      </div>
+      <div class="video-grid" id="instructorsGrid">
+        <div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading instructors...</div>
+      </div>
+    </div>
+
+        <!-- ═══ MY CERTIFICATES PAGE ═══ -->
+    <div class="page" id="page-certificates">
+      <div class="page-header">
+        <div class="page-title">My Certificates</div>
+        <div class="page-sub">View and download your completion certificates</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-certificate"></i> Your Certificates</div>
+        </div>
+        <div class="card-body">
+          <div id="studentCertificatesList" style="display:flex;flex-direction:column;gap:12px;">
+            <div style="text-align:center;color:var(--text-muted);padding:32px;">Loading your certificates…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW CERTIFICATE MODAL (Student) ═══ -->
+    <div class="modal-overlay" id="studentViewCertificateModal">
+      <div class="modal" style="max-width: 750px;">
+        <div class="modal-header">
+          <div class="modal-title">Certificate</div>
+          <button class="modal-close" onclick="closeStudentViewCertificateModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" style="text-align:center;">
+          <img id="studentViewCertificateImage" src="" style="max-width:100%; border-radius:12px; border:2px solid var(--gold);" />
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-gold btn-animated" onclick="downloadStudentCertificate()"><i class="fas fa-download"></i> Download</button>
+          <button class="btn btn-outline" onclick="closeStudentViewCertificateModal()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ NOTIFICATIONS PAGE ═══ -->
+    <div class="page" id="page-notifications">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Notifications</div>
+        <div style="font-size:14px; color:var(--text-muted)">Messages from your instructor and school updates.</div>
+      </div>
+      <div class="card">
+        <div class="notif-list" id="fullNotifList">
+          <div style="padding:32px; text-align:center; color:var(--text-muted); font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PROFILE PAGE ═══ -->
+    <div class="page" id="page-profile">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Profile</div>
+        <div style="font-size:14px; color:var(--text-muted)">Your personal details and account settings.</div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-avatar-card">
+           <div class="profile-avatar-big" id="profileAvatarBig" onclick="viewProfileImage()">
+              <span id="avatarInitials">--</span>
+              <div class="avatar-edit-badge" id="avatarEditBadge" onclick="event.stopPropagation(); document.getElementById('avatarUpload').click();"><i class="fas fa-camera"></i></div>
+            </div>
+          </div>
+          <input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="uploadAvatar(this)" />
+          <div class="profile-name" id="profileFullName">Loading…</div>
+          <div class="profile-email" id="profileEmail">—</div>
+          <div class="profile-course-badge" id="profileCourseBadge"><i class="fas fa-car"></i> —</div>
+          <div style="margin-top:20px; font-size:12px; color:var(--text-muted); line-height:1.6;" id="profileUploadHint">Tap the camera icon to upload your profile picture. You can only set it once.</div>
+        </div>
+        <div class="profile-form-card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-user-edit"></i> Personal details</div></div>
+          <div class="card-body">
+            <div class="profile-section-title">Basic info</div>
+            <div class="pf-row">
+              <div class="pf-group"><label>First name</label><input type="text" id="pfFirstName" class="pf-input" placeholder="Kwame" disabled /></div>
+              <div class="pf-group"><label>Last name</label><input type="text" id="pfLastName" class="pf-input" placeholder="Asante" disabled /></div>
+            </div>
+            <div class="pf-row">
+              <div class="pf-group"><label>Phone number</label><input type="tel" id="pfPhone" class="pf-input" placeholder="024 000 0000" disabled /></div>
+              <div class="pf-group"><label>Email address</label><input type="email" id="pfEmail" class="pf-input" disabled /></div>
+            </div>
+            <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+              <div class="profile-section-title">Identification</div>
+              <div class="pf-row">
+                <div class="pf-group"><label>GH Card Number</label><input type="text" id="pfGhCardNumber" class="pf-input" disabled /></div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
+                <i class="fas fa-info-circle"></i> Your Ghana Card number for DVLA registration
+              </div>
+            </div>
+            <div style="margin-top:20px;" id="profileSaveBtnContainer">
+              <button class="btn-sm btn-sm-gold" onclick="saveProfile()"><i class="fas fa-save"></i> Save changes</button>
+            </div>
+            <div style="margin-top:20px; font-size:12px; color:var(--gold); text-align:center; display:none;" id="profileLockedMsg">
+              <i class="fas fa-lock"></i> Profile editing has been disabled by the school administration
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+
+  <!-- ── QUIZ MODAL ── -->
+  <div class="modal-overlay" id="quizModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="quizModalTitle">Quiz</div>
+        <button class="modal-close" onclick="closeQuizModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="quizModalBody">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+    <!-- LIGHTBOX / IMAGE VIEWER -->
+  <div id="imageLightbox" style="position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; cursor:pointer;" onclick="closeLightbox()">
+    <button style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:1px solid var(--border); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--white); font-size:16px; cursor:pointer; z-index:1;" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+    <img id="lightboxImage" src="" style="max-width:90vw; max-height:90vh; border-radius:var(--radius-lg); border:2px solid var(--gold); cursor:default;" onclick="event.stopPropagation()" />
+  </div>
+
+   <!-- INSTRUCTOR INFO MODAL -->
+  <div id="instructorInfoModal" class="modal-overlay">
+    <div class="modal" style="max-width: 550px;">
+      <div class="modal-header">
+        <div class="modal-title" id="instructorModalTitle">Instructor Details</div>
+        <button class="modal-close" onclick="closeInstructorModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="instructorModalBody">
+        <!-- Content injected -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeInstructorModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+    <!-- CLASS DETAILS MODAL (for students) -->
+  <div id="classDetailsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 650px;">
+      <div class="modal-header">
+        <div class="modal-title" id="classDetailsModalTitle">Class Details</div>
+        <button class="modal-close" onclick="closeClassDetailsModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="classDetailsModalBody">
+        <!-- Content will be injected dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeClassDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc,
+    collection, query, where, orderBy, getDocs, addDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ── FIREBASE CONFIG ──
+  const firebaseConfig = {
+    apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
+    authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
+    projectId: "dekaydrivingschool-6933c",
+    storageBucket: "dekaydrivingschool-6933c.firebasestorage.app",
+    messagingSenderId: "1017266487810",
+    appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b",
+    measurementId: "G-QTR8V6LG85"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Cloudinary – replace with your own values later
+  const CLOUDINARY_CLOUD = "drs2xpwho";
+  const CLOUDINARY_PRESET = "student_avatars";
+
+  let currentUser = null;
+  let studentData = {};
+
+  // ══════════════════════════════════════
+  // AUTH GUARD
+  // ══════════════════════════════════════
+    // ── AUTH GUARD (loop‑proof) ──
+  let authGuardDone = false;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (authGuardDone) return;
+    authGuardDone = true;
+
+    try {
+      if (!user) {
+        window.location.href = "/login";
+        return;
+      }
+
+      console.log("🔍 Student guard: fetching user doc for", user.uid);
+      const snap = await getDoc(doc(db, "users", user.uid));
+      console.log("📄 User doc exists?", snap.exists(), "Role:", snap.data()?.role);
+
+      if (!snap.exists() || snap.data().role !== "student") {
+        console.warn("⛔ Not a student – signing out");
+        await signOut(auth);
+        window.location.href = "/login";
+        return;
+      }
+
+      // Block pending students
+      if (snap.data().status === "pending") {
+        console.warn("⛔ Pending approval – signing out");
+        await signOut(auth);
+        window.location.href = "/login";
+        return;
+      }
+
+      // ✅ Authorised
+      currentUser = user;
+      studentData = snap.data();
+      initDashboard();
+    } catch (err) {
+      console.error("❌ Student guard failed:", err);
+      await signOut(auth).catch(() => {});
+      window.location.href = "/login";
+    }
+  });
+
+  // ══════════════════════════════════════
+  // DASHBOARD INIT
+  // ══════════════════════════════════════
+  let studentPermissions = {};
+
+  async function loadStudentPermissions() {
+    try {
+      const snap = await getDoc(doc(db, "permissions", "student_permissions"));
+      if (snap.exists()) {
+        studentPermissions = snap.data();
+      }
+    } catch(e) {
+      studentPermissions = {};
+    }
+  }
+
+  async function initDashboard() {
+    const d = studentData;
+    await loadStudentPermissions();
+    const displayName = `${d.firstName || ''} ${d.lastName || ''}`.trim() || "Student";
+    const initials    = (d.firstName?.[0] || '') + (d.lastName?.[0] || '') || "S";
+
+    document.getElementById("studentNameGreet").textContent = d.firstName || "Student";
+    document.getElementById("avatarBtn").textContent        = initials;
+    document.getElementById("avatarInitials").textContent   = initials;
+    document.getElementById("dashDateLine").textContent     = `${new Date().toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'})} · ${d.courseType || 'Manual'} course`;
+
+    // Profile page
+    document.getElementById("profileFullName").textContent   = displayName;
+    document.getElementById("profileEmail").textContent      = currentUser.email;
+    document.getElementById("pfFirstName").value = d.firstName || '';
+    document.getElementById("pfLastName").value  = d.lastName  || '';
+    document.getElementById("pfPhone").value     = d.phone     || '';
+    document.getElementById("pfEmail").value     = currentUser.email;
+
+    // Check permission: can student edit their profile?
+    const canEditProfile = !studentPermissions.editProfile || studentPermissions.editProfile.enabled !== false;
+    document.getElementById("pfFirstName").disabled = !canEditProfile;
+    document.getElementById("pfLastName").disabled  = !canEditProfile;
+    document.getElementById("pfPhone").disabled     = !canEditProfile;
+
+    document.getElementById("pfGhCardNumber").value = d.ghCardNumber || '—';
+
+    // Show or hide save button based on Edit Profile permission
+    const saveBtnContainer = document.getElementById("profileSaveBtnContainer");
+    const lockedMsg = document.getElementById("profileLockedMsg");
+    if (canEditProfile) {
+      if (saveBtnContainer) saveBtnContainer.style.display = "block";
+      if (lockedMsg) lockedMsg.style.display = "none";
+    } else {
+      if (saveBtnContainer) saveBtnContainer.style.display = "none";
+      if (lockedMsg) lockedMsg.style.display = "block";
+    }
+    document.getElementById("profileCourseBadge").innerHTML = `<i class="fas fa-car"></i> ${d.courseType || 'Manual'}`;
+
+    window.currentAvatarUrl = d.avatarUrl || null;
+    if (d.avatarUrl) {
+      document.getElementById("profileAvatarBig").style.backgroundImage = `url(${d.avatarUrl})`;
+      document.getElementById("profileAvatarBig").style.backgroundSize  = "cover";
+      document.getElementById("avatarInitials").style.display = "none";
+      // Hide the camera badge — profile photo is locked once uploaded
+      const badge = document.getElementById("avatarEditBadge");
+      if (badge) badge.style.display = "none";
+      // Update hint text
+      const hint = document.getElementById("profileUploadHint");
+      if (hint) hint.textContent = "Your profile picture has been set and is now locked.";
+      // Update topbar avatar button with photo
+      const avatarBtn = document.getElementById("avatarBtn");
+      avatarBtn.style.backgroundImage = `url(${d.avatarUrl})`;
+      avatarBtn.style.backgroundSize = "cover";
+      avatarBtn.style.backgroundPosition = "center";
+      avatarBtn.textContent = "";
+      // Also disable the file input (extra safety)
+      const uploadInput = document.getElementById("avatarUpload");
+      if (uploadInput) uploadInput.disabled = true;
+    }
+
+    const stage = d.trainingStage || 1;
+    document.getElementById("dashStage").textContent = stage;
+
+    await loadMyClasses();              // Load classes FIRST so class titles are available
+    const attendanceRecords = await loadAttendance(stage);   // now attendance can show class titles
+    loadLessons();                // these can still run in parallel
+    loadQuizzes();
+    loadNotifications();
+    buildPipelines(stage, d);
+    renderUpcomingClasses();          // show upcoming classes on dashboard
+    checkTodaySession(attendanceRecords);   // pass the records
+    checkAndShowUnlockButton();       // Check if stage unlock button should be shown
+  }
+
+  // ══════════════════════════════════════
+  // LOAD ATTENDANCE
+  // ══════════════════════════════════════
+  async function loadAttendance(stage) {
+    try {
+      const q = query(collection(db, "attendance"),
+        where("studentId", "==", currentUser.uid)
+      );
+      // We'll sort after fetching (avoids needing a composite index)
+      const snaps = await getDocs(q);
+      const records = snaps.docs
+  .map(d => ({ id: d.id, ...d.data() }))
+  .sort((a, b) => {
+    // Sort by date descending (newest first)
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return a.date < b.date ? 1 : -1;
+  });
+      const present = records.filter(r => r.status === "present").length;
+      const absent  = records.filter(r => r.status === "absent").length;
+      const total   = records.length;
+      const rate    = total > 0 ? Math.round((present / total) * 100) : 0;
+
+      document.getElementById("dashAttendance").textContent = `${rate}%`;
+      document.getElementById("dashAttSub").textContent     = `${present}/${total} sessions`;
+      document.getElementById("attPresent").textContent = present;
+      document.getElementById("attAbsent").textContent  = absent;
+      document.getElementById("attRate").textContent    = `${rate}%`;
+
+            const tbody = document.getElementById("attTableBody");
+      tbody.innerHTML = records.length === 0
+        ? `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No sessions recorded yet. </div>`
+        : records.map(r => {
+            // Use timestamp field if available (exact check-in time), fall back to date field
+            let dateTimeStr = '';
+            if (r.timestamp?.toDate) {
+              const d = r.timestamp.toDate();
+              const dateStr = d.toLocaleDateString('en-GB');
+              let hours = d.getHours();
+              const minutes = d.getMinutes().toString().padStart(2, '0');
+              const ampm = hours >= 12 ? 'PM' : 'AM';
+              hours = hours % 12 || 12;
+              const timeStr = `${hours}:${minutes} ${ampm}`;
+              dateTimeStr = `${dateStr} at ${timeStr}`;
+            } else if (r.date) {
+              // Fall back to date field if no timestamp (for older records)
+              const d = new Date(r.date);
+              const dateStr = d.toLocaleDateString('en-GB');
+              let hours = d.getHours();
+              const minutes = d.getMinutes().toString().padStart(2, '0');
+              const ampm = hours >= 12 ? 'PM' : 'AM';
+              hours = hours % 12 || 12;
+              const timeStr = `${hours}:${minutes} ${ampm}`;
+              dateTimeStr = `${dateStr} at ${timeStr}`;
+            } else {
+              dateTimeStr = '—';
+            }
+            
+            const pill = `<span class="att-pill ${r.status}">${r.status}</span>`;
+            // Get class title from classId if available
+            let classTitle = '—';
+            if (r.classId && allMyClasses && allMyClasses.length > 0) {
+              const foundClass = allMyClasses.find(c => c.id === r.classId);
+              if (foundClass) classTitle = foundClass.title || '—';
+            }
+            return `<tr>
+              <td style="font-size:12px;">${dateTimeStr}</td>
+              <td style="font-size:12px;">${studentData.courseType || '—'}</td>
+              <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
+              <td style="font-size:12px;">${r.instructor || '—'}</td>
+              <td style="font-size:12px;">Stage ${r.stage || '—'}</td>
+              <td style="font-size:12px;">${pill}</td>
+            </tr>`;
+          }).join('');
+
+      return records;   // ← NEW: return the records array
+    } catch(e) { 
+      console.error(e);
+      return [];        // ← NEW: return empty array on error
+    }
+  }
+
+  // ══════════════════════════════════════
+  // LOAD LESSONS
+  // ══════════════════════════════════════
+  async function loadLessons() {
+    try {
+      const snaps = await getDocs(collection(db, "lessons"));
+      const lessons = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      const progressSnap = await getDoc(doc(db, "lessonProgress", currentUser.uid));
+      const progress = progressSnap.exists() ? progressSnap.data() : {};
+
+      const watched  = lessons.filter(l => (progress[l.id] || 0) >= 80).length;
+      const total    = lessons.length || 5;
+      const pct      = total > 0 ? Math.round((watched / total) * 100) : 0;
+
+      document.getElementById("dashLessons").textContent = `${watched}/${total}`;
+      document.getElementById("lessonCompletePct").textContent = `${pct}%`;
+      document.getElementById("lessonProgressBar").style.width  = `${pct}%`;
+
+      const grid = document.getElementById("videoGrid");
+      if (!lessons.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">No lessons published yet. Check back soon.</div>`;
+        return;
+      }
+
+      grid.innerHTML = lessons.map(l => {
+        const pctWatched = progress[l.id] || 0;
+        const done = pctWatched >= 80;
+        return `
+          <div class="video-item" onclick="playLesson('${l.id}','${l.videoUrl}','${l.title}')">
+            <div class="video-thumb">
+              <img src="${l.thumbnailUrl || ''}" alt="${l.title}" onerror="this.style.display='none'" />
+              <div class="video-play-overlay">
+                <div class="play-circle" style="${done ? 'background:var(--success)' : ''}">
+                  <i class="fas ${done ? 'fa-check' : 'fa-play'}"></i>
+                </div>
+              </div>
+            </div>
+            <div class="video-progress-strip"><div class="fill" style="width:${pctWatched}%"></div></div>
+            <div class="video-info">
+              <span class="video-tag">${l.category || 'Theory'}</span>
+              <div class="video-name">${l.title}</div>
+              <div class="video-meta-row">
+                <span><i class="fas fa-clock"></i> ${l.duration || '—'}</span>
+                <span><i class="fas fa-eye"></i> ${pctWatched}% watched</span>
+                ${done ? '<span style="color:var(--success)"><i class="fas fa-check-circle"></i> Complete</span>' : ''}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    } catch(e) { console.error(e); }
+  }
+
+  // ══════════════════════════════════════
+  // LOAD QUIZZES
+  // ══════════════════════════════════════
+  async function loadQuizzes() {
+    try {
+      const snaps  = await getDocs(collection(db, "quizzes"));
+      const quizzes = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      const resultsSnap = await getDoc(doc(db, "quizResults", currentUser.uid));
+      const results = resultsSnap.exists() ? resultsSnap.data() : {};
+
+      const pending = quizzes.filter(q => !results[q.id]).length;
+      document.getElementById("quizBadge").textContent = pending || '';
+      document.getElementById("quizBadge").style.display = pending ? '' : 'none';
+
+      let avgSum = 0, avgCount = 0;
+      Object.values(results).forEach(s => { avgSum += s; avgCount++; });
+      document.getElementById("dashQuizAvg").textContent = avgCount > 0 ? `${Math.round(avgSum/avgCount)}%` : '—';
+
+      const list = document.getElementById("quizList");
+      if (!quizzes.length) {
+        list.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px;">No quizzes available yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = quizzes.map(q => {
+        const score = results[q.id];
+        const done  = score !== undefined;
+        const pass  = score >= 60;
+        return `<div class="quiz-row">
+          <div class="quiz-row-left">
+            <div class="quiz-icon"><i class="fas fa-clipboard-question"></i></div>
+            <div>
+              <div class="quiz-name">${q.title}</div>
+              <div class="quiz-desc">${q.questionCount || '?'} questions · Pass mark 60%</div>
+            </div>
+          </div>
+          ${done
+            ? `<div style="text-align:right;">
+                 <div class="quiz-score" style="color:${pass ? 'var(--success)' : 'var(--error)'}">${score}%</div>
+                 <div class="quiz-score-label">${pass ? 'Passed ✓' : 'Try again'}</div>
+                 <button class="btn-sm btn-sm-outline" style="margin-top:6px" onclick="openQuiz('${q.id}')">Retake</button>
+               </div>`
+            : `<button class="btn-sm btn-sm-gold" onclick="openQuiz('${q.id}')"><i class="fas fa-play"></i> Start</button>`
+          }
+        </div>`;
+      }).join('');
+
+      window._quizzesData = quizzes;
+      window._quizResults = results;
+    } catch(e) { console.error(e); }
+  }
+
+  // ══════════════════════════════════════
+  // LOAD NOTIFICATIONS
+  // ══════════════════════════════════════
+  async function loadNotifications() {
+    try {
+      const q = query(
+        collection(db, "notifications"),
+        where("studentId", "==", currentUser.uid),
+        orderBy("createdAt", "desc")
+      );
+      const snaps = await getDocs(q);
+      const notifs = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      const unread  = notifs.filter(n => !n.read).length;
+
+      document.getElementById("notifBadge").textContent = unread || '';
+      document.getElementById("notifBadge").style.display = unread ? '' : 'none';
+      document.getElementById("notifDot").style.display   = unread ? '' : 'none';
+
+      const renderNotif = (n) => {
+        const date = n.createdAt?.toDate();
+        let timeStr = '';
+        if (date) {
+          const formattedDate = date.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+          let hours = date.getHours();
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12 || 12;
+          const formattedTime = `${hours}:${minutes} ${ampm}`;
+          timeStr = `${formattedDate} at ${formattedTime}`;
+        }
+        const iconClass = n.type === 'system' ? 'system' : '';
+        return `<div class="notif-item ${!n.read ? 'notif-unread' : ''}">
+          <div class="notif-dot-outer ${iconClass}"><i class="fas ${n.icon || 'fa-bell'}"></i></div>
+          <div><div class="notif-text">${n.message}</div><div class="notif-time">${timeStr}</div></div>
+        </div>`;
+      };
+
+      const preview = notifs.slice(0, 4).map(renderNotif).join('') || `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications yet.</div>`;
+      document.getElementById("dashNotifList").innerHTML = preview;
+      document.getElementById("fullNotifList").innerHTML = notifs.length
+        ? notifs.map(renderNotif).join('')
+        : `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications yet.</div>`;
+    } catch(e) { console.error(e); }
+  }
+
+  // ══════════════════════════════════════
+  // BUILD PIPELINES
+  // ══════════════════════════════════════
+    function buildPipelines(stage, d) {
+    const stages = [
+      { label: "Registration", desc: "Enrolled and profile set up" },
+      { label: "Theory lessons", desc: "Watch all video modules" },
+      { label: "Theory test", desc: "Pass the online quiz (60%+)" },
+      { label: "Practical lessons", desc: "Behind-the-wheel training" },
+      { label: "Assessment", desc: "Mock DVLA test (70%+)" },
+      { label: "DVLA Ready", desc: "Ready for official test" }
+    ];
+
+    // DVLA Ready = 95% completion
+    const dvlaReady = stage >= 6;
+
+    const miniHtml = stages.map((s, i) => {
+      const st = i + 1;
+      let state = 'pending';
+      let label = 'Pending';
+      
+      if (st < stage) {
+        state = 'done';
+        label = '✓ Done';
+      } else if (st === stage) {
+        state = 'current';
+        label = '▶ In progress';
+      } else if (st === 6 && dvlaReady) {
+        state = 'done';
+        label = '✓ DVLA Ready 🏆';
+      }
+      
+      const tagClass = state === 'done' ? 'done-c' : state === 'current' ? 'current-c' : 'pending-c';
+      return `<div class="pipeline-step-item">
+        <div class="ps-dot-wrap"><div class="ps-dot ${state}">${state === 'done' ? '<i class="fas fa-check"></i>' : st}</div></div>
+        <div class="ps-info">
+          <div class="ps-title">${s.label}</div>
+          <span class="ps-tag tag-${tagClass}">${label}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    const fullHtml = stages.map((s, i) => {
+      const st = i + 1;
+      let state = 'pending';
+      let label = 'Locked';
+      
+      if (st < stage) {
+        state = 'done';
+        label = '✓ Complete';
+      } else if (st === stage) {
+        state = 'current';
+        label = '▶ Active';
+      } else if (st === 6 && dvlaReady) {
+        state = 'done';
+        label = '✓ DVLA Ready 🏆';
+      }
+      
+      const tagClass = state === 'done' ? 'done-c' : state === 'current' ? 'current-c' : 'pending-c';
+      return `<div class="pipeline-step-item">
+        <div class="ps-dot-wrap"><div class="ps-dot ${state}">${state === 'done' ? '<i class="fas fa-check"></i>' : st}</div></div>
+        <div class="ps-info">
+          <div class="ps-title">${s.label}</div>
+          <div class="ps-desc">${s.desc}</div>
+          <span class="ps-tag tag-${tagClass}">${label}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById("miniPipeline").innerHTML = miniHtml;
+    document.getElementById("fullPipeline").innerHTML = fullHtml;
+
+    // DVLA Ready = 95% completion
+    const pct = dvlaReady ? 100 : Math.round(((stage - 1) / 6) * 100);
+    document.getElementById("overallPct").textContent   = dvlaReady ? '95%' : `${pct}%`;
+    document.getElementById("overallBar").style.width   = dvlaReady ? '95%' : `${pct}%`;
+    document.getElementById("overallSubtext").textContent = dvlaReady ? 'DVLA Ready 🏆' : `Stage ${stage} of 6`;
+    document.getElementById("nextStepCard").innerHTML   = dvlaReady 
+      ? `<strong style="color:var(--gold)">🎉 DVLA Ready!</strong><br/>You are ready for the official DVLA test.`
+      : `<strong style="color:var(--gold)">${stages[stage-1]?.label || 'DVLA Ready'}</strong><br/>${stages[stage-1]?.desc || 'All stages complete!'}`;
+  }
+
+  function renderUpcomingClasses() {
+    const container = document.getElementById("dashUpcomingClasses");
+    if (!container) return;
+
+    if (!allMyClasses || allMyClasses.length === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No classes scheduled yet.</div>';
+      return;
+    }
+
+    const now = new Date();
+    // Show upcoming and ongoing classes (not completed)
+    const upcoming = allMyClasses
+      .filter(cls => {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+        return end > now; // class hasn't ended yet
+      })
+      .sort((a, b) => {
+        const da = new Date(`${a.date}T${a.time}`);
+        const db2 = new Date(`${b.date}T${b.time}`);
+        return da - db2; // closest first
+      })
+      .slice(0, 5); // Show max 5
+
+    if (upcoming.length === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No upcoming classes.</div>';
+      return;
+    }
+
+    container.innerHTML = upcoming.map(cls => {
+      const start = new Date(`${cls.date}T${cls.time}`);
+      const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+      const timeStr = formatTime(cls.time);
+      const status = computeClassStatus(cls);
+      let statusBadge = '';
+      if (status === 'ongoing') {
+        statusBadge = '<span class="att-pill present" style="font-size:10px;">Live</span>';
+      } else if (status === 'upcoming') {
+        const isToday = start.toDateString() === now.toDateString();
+        statusBadge = isToday ? '<span class="att-pill excused" style="font-size:10px;">Today</span>' : '';
+      }
+      const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
+      return `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:12px;flex-shrink:0;">
+            <i class="fas ${modeIcon}"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(cls.title)}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeStr}</div>
+          </div>
+          ${statusBadge}
+        </div>
+      `;
+    }).join('');
+  }
+
+    function checkTodaySession(records) {
+    const today = new Date();
+    const todayStr = today.getFullYear() + '-' +
+      String(today.getMonth() + 1).padStart(2, '0') + '-' +
+      String(today.getDate()).padStart(2, '0');
+
+    // Check if already marked attendance — but only for classes that have already started
+    // (ignore future-dated attendance records from pre-marking or admin entries)
+    const now = new Date();
+    const alreadyMarked = records.some(r => {
+      if (r.status !== 'present') return false;
+
+      // Resolve the attendance record date string
+      let rDate = r.date;
+      if (r.date?.toDate) {
+        rDate = r.date.toDate().toISOString().split('T')[0];
+      } else if (r.date?.seconds) {
+        rDate = new Date(r.date.seconds * 1000).toISOString().split('T')[0];
+      } else if (typeof r.date === 'string') {
+        rDate = r.date.substring(0, 10);
+      }
+
+      if (rDate !== todayStr) return false;
+
+      // If this record has a classId, verify it matches the SPECIFIC class we're checking in for
+      if (r.classId && allMyClasses && allMyClasses.length > 0) {
+        const matchedClass = allMyClasses.find(c => c.id === r.classId);
+        if (matchedClass) {
+          const classStart = new Date(`${matchedClass.date}T${matchedClass.time}`);
+          const classDateStr = matchedClass.date; // YYYY-MM-DD
+          // ✅ Must be TODAY's date AND class must have already started (date+time check)
+          return classDateStr === todayStr && classStart <= now;
+        }
+      }
+
+      // No classId — only mark as "done" if the attendance timestamp itself is in the past
+      // AND it was recorded after a class actually started (use timestamp, not just date)
+      if (r.timestamp?.toDate) {
+        return r.timestamp.toDate() <= now;
+      }
+      return true;
+    });
+
+    // Find the BEST class to check in for:
+    // Priority 1: Currently ongoing class (now between start and end)
+    // Priority 2: Upcoming class (starts in the future)
+    // Priority 3: Recently ended class (ended within 48 hours, but only if no ongoing/upcoming)
+    let eligibleClass = null;
+    let ongoingClass = null;
+    let upcomingClass = null;
+    let recentClass = null;
+    
+    if (allMyClasses && allMyClasses.length > 0) {
+      const now = new Date();
+      const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+      
+      // Sort by start time ascending (earliest first) for proper priority
+      const sortedClasses = [...allMyClasses].sort((a, b) => {
+        const da = new Date(`${a.date}T${a.time}`);
+        const db = new Date(`${b.date}T${b.time}`);
+        return da - db;
+      });
+      
+      // Find the best class based on priority:
+      // 1. Ongoing class (now between start and end)
+      // 2. Most recent completed class (ended within 48 hours, highest end time)
+      // 3. Upcoming class (earliest start time)
+      for (const cls of sortedClasses) {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+        const timeSinceEnd = now - end;
+        
+        if (now >= start && now <= end) {
+          // Class is currently ongoing - best choice
+          ongoingClass = cls;
+          break;
+        } else if (timeSinceEnd > 0 && timeSinceEnd < FORTY_EIGHT_HOURS) {
+          // Recently ended class - keep the one with the most recent end time
+          if (!recentClass || end > new Date(`${recentClass.date}T${recentClass.time}`).getTime() + (recentClass.durationMinutes || 60) * 60000) {
+            recentClass = cls;
+          }
+        }
+      }
+      
+      // For upcoming classes, find the earliest one (same day preferred)
+      if (!ongoingClass && !recentClass) {
+        for (const cls of sortedClasses) {
+          const start = new Date(`${cls.date}T${cls.time}`);
+          if (now < start) {
+            if (!upcomingClass || start < new Date(`${upcomingClass.date}T${upcomingClass.time}`)) {
+              upcomingClass = cls;
+            }
+          }
+        }
+      }
+      
+      // Select the best available class (priority: ongoing → most recent completed → upcoming)
+      eligibleClass = ongoingClass || recentClass || upcomingClass;
+      
+      // Prefer same-day upcoming over future-day upcoming
+      if (upcomingClass) {
+        const upcomingDate = upcomingClass.date; // YYYY-MM-DD
+        if (upcomingDate !== todayStr) {
+          // It's a future-day class — only use it if there's no same-day recent class
+          upcomingClass = recentClass ? null : upcomingClass;
+        }
+      }
+      // Select the best available class
+      eligibleClass = ongoingClass || upcomingClass || recentClass;
+    }
+
+    const card = document.getElementById("checkinCard");
+    const checkinInfo = card?.querySelector('.checkin-card-info p');
+    const btn = document.getElementById("checkinBtn");
+
+    // "Already marked" only applies if the attendance record is specifically for THIS eligible class
+    const eligibleClassIsToday = eligibleClass && eligibleClass.date === todayStr;
+    const markedForThisClass = eligibleClass && records.some(r => {
+      if (r.status !== 'present') return false;
+      if (r.classId) return r.classId === eligibleClass.id;
+      // Fallback: no classId, check date match + class must have started
+      let rDate = r.date;
+      if (r.date?.toDate) rDate = r.date.toDate().toISOString().split('T')[0];
+      else if (r.date?.seconds) rDate = new Date(r.date.seconds * 1000).toISOString().split('T')[0];
+      else if (typeof r.date === 'string') rDate = r.date.substring(0, 10);
+      const classStart = new Date(`${eligibleClass.date}T${eligibleClass.time}`);
+      return rDate === eligibleClass.date && classStart <= now;
+    });
+    if (markedForThisClass && eligibleClassIsToday) {
+      card.style.display = "flex";
+      card.style.opacity = "0.6";
+      card.style.background = "rgba(76,175,80,0.1)";
+      card.style.border = "1px solid var(--success)";
+
+      document.querySelector('.checkin-card-info h3').innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);margin-right:6px"></i> Attendance marked`;
+      if (checkinInfo && eligibleClass) {
+        const timeLabel = formatTime(eligibleClass.time);
+        checkinInfo.innerHTML = `<strong style="color:var(--success)">${escapeHtml(eligibleClass.title || 'Class')}</strong> (${timeLabel}) — you've already checked in today.`;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Attendance marked';
+        btn.style.background = 'rgba(76,175,80,0.15)';
+        btn.style.color = 'var(--success)';
+        btn.style.cursor = 'default';
+      }
+      return;
+    }
+
+    // Only show the card if there's an eligible class AND not already marked for THIS specific class
+    if (eligibleClass && (!markedForThisClass || !eligibleClassIsToday)) {
+      card.style.display = "flex";
+      card.style.opacity = "1";
+      card.style.background = "linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%)";
+      card.style.border = "1px solid var(--gold)";
+
+      const classStatus = computeClassStatus(eligibleClass);
+      let headerText = 'Session in progress';
+      let detailText = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> — tap to mark your attendance.`;
+
+      const timeLabel = formatTime(eligibleClass.time);
+      if (classStatus === 'ongoing') {
+        headerText = 'Session in progress';
+        detailText = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> (${timeLabel}) is in progress — tap to mark your attendance.`;
+      } else if (classStatus === 'upcoming') {
+        headerText = 'Upcoming Session';
+        detailText = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> starts at ${timeLabel} — you'll be able to mark attendance when it begins.`;
+        // For upcoming classes, disable the button until the class starts
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-clock"></i> Not yet started';
+          btn.style.background = 'rgba(139,154,176,0.15)';
+          btn.style.color = 'var(--text-muted)';
+          btn.style.border = '1px solid var(--border)';
+          btn.style.cursor = 'not-allowed';
+        }
+      } else if (classStatus === 'completed') {
+        headerText = 'Mark attendance';
+        detailText = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> (${timeLabel}) has ended — you can still mark your attendance (within 48 hours).`;
+      }
+
+      document.querySelector('.checkin-card-info h3').innerHTML = `<i class="fas fa-map-pin" style="color:var(--gold);margin-right:6px"></i> ${headerText}`;
+      if (checkinInfo) checkinInfo.innerHTML = detailText;
+
+      // Reset button to active state (only if not upcoming)
+      if (btn && classStatus !== 'upcoming') {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
+        btn.style.background = 'var(--gold)';
+        btn.style.color = 'var(--navy)';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+        btn.style.opacity = "1";
+      }
+    } else {
+      // No eligible class — hide the card
+      card.style.display = "none";
+    }
+  }
+  // ══════════════════════════════════════
+  // ATTENDANCE CHECK‑IN
+  // ══════════════════════════════════════
+  window.markAttendance = async function() {
+    const btn = document.getElementById("checkinBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Marking…';
+    try {
+      const now = new Date();
+      const today = now;
+      const dateStr = today.getFullYear() + '-' +
+        String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
+
+      // Find the eligible class to get its details (same logic as checkTodaySession)
+      let sessionType = "Class";
+      let instructor = studentData.instructor || "—";
+      let classId = null;
+      let className = '';
+
+      if (allMyClasses && allMyClasses.length > 0) {
+        const now = new Date();
+        const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+
+        // Use same priority logic as checkTodaySession: ongoing → same-day upcoming → recent
+        const todayForMark = now.getFullYear() + '-' +
+          String(now.getMonth() + 1).padStart(2, '0') + '-' +
+          String(now.getDate()).padStart(2, '0');
+
+        const sortedClasses = [...allMyClasses].sort((a, b) => {
+          const da = new Date(`${a.date}T${a.time}`);
+          const db = new Date(`${b.date}T${b.time}`);
+          return da - db; // ascending — earliest first
+        });
+
+        let ongoingForMark = null, recentForMark = null;
+        for (const cls of sortedClasses) {
+          const start = new Date(`${cls.date}T${cls.time}`);
+          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+          const timeSinceEnd = now - end;
+          if (now >= start && now <= end) { ongoingForMark = cls; break; }
+          else if (timeSinceEnd > 0 && timeSinceEnd < 48 * 60 * 60 * 1000 && cls.date === todayForMark) {
+            if (!recentForMark) recentForMark = cls;
+          }
+        }
+        const eligibleClass = ongoingForMark || recentForMark;
+
+        if (eligibleClass) {
+          sessionType = eligibleClass.mode === 'online' ? 'Online Class' : 'In-person Class';
+          instructor = eligibleClass.instructorName || instructor;
+          classId = eligibleClass.id;
+          className = eligibleClass.title || 'Class';
+        }
+      }
+
+      await addDoc(collection(db, "attendance"), {
+        studentId:   currentUser.uid,
+        date:        dateStr,
+        timestamp:   serverTimestamp(),
+        status:      "present",
+        sessionType: sessionType,
+        instructor:  instructor,
+        stage:       studentData.trainingStage || 1,
+        classId:     classId || null
+      });
+
+      // Update the card to show "marked" state (faded and disabled)
+      const card = document.getElementById("checkinCard");
+      const cardBtn = document.getElementById("checkinBtn");
+      const checkinInfo = document.querySelector('.checkin-card-info p');
+      
+      if (card) {
+        card.style.opacity = "0.6";
+        card.style.background = "rgba(76,175,80,0.1)";
+        card.style.border = "1px solid var(--success)";
+      }
+      
+      if (cardBtn) {
+        cardBtn.disabled = true;
+        cardBtn.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i> Attendance marked';
+        cardBtn.style.background = 'rgba(76,175,80,0.15)';
+        cardBtn.style.color = 'var(--success)';
+        cardBtn.style.border = '1px solid var(--success)';
+        cardBtn.style.cursor = 'default';
+      }
+      
+      document.querySelector('.checkin-card-info h3').innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);margin-right:6px"></i> Attendance marked`;
+      if (checkinInfo) {
+        const classObj = allMyClasses.find(c => c.id === classId);
+        const timeLabel3 = classObj ? formatTime(classObj.time) : '';
+        checkinInfo.innerHTML = `<strong style="color:var(--success)">${escapeHtml(className || 'Class')}</strong>${timeLabel3 ? ` (${timeLabel3})` : ''} — you've already checked in today.`;
+      }
+
+      showToast("Attendance marked ✓", "success");
+      loadAttendance(studentData.trainingStage || 1);
+    } catch(e) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
+      btn.style.background = 'var(--gold)';
+      btn.style.color = 'var(--navy)';
+      btn.style.border = 'none';
+      showToast("Could not mark attendance. Try again.", "error");
+    }
+  };
+
+  // ══════════════════════════════════════
+  // PLAY LESSON
+  // ══════════════════════════════════════
+  window.playLesson = function(id, url, title) {
+    window.open(url, "_blank");
+    updateDoc(doc(db, "lessonProgress", currentUser.uid), { [id]: 100 }).catch(() =>
+      setDoc(doc(db, "lessonProgress", currentUser.uid), { [id]: 100 }, { merge: true })
+    );
+  };
+
+  // ══════════════════════════════════════
+  // QUIZZES
+  // ══════════════════════════════════════
+  window.openQuiz = function(quizId) {
+    const quiz = window._quizzesData?.find(q => q.id === quizId);
+    if (!quiz || !quiz.questions?.length) { showToast("Quiz not available yet.", "error"); return; }
+    window._activeQuiz = { quiz, currentQ: 0, answers: [], startTime: Date.now() };
+    document.getElementById("quizModalTitle").textContent = quiz.title;
+    renderQuizQuestion();
+    document.getElementById("quizModal").classList.add("open");
+  };
+
+  window.closeQuizModal = function() {
+    document.getElementById("quizModal").classList.remove("open");
+  };
+
+  function renderQuizQuestion() {
+    const { quiz, currentQ, answers } = window._activeQuiz;
+    const q = quiz.questions[currentQ];
+    const total = quiz.questions.length;
+    const body = document.getElementById("quizModalBody");
+
+    body.innerHTML = `
+      <div class="prog-bar-wrap" style="margin-bottom:20px">
+        <div class="prog-bar-label"><span>Question ${currentQ + 1} of ${total}</span><span>${Math.round(((currentQ)/total)*100)}%</span></div>
+        <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${(currentQ/total)*100}%"></div></div>
+      </div>
+      <div class="quiz-q">
+        <div class="quiz-q-text">${currentQ + 1}. ${q.question}</div>
+        <div class="quiz-options">
+          ${q.options.map((opt, i) => `
+            <div class="quiz-option" onclick="selectOption(${i})" id="opt-${i}">
+              <div class="option-circle">${String.fromCharCode(65+i)}</div>
+              ${opt}
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="quiz-footer">
+        <div class="quiz-progress-text">${total - currentQ - 1} questions remaining</div>
+        <button class="btn-sm btn-sm-gold" id="nextQBtn" onclick="nextQuestion()" disabled>
+          ${currentQ === total - 1 ? 'Finish quiz' : 'Next'} <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>`;
+  }
+
+  window.selectOption = function(idx) {
+    document.querySelectorAll(".quiz-option").forEach(o => o.classList.remove("selected"));
+    document.getElementById(`opt-${idx}`).classList.add("selected");
+    window._activeQuiz.selectedOption = idx;
+    document.getElementById("nextQBtn").disabled = false;
+  };
+
+  window.nextQuestion = async function() {
+    const aq = window._activeQuiz;
+    const q  = aq.quiz.questions[aq.currentQ];
+    aq.answers.push(aq.selectedOption);
+    aq.selectedOption = undefined;
+
+    aq.currentQ++;
+    if (aq.currentQ < aq.quiz.questions.length) {
+      renderQuizQuestion();
+    } else {
+      let correct = 0;
+      aq.answers.forEach((ans, i) => {
+        if (ans === aq.quiz.questions[i].correctIndex) correct++;
+      });
+      const score = Math.round((correct / aq.quiz.questions.length) * 100);
+      const pass  = score >= 60;
+
+      try {
+        await setDoc(doc(db, "quizResults", currentUser.uid), { [aq.quiz.id]: score }, { merge: true });
+      } catch(e) {}
+
+      document.getElementById("quizModalBody").innerHTML = `
+        <div class="quiz-result">
+          <div class="quiz-result-score" style="color:${pass ? 'var(--success)' : 'var(--error)'}">${score}%</div>
+          <div class="quiz-result-label">${correct} / ${aq.quiz.questions.length} correct</div>
+          <div class="quiz-result-msg" style="background:${pass ? 'rgba(76,175,80,0.1)' : 'rgba(239,83,80,0.1)'}; color:${pass ? 'var(--success)' : 'var(--error)'}">
+            ${pass ? '✓ Passed! You can now continue to the next module.' : '✗ Below 60%. Review the lessons and try again.'}
+          </div>
+          <button class="btn-sm btn-sm-gold" style="margin-top:20px" onclick="closeQuizModal(); loadQuizzes()">
+            <i class="fas fa-check"></i> Done
+          </button>
+        </div>`;
+
+      loadQuizzes();
+      showToast(pass ? `Quiz passed: ${score}%! 🎉` : `Score: ${score}%. Try again after reviewing.`, pass ? "success" : "error");
+    }
+  };
+
+  // ══════════════════════════════════════
+  // PROFILE
+  // ══════════════════════════════════════
+  window.saveProfile = async function() {
+    const first = document.getElementById("pfFirstName").value.trim();
+    const last  = document.getElementById("pfLastName").value.trim();
+    const phone = document.getElementById("pfPhone").value.trim();
+    
+    // Grab the button and show loading state
+    const btn = document.getElementById("profileSaveBtn");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+    }
+    
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), { firstName: first, lastName: last, phone });
+      showToast("Profile saved ✓", "success");
+      document.getElementById("studentNameGreet").textContent = first || "Student";
+    } catch(e) { 
+      showToast("Could not save. Try again.", "error"); 
+    } finally {
+      // Restore button
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Save changes';
+      }
+    }
+  };
+
+  window.uploadAvatar = async function(input) {
+    const file = input.files[0]; if (!file) return;
+    showToast("Uploading photo…");
+    const fd = new FormData();
+    fd.append("file",   file);
+    fd.append("upload_preset", CLOUDINARY_PRESET);
+    try {
+      const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
+      const data = await res.json();
+      const url  = data.secure_url;
+      await updateDoc(doc(db, "users", currentUser.uid), { avatarUrl: url });
+      window.currentAvatarUrl = url;
+      document.getElementById("profileAvatarBig").style.backgroundImage = `url(${url})`;
+      document.getElementById("profileAvatarBig").style.backgroundSize  = "cover";
+      document.getElementById("avatarInitials").style.display = "none";
+      // Hide the camera badge — photo is now locked
+      const badge = document.getElementById("avatarEditBadge");
+      if (badge) badge.style.display = "none";
+      // Disable the file input
+      const uploadInput = document.getElementById("avatarUpload");
+      if (uploadInput) uploadInput.disabled = true;
+      // Update hint text
+      const hint = document.getElementById("profileUploadHint");
+      if (hint) hint.textContent = "Your profile picture has been set and is now locked.";
+      // Also update topbar avatar
+      const avatarBtn = document.getElementById("avatarBtn");
+      avatarBtn.style.backgroundImage = `url(${url})`;
+      avatarBtn.style.backgroundSize = "cover";
+      avatarBtn.style.backgroundPosition = "center";
+      avatarBtn.textContent = "";
+      showToast("Photo updated ✓", "success");
+    } catch(e) { showToast("Upload failed. Try again.", "error"); }
+  };
+
+  // ══════════════════════════════════════
+  // LOGOUT
+  // ══════════════════════════════════════
+    window.handleLogout = async function() {
+    await signOut(auth);
+    // Replace the current history entry – the back button will not return here
+    window.location.replace("/login");
+  };
+
+  // ══════════════════════════════════════
+  // UI HELPERS
+  // ══════════════════════════════════════
+  function showPage(name, btn) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(`page-${name}`).classList.add("active");
+
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+
+    const titles = {
+      dashboard: "Dashboard", lessons: "Video Lessons", quizzes: "Quizzes",
+      attendance: "Attendance", progress: "My Progress",
+      notifications: "Notifications", profile: "Profile",
+      classes: "My Classes", resources: "Resources", instructors: "My Instructors"
+    };
+    document.getElementById("topbarTitle").textContent = titles[name] || "Portal";
+
+    // Load instructors data when that page is shown
+    if (name === "instructors" && typeof loadInstructors === "function") {
+      loadInstructors();
+    }
+    // Load classes data when that page is shown
+    if (name === "classes" && typeof loadMyClasses === "function") {
+      loadMyClasses();
+    }
+    // Load resources when that page is shown
+    if (name === "resources" && typeof loadResources === "function") {
+      loadResources();
+    }
+
+    if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
+  }
+
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+  }
+
+  function showToast(msg, type = "success") {
+    const t = document.getElementById("toast");
+    t.className = "toast " + type;
+    const icon = t.querySelector("i");
+    icon.className = type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+    document.getElementById("toastMsg").textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3500);
+  }
+
+  // Expose to global scope so onclick attributes work
+  window.showPage  = showPage;
+  window.toggleSidebar = toggleSidebar;
+  window.showToast = showToast;
+  window.closeQuizModal = closeQuizModal;
+  window.loadQuizzes = loadQuizzes;  // needed by nextQuestion callback
+
+  // ── LIGHTBOX FUNCTIONS ──
+  window.openLightbox = function(imageUrl) {
+    if (!imageUrl) return;
+    const lightbox = document.getElementById('imageLightbox');
+    const img = document.getElementById('lightboxImage');
+    img.src = imageUrl;
+    lightbox.style.display = 'flex';
+  };
+
+  window.closeLightbox = function() {
+    const lightbox = document.getElementById('imageLightbox');
+    const img = document.getElementById('lightboxImage');
+    lightbox.style.display = 'none';
+    img.src = ''; // clear for next time
+  };
+
+  window.viewProfileImage = function() {
+    if (window.currentAvatarUrl) {
+      openLightbox(window.currentAvatarUrl);
+    } else {
+      showToast("No profile picture yet. Upload one using the camera icon.", "error");
+    }
+  };
+
+  // ══════════════════════════════════════
+  // MY CLASSES
+  // ══════════════════════════════════════
+  let allMyClasses = [];
+  let filteredMyClasses = [];
+
+  function computeClassStatus(cls) {
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const end   = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+    const now   = new Date();
+    if (now < start) return 'upcoming';
+    if (now >= start && now <= end) return 'ongoing';
+    return 'completed';
+  }
+
+  function classStatusPill(status) {
+    const map = {
+      upcoming:  { cls: 'att-pill excused',  label: 'Upcoming' },
+      ongoing:   { cls: 'att-pill present',  label: 'Ongoing'  },
+      completed: { cls: 'att-pill absent',   label: 'Completed'},
+    };
+    const s = map[status] || map.upcoming;
+    return `<span class="${s.cls}">${s.label}</span>`;
+  }
+
+  async function loadMyClasses() {
+    const tbody = document.getElementById("studentClassesTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">Loading classes…</td></tr>`;
+
+    try {
+      let courseName = (studentData.courseType || '').trim();
+      if (!courseName && Array.isArray(studentData.courseTypes) && studentData.courseTypes.length > 0) {
+        courseName = (studentData.courseTypes[0] || '').trim();
+      }
+      if (!courseName) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">No course assigned to your account.</td></tr>`;
+        return;
+      }
+
+      const q = query(collection(db, "classes"), where("courseName", "==", courseName));
+      const snaps = await getDocs(q);
+      allMyClasses = snaps.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const da = new Date(`${a.date}T${a.time}`);
+          const db2 = new Date(`${b.date}T${b.time}`);
+          return db2 - da;
+        });
+      filteredMyClasses = [...allMyClasses];
+      renderMyClassesTable(filteredMyClasses);
+    } catch(e) {
+      console.error("Error loading classes:", e);
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--error); padding:32px;">Could not load classes.</td></tr>`;
+    }
+  }
+
+    function renderMyClassesTable(classes) {
+    const tbody = document.getElementById("studentClassesTableBody");
+    if (!classes.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">No classes scheduled yet for your course. </div>`;
+      return;
+    }
+    tbody.innerHTML = classes.map(cls => {
+      const status = computeClassStatus(cls);
+      const start  = new Date(`${cls.date}T${cls.time}`);
+      const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      const timeStr = formatTime(cls.time);
+      const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
+      const modeLabel = cls.mode === 'online' ? 'Online' : 'In-person';
+      const durLabel = cls.durationMinutes >= 60
+        ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
+        : `${cls.durationMinutes}m`;
+      return `<tr>
+        <td><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
+        <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(cls.instructorName || '—')}</td>
+        <td><div style="font-weight:500;">${dateStr}</div><div style="font-size:11px;color:var(--text-muted);">${timeStr}</div></td>
+        <td style="color:var(--text-muted);">${durLabel}</td>
+        <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);"><i class="fas ${modeIcon}" style="color:var(--gold);"></i>${modeLabel}</span></td>
+        <td>${classStatusPill(status)}</td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn-sm btn-sm-outline" onclick="openClassDetailsModal('${cls.id}')" style="padding:5px 10px;">
+            <i class="fas fa-eye"></i> View
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  window.filterMyClasses = function() {
+    const search = document.getElementById("classSearch")?.value.toLowerCase() || '';
+    const statusFilter = document.getElementById("classStatusFilter")?.value || '';
+    filteredMyClasses = allMyClasses.filter(cls => {
+      const matchSearch = !search || cls.title?.toLowerCase().includes(search) || cls.instructorName?.toLowerCase().includes(search);
+      const matchStatus = !statusFilter || computeClassStatus(cls) === statusFilter;
+      return matchSearch && matchStatus;
+    });
+    renderMyClassesTable(filteredMyClasses);
+  };
+
+  window.resetClassFilters = function() {
+    const searchEl = document.getElementById("classSearch");
+    const statusEl = document.getElementById("classStatusFilter");
+    if (searchEl) searchEl.value = '';
+    if (statusEl) statusEl.value = '';
+    filteredMyClasses = [...allMyClasses];
+    renderMyClassesTable(filteredMyClasses);
+  };
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Convert 24h time (HH:MM) to 12h AM/PM format
+  function formatTime(timeStr) {
+    if (!timeStr) return '';
+    const [h, m] = timeStr.split(':');
+    let hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    if (hour === 0) hour = 12;
+    else if (hour > 12) hour -= 12;
+    return `${hour}:${m} ${ampm}`;
+  }
+
+  // ══════════════════════════════════════
+  // RESOURCES PAGE
+  // ══════════════════════════════════════
+  let allResourcesClasses = [];
+
+  async function loadResources() {
+    const grid = document.getElementById("resourcesCourseGrid");
+    if (!grid) return;
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading resources…</div>';
+
+    try {
+      let courseName = (studentData.courseType || '').trim();
+      if (!courseName && Array.isArray(studentData.courseTypes) && studentData.courseTypes.length > 0) {
+        courseName = (studentData.courseTypes[0] || '').trim();
+      }
+      if (!courseName) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No course assigned to your account.</div>';
+        return;
+      }
+
+      // Get classes that have documents
+      const q = query(collection(db, "classes"), where("courseName", "==", courseName));
+      const snaps = await getDocs(q);
+      allResourcesClasses = snaps.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(cls => cls.documents && cls.documents.length > 0)
+        .sort((a, b) => {
+          const da = new Date(`${a.date}T${a.time}`);
+          const db2 = new Date(`${b.date}T${b.time}`);
+          return db2 - da;
+        });
+
+      if (allResourcesClasses.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No resources available yet for your course.</div>';
+        return;
+      }
+
+      filteredResourcesClasses = [...allResourcesClasses];
+      renderFilteredResources(filteredResourcesClasses);
+      return; // Skip the old rendering code below
+    } catch(e) {
+      console.error("Error loading resources:", e);
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--error); padding:40px;">Could not load resources.</div>';
+    }
+  }
+
+
+
+  window.openResourcesModal = function(classId) {
+    const cls = allResourcesClasses.find(c => c.id === classId);
+    if (!cls) return;
+
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const timeStr = formatTime(cls.time);
+    const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
+
+    document.getElementById("resourcesModalTitle").textContent = cls.title || 'Class Resources';
+
+    const body = document.getElementById("resourcesModalBody");
+    body.innerHTML = `
+      <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
+            <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
+          </div>
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
+            <div style="font-weight:600;">${dateStr}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${timeStr}</div>
+          </div>
+          <div style="flex:1;min-width:100px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
+            <div style="font-weight:600;">${modeLabel}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+        <i class="fas fa-paperclip" style="margin-right:6px;"></i> Documents (${cls.documents.length})
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${cls.documents.map((doc, i) => {
+          // Determine file type from extension
+          const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
+          let icon = 'fa-file';
+          let iconColor = 'var(--text-muted)';
+          let bgColor = 'rgba(139,154,176,0.08)';
+          
+          if (ext === 'pdf') {
+            icon = 'fa-file-pdf';
+            iconColor = '#EF5350';
+            bgColor = 'rgba(239,83,80,0.1)';
+          } else if (ext === 'doc' || ext === 'docx') {
+            icon = 'fa-file-word';
+            iconColor = '#42A5F5';
+            bgColor = 'rgba(66,165,245,0.1)';
+          } else if (ext === 'xls' || ext === 'xlsx') {
+            icon = 'fa-file-excel';
+            iconColor = '#66BB6A';
+            bgColor = 'rgba(102,187,106,0.1)';
+          } else if (ext === 'ppt' || ext === 'pptx') {
+            icon = 'fa-file-powerpoint';
+            iconColor = '#FFA726';
+            bgColor = 'rgba(255,167,38,0.1)';
+          } else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
+            icon = 'fa-file-image';
+            iconColor = '#42A5F5';
+            bgColor = 'rgba(66,165,245,0.1)';
+          } else if (ext === 'txt') {
+            icon = 'fa-file-alt';
+            iconColor = 'var(--text-muted)';
+            bgColor = 'rgba(139,154,176,0.08)';
+          } else if (ext === 'csv') {
+            icon = 'fa-file-csv';
+            iconColor = '#66BB6A';
+            bgColor = 'rgba(102,187,106,0.1)';
+          } else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
+            icon = 'fa-file-archive';
+            iconColor = '#8D6E63';
+            bgColor = 'rgba(141,110,99,0.1)';
+          }
+          return `
+            <a href="${doc.url}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);">
+              <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
+                <div style="font-size:11px;color:var(--text-muted);">Click to view / download</div>
+              </div>
+              <i class="fas fa-external-link-alt" style="color:var(--text-muted);font-size:12px;"></i>
+            </a>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    document.getElementById("resourcesModal").classList.add("open");
+  };
+
+  window.closeResourcesModal = function() {
+    document.getElementById("resourcesModal").classList.remove("open");
+  };
+
+  // ── RESOURCE FILTERS ──
+  let filteredResourcesClasses = [];
+
+  window.filterMyResources = function() {
+    const search = document.getElementById("resourceSearch")?.value.toLowerCase() || '';
+    filteredResourcesClasses = allResourcesClasses.filter(cls => {
+      const matchSearch = !search || 
+        cls.title?.toLowerCase().includes(search) || 
+        cls.instructorName?.toLowerCase().includes(search);
+      return matchSearch;
+    });
+    renderFilteredResources(filteredResourcesClasses);
+  };
+
+  window.resetResourceFilters = function() {
+    const searchEl = document.getElementById("resourceSearch");
+    if (searchEl) searchEl.value = '';
+    filteredResourcesClasses = [...allResourcesClasses];
+    renderFilteredResources(filteredResourcesClasses);
+  };
+
+  function renderFilteredResources(classes) {
+    const grid = document.getElementById("resourcesCourseGrid");
+    if (!grid) return;
+
+    if (!classes || classes.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No matching resources found.</div>';
+      return;
+    }
+
+    grid.innerHTML = classes.map(cls => {
+      const start = new Date(`${cls.date}T${cls.time}`);
+      const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      const timeStr = formatTime(cls.time);
+      const docCount = cls.documents.length;
+
+      return `
+        <div class="video-item" onclick="openResourcesModal('${cls.id}')" style="cursor:pointer;">
+          <div style="padding:18px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px;">
+                <i class="fas fa-folder"></i>
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:14px;">${escapeHtml(cls.title)}</div>
+                <div style="font-size:11px;color:var(--text-muted);">${docCount} document${docCount > 1 ? 's' : ''}</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+              <i class="fas fa-user" style="margin-right:4px;"></i>${escapeHtml(cls.instructorName || '—')}
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+              <i class="fas fa-calendar" style="margin-right:4px;"></i>${dateStr} · ${timeStr}
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              ${cls.documents.map(d => {
+                const ext = (d.name || '').split('.').pop()?.toLowerCase() || '';
+                let icon = 'fa-file';
+                let color = 'var(--text-muted)';
+                if (ext === 'pdf') { icon = 'fa-file-pdf'; color = '#EF5350'; }
+                else if (ext === 'doc' || ext === 'docx') { icon = 'fa-file-word'; color = '#42A5F5'; }
+                else if (ext === 'xls' || ext === 'xlsx') { icon = 'fa-file-excel'; color = '#66BB6A'; }
+                else if (ext === 'ppt' || ext === 'pptx') { icon = 'fa-file-powerpoint'; color = '#FFA726'; }
+                else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) { icon = 'fa-file-image'; color = '#42A5F5'; }
+                return `<span style="font-size:10px;background:rgba(245,166,35,0.08);padding:3px 8px;border-radius:4px;color:${color};"><i class="fas ${icon}"></i></span>`;
+              }).join('')}
+              ${docCount > 3 ? `<span style="font-size:10px;color:var(--text-muted);">+${docCount - 3} more</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── MY INSTRUCTORS PAGE FUNCTIONS ──
+  let instructorsList = [];
+
+  async function loadInstructors() {
+    const grid = document.getElementById("instructorsGrid");
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading instructors...</div>';
+
+    try {
+      // Get unique instructor names from multiple sources
+      const instructorNames = new Set();
+      const studentCourse = studentData.courseType || '';
+      
+      // 1. Add instructors from attendance records
+      const attSnap = await getDocs(query(collection(db, "attendance"), where("studentId", "==", currentUser.uid)));
+      attSnap.forEach(doc => {
+        const inst = doc.data().instructor;
+        if (inst && inst !== "—") instructorNames.add(inst);
+      });
+      
+      // 2. Add directly assigned instructor(s)
+      const assignedInstructor = studentData.instructor;
+      if (assignedInstructor && assignedInstructor !== "—") {
+        instructorNames.add(assignedInstructor);
+      }
+      
+      // 3. Add instructors from the instructors array (multi-instructor assignment)
+      if (studentData.instructors && Array.isArray(studentData.instructors)) {
+        studentData.instructors.forEach(inst => {
+          if (inst && inst !== "—") instructorNames.add(inst);
+        });
+      }
+
+      // 4. Fetch all instructors and add those who teach the student's course
+      let allInstructors = [];
+      try {
+        const instrSnap = await getDocs(collection(db, "instructors"));
+        allInstructors = instrSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (permError) {
+        console.error("Firestore permission error:", permError);
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--error); padding:40px;">
+          Cannot load instructor details due to security rules.
+        </div>`;
+        return;
+      }
+
+      // Add instructors whose assignedCourses include the student's course
+      if (studentCourse) {
+        allInstructors.forEach(inst => {
+          let courses = inst.assignedCourses || [];
+          if (courses && typeof courses === 'object' && !Array.isArray(courses)) {
+            courses = Object.values(courses);
+          }
+          if (Array.isArray(courses) && courses.includes(studentCourse)) {
+            const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim();
+            if (fullName) instructorNames.add(fullName);
+          }
+        });
+      }
+
+      if (instructorNames.size === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No instructors recorded yet.</div>';
+        return;
+      }
+
+      // Filter instructors whose full name is in the set
+
+      // Filter instructors whose full name is in the set
+      let matchedInstructors = allInstructors.filter(inst => {
+        const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim();
+        return instructorNames.has(fullName);
+      });
+
+      if (matchedInstructors.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Instructor profiles not found.</div>';
+        return;
+      }
+
+      // Build a set of actively assigned instructor names (for "Current Instructor" badge)
+      const activelyAssignedNames = new Set();
+      // From old single instructor field
+      if (assignedInstructor && assignedInstructor !== "—") {
+        activelyAssignedNames.add(assignedInstructor);
+      }
+      // From new multi-instructor array
+      if (studentData.instructors && Array.isArray(studentData.instructors)) {
+        studentData.instructors.forEach(inst => {
+          if (inst && inst !== "—") activelyAssignedNames.add(inst);
+        });
+      }
+
+      // Sort: actively assigned instructors first
+      matchedInstructors.sort((a, b) => {
+        const aFull = `${a.firstName || ''} ${a.lastName || ''}`.trim();
+        const bFull = `${b.firstName || ''} ${b.lastName || ''}`.trim();
+        const aIsCurrent = activelyAssignedNames.has(aFull);
+        const bIsCurrent = activelyAssignedNames.has(bFull);
+        if (aIsCurrent && !bIsCurrent) return -1;
+        if (!aIsCurrent && bIsCurrent) return 1;
+        return 0;
+      });
+
+      instructorsList = matchedInstructors;
+
+      // Generate cards
+      grid.innerHTML = matchedInstructors.map(inst => {
+        const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim() || "Instructor";
+        const initials = (inst.firstName?.[0] || '') + (inst.lastName?.[0] || '') || 'I';
+        const photoUrl = inst.profilePhoto || inst.avatarUrl;
+        const avatarHtml = photoUrl
+          ? `<div style="width: 80px; height: 80px; border-radius: 50%; background: url(${photoUrl}) center/cover; margin: 0 auto 12px;"></div>`
+          : `<div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--gold); margin: 0 auto 12px;">${initials}</div>`;
+        // Show "Current Instructor" badge ONLY if actively assigned to this student
+        const isCurrent = activelyAssignedNames.has(fullName);
+        const currentBadge = isCurrent ? `<div style="display: inline-block; background: var(--gold); color: var(--navy); font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 20px; margin-bottom: 6px;">Current Instructor</div>` : '';
+        // Show a different label for instructors from course/attendance history
+        const instructorLabel = isCurrent ? 'Current Instructor' : 'Course Instructor';
+        return `
+          <div class="video-item" onclick='openInstructorInfo(${JSON.stringify(inst).replace(/'/g, "&#39;")})' style="cursor:pointer; text-align:center;">
+            ${avatarHtml}
+            <div style="padding: 14px;">
+              ${currentBadge}
+              <div style="font-weight:600; margin-bottom:4px;">${fullName}</div>
+              <div style="font-size:12px; color:var(--text-muted);">Driving Instructor</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error("Unexpected error loading instructors:", err);
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Could not load instructors. Please try again later.</div>';
+    }
+  }
+
+  window.openInstructorInfo = function(instructor) {
+    const fullName = `${instructor.firstName || ''} ${instructor.lastName || ''}`.trim() || "Instructor";
+    const initials = (instructor.firstName?.[0] || '') + (instructor.lastName?.[0] || '') || 'I';
+    const photoUrl = instructor.profilePhoto || instructor.avatarUrl;
+    
+    // Build avatar with click-to-enlarge
+    const avatarHtml = photoUrl
+      ? `<div style="width: 100px; height: 100px; border-radius: 50%; background: url(${photoUrl}) center/cover; border: 3px solid var(--gold); margin: 0 auto 16px; cursor: pointer;" onclick="event.stopPropagation(); openLightbox('${photoUrl}')"></div>`
+      : `<div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 700; color: var(--gold); border: 3px solid var(--gold); margin: 0 auto 16px;">${initials}</div>`;
+    
+    const html = `
+      <div style="text-align:center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+        ${avatarHtml}
+        <h2 style="font-size: 22px; margin-bottom: 4px;">${fullName}</h2>
+        <div style="color: var(--gold); font-size: 13px; margin-bottom: 8px;"><i class="fas fa-chalkboard-teacher"></i> Driving Instructor</div>
+        <div style="color: var(--text-muted);"><i class="fas fa-envelope"></i> ${instructor.email || '—'}</div>
+        <div style="color: var(--text-muted); margin-top: 4px;"><i class="fas fa-phone"></i> ${instructor.phone || '—'}</div>
+      </div>
+      
+      <div class="bio-section" style="margin-bottom: 20px;">
+        <div class="bio-section-title" style="font-size: 13px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">Professional Details</div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px; font-size: 14px;">
+          <div style="color: var(--text-muted);">Experience</div><div><strong>${instructor.experience || '—'} years</strong></div>
+          <div style="color: var(--text-muted);">Qualifications</div><div>${instructor.qualifications || '—'}</div>
+          <div style="color: var(--text-muted);">Certifications</div><div>${instructor.certifications || '—'}</div>
+        </div>
+      </div>
+
+      ${(() => {
+        let courses = instructor.assignedCourses || [];
+        if (courses && typeof courses === 'object' && !Array.isArray(courses)) courses = Object.values(courses);
+        if (!Array.isArray(courses)) courses = [];
+        courses = courses.filter(c => c && typeof c === 'string' && c.trim().length > 0);
+
+        if (courses.length === 0) return '';
+
+        const iconMap = { 'manual': 'fa-car', 'automatic': 'fa-car', 'motorcycle': 'fa-motorcycle', 'bus': 'fa-bus', 'truck': 'fa-truck', 'hgv': 'fa-truck' };
+        const getIcon = (name) => {
+          const lower = name.toLowerCase();
+          for (const [key, icon] of Object.entries(iconMap)) { if (lower.includes(key)) return icon; }
+          return 'fa-book';
+        };
+
+        return `
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">
+              <i class="fas fa-book" style="margin-right: 6px;"></i> Assigned Courses
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              ${courses.map(c => `
+                <div style="display: flex; align-items: center; gap: 7px; background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.2); border-radius: 50px; padding: 5px 12px;">
+                  <i class="fas ${getIcon(c)}" style="color: var(--gold); font-size: 12px;"></i>
+                  <span style="font-size: 13px; font-weight: 600; color: var(--white);">${c}</span>
+                </div>`).join('')}
+            </div>
+          </div>`;
+      })()}
+
+      <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 8px;">
+        <i class="fas fa-id-card"></i> Verified Instructor
+      </div>
+    `;
+    
+    document.getElementById("instructorModalTitle").textContent = `Instructor Profile`;
+    document.getElementById("instructorModalBody").innerHTML = html;
+    document.getElementById("instructorInfoModal").classList.add("open");
+  };
+
+  window.closeInstructorModal = function() {
+    document.getElementById("instructorInfoModal").classList.remove("open");
+  };
+
+  // Close modals on overlay click
+  document.querySelectorAll(".modal-overlay").forEach(overlay => {
+    overlay.addEventListener("click", e => {
+      if (e.target === overlay) overlay.classList.remove("open");
+    });
+  });
+
+        // ══════════════════════════════════════
+  // CLASS DETAILS MODAL (Student View)
+  // ══════════════════════════════════════
+  window.openClassDetailsModal = function(classId) {
+    const cls = allMyClasses.find(c => c.id === classId);
+    if (!cls) {
+      showToast("Class details not found.", "error");
+      return;
+    }
+
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const timeStr = formatTime(cls.time);
+    const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
+    const status = computeClassStatus(cls);
+    let statusBadge = '';
+    if (status === 'ongoing') {
+      statusBadge = '<span class="att-pill present" style="font-size:11px;">Live Now</span>';
+    } else if (status === 'upcoming') {
+      statusBadge = '<span class="att-pill excused" style="font-size:11px;">Upcoming</span>';
+    } else {
+      statusBadge = '<span class="att-pill absent" style="font-size:11px;">Completed</span>';
+    }
+
+    const durLabel = cls.durationMinutes >= 60
+      ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
+      : `${cls.durationMinutes}m`;
+
+    // Determine if join button should be shown (online mode and meeting link exists)
+    const showJoinButton = cls.mode === 'online' && cls.meetingLink && cls.meetingLink.trim() !== '';
+    const joinButtonHtml = showJoinButton 
+      ? `<button class="btn btn-gold" onclick="window.open('${cls.meetingLink}', '_blank')" style="margin-top:10px; width:100%; justify-content:center;">
+           <i class="fas fa-video"></i> Join Online Class
+         </button>`
+      : '';
+
+    // Build documents HTML
+    let documentsHtml = '';
+    if (cls.documents && cls.documents.length > 0) {
+      documentsHtml = `
+        <div style="margin-top:20px;">
+          <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+            <i class="fas fa-paperclip" style="margin-right:6px;"></i> Class Materials (${cls.documents.length})
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${cls.documents.map((doc, i) => {
+              const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
+              let icon = 'fa-file';
+              let iconColor = 'var(--text-muted)';
+              let bgColor = 'rgba(139,154,176,0.08)';
+              
+              if (ext === 'pdf') {
+                icon = 'fa-file-pdf';
+                iconColor = '#EF5350';
+                bgColor = 'rgba(239,83,80,0.1)';
+              } else if (ext === 'doc' || ext === 'docx') {
+                icon = 'fa-file-word';
+                iconColor = '#42A5F5';
+                bgColor = 'rgba(66,165,245,0.1)';
+              } else if (ext === 'xls' || ext === 'xlsx') {
+                icon = 'fa-file-excel';
+                iconColor = '#66BB6A';
+                bgColor = 'rgba(102,187,106,0.1)';
+              } else if (ext === 'ppt' || ext === 'pptx') {
+                icon = 'fa-file-powerpoint';
+                iconColor = '#FFA726';
+                bgColor = 'rgba(255,167,38,0.1)';
+              } else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
+                icon = 'fa-file-image';
+                iconColor = '#42A5F5';
+                bgColor = 'rgba(66,165,245,0.1)';
+              }
+              return `
+                <a href="${doc.url}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);">
+                  <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
+                  <div style="flex:1;">
+                    <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">Click to view / download</div>
+                  </div>
+                  <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+                </a>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Build platform info HTML for online classes
+    let platformHtml = '';
+    if (cls.mode === 'online' && cls.platform) {
+      platformHtml = `
+        <div style="flex:1;min-width:150px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Platform</div>
+          <div style="font-weight:600;">${escapeHtml(cls.platform)}</div>
+        </div>
+      `;
+    }
+
+    const html = `
+      <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+          <h2 style="font-size:18px;font-weight:700;color:var(--gold);">${escapeHtml(cls.title)}</h2>
+          ${statusBadge}
+        </div>
+        ${cls.description ? `<p style="font-size:13px;color:var(--text-light);margin-bottom:16px;line-height:1.5;">${escapeHtml(cls.description)}</p>` : ''}
+        
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
+            <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
+          </div>
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
+            <div style="font-weight:600;">${dateStr}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${timeStr}</div>
+          </div>
+          <div style="flex:1;min-width:100px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Duration</div>
+            <div style="font-weight:600;">${durLabel}</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
+            <div style="font-weight:600;">
+              <i class="fas ${cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt'}" style="color:var(--gold);margin-right:6px;"></i>
+              ${modeLabel}
+            </div>
+          </div>
+          ${platformHtml}
+          ${cls.mode === 'online' && cls.meetingLink ? `
+          <div style="flex:2;min-width:200px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Meeting Link</div>
+            <div style="font-size:12px;word-break:break-all;">
+              <a href="${cls.meetingLink}" target="_blank" style="color:var(--gold);text-decoration:none;">${escapeHtml(cls.meetingLink.length > 50 ? cls.meetingLink.substring(0, 50) + '...' : cls.meetingLink)}</a>
+            </div>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+
+      ${documentsHtml}
+      ${joinButtonHtml}
+    `;
+
+    document.getElementById("classDetailsModalTitle").textContent = `Class: ${cls.title}`;
+    document.getElementById("classDetailsModalBody").innerHTML = html;
+    // Use the student dashboard's modal method (add 'open' class)
+    document.getElementById("classDetailsModal").classList.add("open");
+  };
+
+  window.closeClassDetailsModal = function() {
+    // Use the student dashboard's modal method (remove 'open' class)
+    document.getElementById("classDetailsModal").classList.remove("open");
+  };
+
+
+  // ══════════════════════════════════════
+  // STAGE UNLOCK FUNCTION
+  // ══════════════════════════════════════
+  window.unlockNextStage = async function() {
+    const btn = event.target;
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Unlocking…';
+    
+    try {
+      const currentStage = studentData.trainingStage || 1;
+      const nextStage = Math.min(currentStage + 1, 6);
+      
+      // Update the student's training stage
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        trainingStage: nextStage
+      });
+      
+      // Update local data
+      studentData.trainingStage = nextStage;
+      
+      // Update UI
+      const stage = nextStage;
+      const stages = [
+        { label: "Registration", desc: "Enrolled and profile set up" },
+        { label: "Theory lessons", desc: "Watch all video modules" },
+        { label: "Theory test", desc: "Pass the online quiz (60%+)" },
+        { label: "Practical lessons", desc: "Behind-the-wheel training" },
+        { label: "Internal assessment", desc: "Mock DVLA test" },
+        { label: "DVLA ready", desc: "Test day escort included" }
+      ];
+      
+      // Rebuild pipelines with updated stage
+      buildPipelines(stage, studentData);
+      
+      // Update dashboard stage display
+      document.getElementById("dashStage").textContent = stage;
+      
+      // Hide the unlock button after successful unlock
+      document.getElementById("stageUnlockContainer").style.display = "none";
+      
+      // Update overall progress
+      const pct = Math.round(((stage - 1) / 6) * 100);
+      document.getElementById("overallPct").textContent = `${pct}%`;
+      document.getElementById("overallBar").style.width = `${pct}%`;
+      document.getElementById("overallSubtext").textContent = `Stage ${stage} of 6`;
+      document.getElementById("nextStepCard").innerHTML = `<strong style="color:var(--gold)">${stages[stage-1]?.label || 'DVLA Ready'}</strong><br/>${stages[stage-1]?.desc || 'All stages complete!'}`;
+      
+      showToast(`🎉 Stage ${stage}: ${stages[stage-1]?.label || 'Complete'} unlocked!`, "success");
+      
+      // Reload to refresh all data
+      setTimeout(() => {
+        initDashboard();
+      }, 500);
+      
+    } catch(e) {
+      console.error("Error unlocking stage:", e);
+      showToast("Could not unlock the next stage. Please try again.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  };
+  
+  // ── CHECK IF STAGE 1 IS COMPLETE AND SHOW UNLOCK BUTTON ──
+  function checkAndShowUnlockButton() {
+    const container = document.getElementById("stageUnlockContainer");
+    if (!container) return;
+    
+    const currentStage = studentData.trainingStage || 1;
+    const status = studentData.status || 'pending';
+    
+    // Show button only if:
+    // 1. Student is active (approved)
+    // 2. Current stage is 1 (Registration)
+    // 3. Stage 1 is complete (status is active means approved)
+    if (status === 'active' && currentStage === 1) {
+      container.style.display = "block";
+    } else {
+      container.style.display = "none";
+    }
+  }
+
+  // ══════════════════════════════════════
+  // STUDENT CERTIFICATES
+  // ══════════════════════════════════════
+  
+  // ── LOAD STUDENT CERTIFICATES ──
+  async function loadStudentCertificates() {
+    const container = document.getElementById("studentCertificatesList");
+    if (!container) return;
+    
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;"><i class="fas fa-spinner fa-spin"></i> Loading certificates…</div>';
+    
+    try {
+      const q = query(
+        collection(db, "certificates"),
+        where("studentId", "==", currentUser.uid),
+        orderBy("createdAt", "desc")
+      );
+      const snaps = await getDocs(q);
+      const certificates = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      if (certificates.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center;color:var(--text-muted);padding:40px;">
+            <i class="fas fa-certificate" style="font-size:48px;display:block;margin-bottom:16px;opacity:0.3;"></i>
+            <p>You haven't received any certificates yet.</p>
+            <p style="font-size:12px;margin-top:8px;">Complete your training to earn a certificate!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = certificates.map(cert => `
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--navy);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;transition:all var(--transition);">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="width:48px;height:48px;border-radius:10px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:24px;">
+              <i class="fas fa-certificate"></i>
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:15px;">${escapeHtml(cert.course || 'Driving Course')}</div>
+              <div style="font-size:12px;color:var(--text-muted);">
+                Serial: ${escapeHtml(cert.serialNumber || '—')} 
+                <span style="margin:0 8px;">•</span>
+                Issued: ${cert.issueDate || '—'}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm btn-outline btn-animated" onclick="viewStudentCertificate('${cert.imageUrl}')" title="View Certificate">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button class="btn btn-sm btn-gold btn-animated" onclick="downloadStudentCertificateUrl('${cert.imageUrl}', '${cert.serialNumber}')" title="Download Certificate">
+              <i class="fas fa-download"></i> Download
+            </button>
+          </div>
+        </div>
+      `).join('');
+      
+    } catch(e) {
+      console.error("Error loading student certificates:", e);
+      container.innerHTML = '<div style="text-align:center;color:var(--error);padding:32px;">Could not load certificates.</div>';
+    }
+  }
+
+  // ── VIEW STUDENT CERTIFICATE ──
+  window.viewStudentCertificate = function(imageUrl) {
+    console.log("viewStudentCertificate called with:", imageUrl);
+    if (!imageUrl) {
+      showToast("Certificate image not available.", "error");
+      return;
+    }
+    const img = document.getElementById("studentViewCertificateImage");
+    if (img) {
+      img.src = imageUrl;
+      img.onerror = function() {
+        console.error("Failed to load certificate image:", imageUrl);
+        showToast("Failed to load certificate image. Try downloading instead.", "error");
+      };
+      img.onload = function() {
+        console.log("Certificate image loaded successfully");
+      };
+    }
+    window._studentViewImageUrl = imageUrl;
+    
+    // ✅ Directly manipulate the DOM to open modal (bypasses scope issues)
+    const modal = document.getElementById("studentViewCertificateModal");
+    if (modal) {
+      modal.classList.add("open");
+      console.log("Modal opened via DOM manipulation");
+    } else {
+      console.error("Modal element not found!");
+      showToast("Could not open certificate view.", "error");
+    }
+  };
+
+    // ── CLOSE STUDENT VIEW CERTIFICATE MODAL ──
+  window.closeStudentViewCertificateModal = function() {
+    const modal = document.getElementById("studentViewCertificateModal");
+    if (modal) {
+      modal.classList.remove("open");
+      console.log("Modal closed via DOM manipulation");
+    }
+  };
+
+  // ── DOWNLOAD STUDENT CERTIFICATE (from modal) ──
+  window.downloadStudentCertificate = async function() {
+    const imageUrl = window._studentViewImageUrl;
+    if (!imageUrl) {
+      showToast("Certificate not available.", "error");
+      return;
+    }
+    
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error("Failed to fetch image");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.download = `certificate_${new Date().getTime()}.png`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      
+      showToast("Certificate downloaded ✓", "success");
+    } catch(e) {
+      console.error("Download error:", e);
+      const link = document.createElement('a');
+      link.download = `certificate_${new Date().getTime()}.png`;
+      link.href = imageUrl;
+      link.target = '_blank';
+      link.click();
+      showToast("Certificate downloaded ✓", "success");
+    }
+  };
+
+  // ── DOWNLOAD STUDENT CERTIFICATE (from list) ──
+  window.downloadStudentCertificateUrl = async function(imageUrl, serialNumber) {
+    if (!imageUrl) {
+      showToast("Certificate not available.", "error");
+      return;
+    }
+    
+    showToast("Downloading certificate…", "success");
+    
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error("Failed to fetch image");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.download = `certificate_${serialNumber || 'download'}.png`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      
+      showToast("Certificate downloaded ✓", "success");
+    } catch(e) {
+      console.error("Download error:", e);
+      const link = document.createElement('a');
+      link.download = `certificate_${serialNumber || 'download'}.png`;
+      link.href = imageUrl;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Certificate downloaded ✓", "success");
+    }
+  };
+
+  // ── INIT CERTIFICATES PAGE ──
+  async function loadStudentCertificatesPage() {
+    if (document.getElementById("page-certificates")?.classList.contains("active")) {
+      await loadStudentCertificates();
+    }
+  }
+
+  // Override showPage to load certificates when needed
+  const originalStudentShowPage = window.showPage;
+  window.showPage = function(name, btn) {
+    originalStudentShowPage(name, btn);
+    if (name === "certificates") {
+      loadStudentCertificates();
+    }
+  };
+  
+</script>
+</body>
+</html>

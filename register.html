@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register | Dekay Driving School</title>
+  <meta name="description" content="Create a new student account at Dekay Driving School." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --navy: #0A1628;
+      --navy-mid: #12223F;
+      --navy-light: #1C3259;
+      --gold: #F5A623;
+      --gold-light: #FAC75A;
+      --white: #FFFFFF;
+      --text-muted: #8B9AB0;
+      --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2);
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+      --transition: 0.25s ease;
+      --error: #EF5350;
+      --success: #4CAF50;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ── LEFT PANEL (same as login) ── */
+        .left-panel {
+      width: 45%;
+      background: var(--navy-mid);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .left-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(245,166,35,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(245,166,35,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .left-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+    .left-content { position: relative; z-index: 2; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-bottom: 64px; }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: var(--gold); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: var(--navy);
+    }
+    .brand-text .name { font-size: 16px; font-weight: 700; color: var(--white); }
+    .brand-text .tagline { font-size: 11px; color: var(--gold); font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; }
+    .left-heading { font-size: 36px; font-weight: 700; line-height: 1.15; letter-spacing: -1px; margin-bottom: 20px; }
+    .left-heading span { color: var(--gold); }
+    .left-sub { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 360px; margin-bottom: 48px; }
+    .feature-list { display: flex; flex-direction: column; gap: 16px; }
+    .feature-item { display: flex; align-items: center; gap: 14px; font-size: 14px; color: var(--text-light); }
+    .feature-dot {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(245,166,35,0.1); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-size: 13px; flex-shrink: 0;
+    }
+    .left-footer { position: relative; z-index: 2; margin-top: 24px; }
+    .left-footer-stats { display: flex; gap: 32px; }
+    .lf-stat .num { font-size: 22px; font-weight: 700; color: var(--gold); }
+    .lf-stat .lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+    }
+    .register-box { width: 100%; max-width: 460px; }
+    .register-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .register-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-light); margin-bottom: 8px; }
+    .form-label span { color: var(--error); }
+    .input-wrap { position: relative; }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--navy-mid);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-input::placeholder { color: var(--text-muted); }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245,166,35,0.1);
+    }
+    .form-input.error { border-color: var(--error); }
+    .input-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 14px; pointer-events: none;
+    }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%238B9AB0' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 14px;
+      padding-right: 36px;
+    }
+
+        .form-select:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .loading-spinner-small {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(245,166,35,0.3);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .error-msg {
+      font-size: 12px; color: var(--error);
+      margin-top: 6px;
+      display: none;
+      align-items: center; gap: 4px;
+    }
+    .error-msg.show { display: flex; }
+
+    .submit-btn {
+      width: 100%; padding: 14px;
+      background: var(--gold); color: var(--navy);
+      border: none; border-radius: var(--radius);
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-top: 8px;
+    }
+    .submit-btn:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245,166,35,0.35);
+    }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .google-btn {
+      width: 100%; padding: 14px;
+      background: var(--white);
+      color: #333;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-bottom: 20px;
+    }
+    .google-btn:hover {
+      border-color: var(--gold);
+      background: #f1f3f4;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .google-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(10,22,40,0.3);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .submit-btn.loading .btn-text { display: none; }
+    .submit-btn.loading .spinner { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .back-link {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 13px; color: var(--text-muted);
+      text-decoration: none; margin-top: 24px;
+      transition: color var(--transition);
+    }
+    .back-link:hover { color: var(--gold); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      font-size: 14px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: var(--shadow);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      max-width: 320px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(76,175,80,0.4); }
+    .toast.success i { color: var(--success); }
+    .toast.error i { color: var(--error); }
+
+    @media (max-width: 900px) {
+      .left-panel { display: none; }
+      .right-panel { padding: 40px 24px; }
+    }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-bg"></div>
+    <div class="left-grid"></div>
+    <div class="left-content">
+      
+      <h1 class="left-heading">Start your<br/>journey <span>today</span></h1>
+      <p class="left-sub">Fill in your details to create a student account. An administrator will approve your access shortly.</p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-dot"><i class="fas fa-check-circle"></i></div>
+          Instant account creation
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"><i class="fas fa-clock"></i></div>
+          Approval usually within 24 hours
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"><i class="fas fa-bell"></i></div>
+          You'll be notified when approved
+        </div>
+      </div>
+    </div>
+    <div class="left-footer">
+      <div class="left-footer-stats">
+        <div class="lf-stat"><div class="num">500+</div><div class="lbl">Graduates</div></div>
+        <div class="lf-stat"><div class="num">98%</div><div class="lbl">Pass rate</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="register-box">  
+      
+      <div style="text-align:center; margin-bottom:28px;">
+        <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 80px; margin-bottom: 12px; border-radius: 10px;" />
+        <div style="font-size: 18px; font-weight: 700; color: var(--white);">Dekay Driving School</div>
+        <div style="font-size: 11px; color: var(--gold); font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;">Ablekuma · Accra</div>
+      </div>
+
+      <div class="register-title">Create account as a student</div>
+      <p class="register-sub">All fields are required</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First name <span>*</span></label>
+          <div class="input-wrap">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="firstName" class="form-input" placeholder="Kwame" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last name <span>*</span></label>
+          <div class="input-wrap">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="lastName" class="form-input" placeholder="Asante" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email address <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-envelope input-icon"></i>
+          <input type="email" id="email" class="form-input" placeholder="you@example.com" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone number <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-phone input-icon"></i>
+          <input type="tel" id="phone" class="form-input" placeholder="024 000 0000" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Course type <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-car input-icon"></i>
+          <select id="courseType" class="form-select">
+            <option value="">Loading courses...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">GH Card Number <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-id-card input-icon"></i>
+          <input type="text" id="ghCardNumber" class="form-input" placeholder="e.g., GHA-123456789" />
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
+          <i class="fas fa-info-circle"></i> Your Ghana Card number (used for DVLA registration)
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password <span>*</span></label>
+          <div class="input-wrap">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="password" class="form-input" placeholder="Min. 6 characters" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm password <span>*</span></label>
+          <div class="input-wrap">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="confirmPassword" class="form-input" placeholder="Re-enter password" />
+          </div>
+        </div>
+      </div>
+
+      <div class="error-msg" id="formError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+
+            <button class="submit-btn" id="registerBtn" onclick="handleRegister()">
+        <span class="btn-text"><i class="fas fa-user-plus"></i> Create account</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div class="divider" style="display:flex; align-items:center; gap:12px; margin:24px 0; font-size:12px; color:var(--text-muted);">
+        <span style="flex:1; height:1px; background:var(--border);"></span>
+        or
+        <span style="flex:1; height:1px; background:var(--border);"></span>
+      </div>
+
+      <button class="google-btn" id="googleRegBtn" onclick="handleGoogleRegister()">
+        <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg> Sign up with Google
+      </button>
+
+      <a href="login.html" class="back-link">
+
+        <i class="fas fa-arrow-left"></i> Already have an account? Sign in
+      </a>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, serverTimestamp, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, deleteUser, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
+      authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
+      projectId: "dekaydrivingschool-6933c",
+      storageBucket: "dekaydrivingschool-6933c.firebasestorage.app",
+      messagingSenderId: "1017266487810",
+      appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b",
+      measurementId: "G-QTR8V6LG85"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+        // ── LOAD COURSES FROM FIRESTORE ──
+    async function loadCourses() {
+      const courseSelect = document.getElementById("courseType");
+      if (!courseSelect) return;
+
+      courseSelect.innerHTML = '<option value="">Loading courses...</option>';
+      courseSelect.disabled = true;
+
+      try {
+        const coursesRef = collection(db, "courses");
+        const querySnapshot = await getDocs(coursesRef);
+        
+        if (querySnapshot.empty) {
+          // Fallback to default courses if none in Firestore
+          courseSelect.innerHTML = `
+            <option value="">Select course…</option>
+            <option value="Manual">Manual Transmission</option>
+            <option value="Automatic">Automatic Transmission</option>
+            <option value="Motorcycle">Motorcycle</option>
+            <option value="Commercial Bus">Commercial Bus</option>
+            <option value="Truck / HGV">Truck / HGV</option>
+          `;
+        } else {
+          let options = '<option value="">Select course…</option>';
+          querySnapshot.forEach(doc => {
+            const course = doc.data();
+            
+            // Build a nice display name from available fields
+            let displayName = course.name;
+            if (course.name === "Automatic") displayName = "Automatic Transmission";
+            else if (course.name === "Manual") displayName = "Manual Transmission";
+            else if (course.name === "Motorcycle") displayName = "Motorcycle";
+            else if (course.name === "Commercial Bus") displayName = "Commercial Bus";
+            else if (course.name === "Truck" || course.name === "HGV") displayName = "Truck / HGV";
+            
+            // Add level badge for beginners/intermediate (optional)
+            if (course.level === "beginner") {
+              displayName += " (Beginner)";
+            }
+            
+            options += `<option value="${course.name}" data-price="${course.price || 0}" data-duration="${course.duration || ''}" data-level="${course.level || ''}">
+                          ${displayName}
+                        </option>`;
+          });
+          courseSelect.innerHTML = options;
+        }
+        courseSelect.disabled = false;
+        
+        // ── AUTO-SELECT COURSE FROM URL ──
+        const urlParams = new URLSearchParams(window.location.search);
+        const preSelectedCourse = urlParams.get('course');
+        if (preSelectedCourse) {
+          // Find and select the matching course
+          for (let i = 0; i < courseSelect.options.length; i++) {
+            if (courseSelect.options[i].value === preSelectedCourse) {
+              courseSelect.selectedIndex = i;
+              break;
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading courses:", error);
+        // Fallback to default courses on error
+        courseSelect.innerHTML = `
+          <option value="">Select course…</option>
+          <option value="Manual">Manual Transmission</option>
+          <option value="Automatic">Automatic Transmission</option>
+          <option value="Motorcycle">Motorcycle</option>
+          <option value="Commercial Bus">Commercial Bus</option>
+          <option value="Truck / HGV">Truck / HGV</option>
+        `;
+        courseSelect.disabled = false;
+      }
+    }
+
+    // Load courses when page loads
+    loadCourses();
+
+    function showToast(msg, type = "success") {
+      const t = document.getElementById("toast");
+      t.className = "toast " + (type === "success" ? "success" : "error");
+      t.querySelector("i").className = type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+      document.getElementById("toastMsg").textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 4000);
+    }
+
+    function setError(msg) {
+      const el = document.getElementById("formError");
+      el.querySelector("span").textContent = msg;
+      el.classList.toggle("show", !!msg);
+    }
+
+    // ── Manual registration (with GH Card Number) ──
+    window.handleRegister = async function() {
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName  = document.getElementById("lastName").value.trim();
+      const email     = document.getElementById("email").value.trim();
+      const phone     = document.getElementById("phone").value.trim();
+      const course    = document.getElementById("courseType").value;
+      const ghCardNumber = document.getElementById("ghCardNumber").value.trim();
+      const password  = document.getElementById("password").value;
+      const confirm   = document.getElementById("confirmPassword").value;
+
+      setError("");
+
+      if (!firstName || !lastName || !email || !phone || !course || !ghCardNumber || !password) {
+        setError("All fields are required.");
+        return;
+      }
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        return;
+      }
+      if (password !== confirm) {
+        setError("Passwords do not match.");
+        return;
+      }
+      // Basic GH Card format validation (optional)
+      if (ghCardNumber.length < 5) {
+        setError("Please enter a valid GH Card number.");
+        return;
+      }
+
+      const btn = document.getElementById("registerBtn");
+      btn.disabled = true;
+      btn.classList.add("loading");
+
+      try {
+        const apiKey = firebaseConfig.apiKey;
+        const res = await fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, returnSecureToken: false })
+          }
+        );
+        const data = await res.json();
+
+        if (!res.ok) {
+          const msg = data.error?.message || "Registration failed.";
+          if (msg.includes("EMAIL_EXISTS")) {
+            setError("This email is already registered.");
+          } else {
+            setError(msg);
+          }
+          btn.disabled = false;
+          btn.classList.remove("loading");
+          return;
+        }
+
+        const uid = data.localId;
+
+        // Sign in with the newly created account so we can write to Firestore
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", uid), {
+          firstName,
+          lastName,
+          email,
+          phone,
+          courseType: course,
+          ghCardNumber: ghCardNumber,
+          role: "student",
+          status: "pending",
+          trainingStage: 1,
+          createdAt: serverTimestamp(),
+          enrolDate: new Date().toLocaleDateString('en-GB')
+        });
+        // Immediately sign out – the student will sign in again after approval
+        await signOut(auth);
+
+        showToast("Registration successful! Your account is pending approval.", "success");
+        document.querySelectorAll(".form-input, .form-select").forEach(el => el.value = "");
+        document.getElementById("courseType").value = "";
+        document.getElementById("ghCardNumber").value = "";
+      } catch (e) {
+        console.error(e);
+        setError("Something went wrong. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove("loading");
+      }
+    };
+
+    // ── Google registration (with GH Card Number prompt) ──
+    window.handleGoogleRegister = async function() {
+      const btn = document.getElementById("googleRegBtn");
+      btn.disabled = true;
+      btn.style.opacity = "0.7";
+      
+      // Prompt for GH Card Number before Google sign-up
+      const ghCardNumber = prompt("Please enter your GH Card Number (for DVLA registration):");
+      if (!ghCardNumber || ghCardNumber.trim().length < 5) {
+        showToast("GH Card Number is required to register.", "error");
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        return;
+      }
+      
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        // Check if user already exists in Firestore
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          // Already registered – delete the new auth user and show error
+          await deleteUser(user);
+          showToast("An account with this email already exists. Please sign in instead.", "error");
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          return;
+        }
+
+        // New Google user – create student doc with pending status
+        const nameParts = (user.displayName || "").split(" ");
+        const firstName = nameParts[0] || "";
+        const lastName  = nameParts.slice(1).join(" ") || "";
+        await setDoc(doc(db, "users", user.uid), {
+          firstName,
+          lastName,
+          email: user.email,
+          phone: user.phoneNumber || "",
+          courseType: "Manual",   // default, can be changed later
+          ghCardNumber: ghCardNumber.trim(),
+          role: "student",
+          status: "pending",
+          trainingStage: 1,
+          createdAt: serverTimestamp(),
+          enrolDate: new Date().toLocaleDateString("en-GB"),
+          avatarUrl: user.photoURL || ""
+        });
+
+        // Sign out so they don’t stay signed in
+        await signOut(auth);
+        showToast("Registration successful! Your account is pending approval.", "success");
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        if (err.code === "auth/account-exists-with-different-credential") {
+          showToast("An account with this email already exists. Please sign in instead.", "error");
+        } else if (err.code !== "auth/popup-closed-by-user") {
+          showToast("Google sign‑up failed. Try again.", "error");
+        }
+      } finally {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+      }
+    };
+  </script>
+</body>
+</html>

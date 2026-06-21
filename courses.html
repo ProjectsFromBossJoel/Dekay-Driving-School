@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Courses & Pricing | Dekay Driving School</title>
+  <link rel="icon" type="image/x-icon" href="img/logo2.png" />
+  <meta name="description" content="Choose from manual, automatic, motorcycle, bus or truck driving courses at Dekay Driving School, Ablekuma, Accra. View durations, what's included, and book today." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --navy: #0A1628;
+      --navy-mid: #12223F;
+      --navy-light: #1C3259;
+      --gold: #F5A623;
+      --gold-light: #FAC75A;
+      --gold-dark: #C47F0A;
+      --white: #FFFFFF;
+      --off-white: #F8F6F1;
+      --text-muted: #8B9AB0;
+      --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2);
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.18);
+      --transition: 0.3s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); line-height: 1.6; overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 0 5%; height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(10,22,40,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border); transition: background var(--transition);
+    }
+    nav.scrolled { background: var(--navy); box-shadow: 0 2px 20px rgba(0,0,0,0.4); }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon { width: 40px; height: 40px; background: var(--gold); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--navy); }
+    .nav-logo-text .name { font-size: 15px; font-weight: 700; color: var(--white); letter-spacing: 0.5px; }
+    .nav-logo-text .tagline { font-size: 10px; color: var(--gold); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--text-light); font-size: 14px; font-weight: 500; transition: color var(--transition); }
+    .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+    .nav-cta { display: flex; align-items: center; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: var(--radius); font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border: none; transition: all var(--transition); font-family: 'Inter', sans-serif; }
+    .btn-primary { background: var(--gold); color: var(--navy); }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,166,35,0.35); }
+    .btn-outline { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.3); }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-gold-outline { background: transparent; color: var(--gold); border: 1.5px solid var(--gold); }
+    .btn-gold-outline:hover { background: var(--gold); color: var(--navy); }
+    .btn-lg { padding: 14px 32px; font-size: 15px; border-radius: 14px; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--white); border-radius: 2px; transition: all var(--transition); }
+    .mobile-menu { display: none; position: fixed; top: 72px; left: 0; right: 0; bottom: 0; background: var(--navy); z-index: 999; padding: 32px 5%; flex-direction: column; gap: 24px; }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { text-decoration: none; color: var(--text-light); font-size: 18px; font-weight: 500; padding-bottom: 16px; border-bottom: 1px solid var(--border); transition: color var(--transition); }
+    .mobile-menu a:hover { color: var(--gold); }
+
+    /* PAGE HEADER */
+    .page-header {
+      padding: 140px 5% 80px;
+      background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(245,166,35,0.07) 0%, transparent 70%),
+                  linear-gradient(135deg, #0A1628 0%, #12223F 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header-grid {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(245,166,35,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(245,166,35,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .page-header-content { position: relative; z-index: 2; }
+    .breadcrumb { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    .breadcrumb a { color: var(--gold); text-decoration: none; }
+    .breadcrumb i { font-size: 10px; }
+    .page-header h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 700; line-height: 1.1; letter-spacing: -1px; margin-bottom: 16px; }
+    .page-header h1 span { color: var(--gold); }
+    .page-header p { font-size: 17px; color: var(--text-light); max-width: 540px; margin: 0 auto; line-height: 1.7; }
+
+    /* SECTION */
+    section { padding: 80px 5%; }
+    .section-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+    .section-label::before { content: ''; display: block; width: 24px; height: 2px; background: var(--gold); }
+    .section-title { font-size: clamp(26px, 4vw, 40px); font-weight: 700; line-height: 1.2; margin-bottom: 16px; letter-spacing: -0.5px; }
+    .section-title span { color: var(--gold); }
+    .section-sub { font-size: 16px; color: var(--text-muted); max-width: 520px; line-height: 1.7; }
+
+    /* FILTER TABS */
+    .filter-bar { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 52px; }
+    .filter-btn { padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all var(--transition); font-family: 'Inter', sans-serif; }
+    .filter-btn:hover, .filter-btn.active { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+
+    /* COURSE CARDS */
+    .courses-section { background: var(--navy-mid); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .courses-list { display: flex; flex-direction: column; gap: 24px; }
+
+    .course-detail-card {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      transition: all var(--transition);
+    }
+    .course-detail-card:hover { border-color: var(--gold); box-shadow: var(--shadow); }
+
+    .course-accent-bar { width: 80px; background: rgba(245,166,35,0.08); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 28px 0; border-right: 1px solid var(--border); }
+    .course-accent-icon { width: 48px; height: 48px; background: rgba(245,166,35,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--gold); }
+    .course-level-badge { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; writing-mode: vertical-rl; transform: rotate(180deg); }
+
+    .course-body { padding: 28px 28px; }
+    .course-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+    .course-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .course-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .course-tag { padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; }
+    .tag-popular { background: rgba(245,166,35,0.15); color: var(--gold); }
+    .tag-beginner { background: rgba(76,175,80,0.12); color: #4CAF50; }
+    .tag-commercial { background: rgba(33,150,243,0.12); color: #64B5F6; }
+    .tag-advanced { background: rgba(156,39,176,0.12); color: #CE93D8; }
+
+    .course-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; max-width: 600px; }
+    .course-meta-row { display: flex; gap: 28px; flex-wrap: wrap; }
+    .course-meta-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-light); }
+    .course-meta-item i { color: var(--gold); font-size: 12px; width: 16px; }
+    .course-meta-item strong { color: var(--white); }
+
+    .course-includes { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; }
+    .include-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+    .include-item i { color: var(--gold); font-size: 11px; }
+
+    .course-cta { padding: 28px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 14px; border-left: 1px solid var(--border); min-width: 160px; }
+    .course-price { text-align: right; }
+    .price-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+    .price-value { font-size: 28px; font-weight: 700; color: var(--gold); line-height: 1; }
+    .price-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    /* WHAT'S INCLUDED */
+    .included-section { text-align: center; }
+    .included-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 52px; }
+    .included-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; transition: all var(--transition); }
+    .included-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+    .included-icon { width: 56px; height: 56px; background: rgba(245,166,35,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--gold); margin: 0 auto 16px; }
+    .included-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .included-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* COMPARISON */
+    .compare-section { background: var(--navy-mid); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .compare-table { width: 100%; border-collapse: collapse; margin-top: 40px; }
+    .compare-table th { padding: 14px 20px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    .compare-table th:first-child { color: var(--gold); }
+    .compare-table td { padding: 16px 20px; font-size: 14px; border-bottom: 1px solid rgba(245,166,35,0.08); vertical-align: middle; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: rgba(245,166,35,0.03); }
+    .compare-table td:first-child { font-weight: 600; color: var(--white); }
+    .check { color: var(--gold); }
+    .dash { color: var(--text-muted); }
+    .duration-pill { display: inline-block; padding: 3px 10px; background: rgba(245,166,35,0.1); color: var(--gold); border-radius: 50px; font-size: 12px; font-weight: 600; }
+
+    /* CTA */
+    .cta-section { text-align: center; }
+    .cta-box { max-width: 600px; margin: 0 auto; }
+    .cta-box h2 { font-size: clamp(28px, 4vw, 42px); font-weight: 700; margin-bottom: 16px; letter-spacing: -0.5px; }
+    .cta-box p { font-size: 16px; color: var(--text-muted); margin-bottom: 36px; }
+    .cta-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 28px; }
+    .cta-contact { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; }
+    .contact-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); text-decoration: none; transition: color var(--transition); }
+    .contact-item i { color: var(--gold); }
+    .contact-item:hover { color: var(--gold); }
+
+    /* FOOTER */
+    footer { background: #060F1E; border-top: 1px solid var(--border); padding: 52px 5% 28px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .footer-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+    .footer-socials { display: flex; gap: 10px; }
+    .social-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--navy-mid); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; text-decoration: none; transition: all var(--transition); }
+    .social-btn:hover { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+    .footer-col h4 { font-size: 13px; font-weight: 600; color: var(--white); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color var(--transition); display: flex; align-items: center; gap: 6px; }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-links a i { font-size: 11px; }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-bottom p { font-size: 12px; color: var(--text-muted); }
+    .footer-bottom-links { display: flex; gap: 20px; }
+    .footer-bottom-links a { font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color var(--transition); }
+    .footer-bottom-links a:hover { color: var(--gold); }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .course-detail-card { grid-template-columns: 64px 1fr; }
+      .course-cta { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; border-left: none; border-top: 1px solid var(--border); }
+      .course-price { text-align: left; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      .course-detail-card { grid-template-columns: 1fr; }
+      .course-accent-bar { width: 100%; flex-direction: row; padding: 16px 20px; border-right: none; border-bottom: 1px solid var(--border); }
+      .course-level-badge { writing-mode: horizontal-tb; transform: none; }
+      .course-cta { flex-direction: column; align-items: flex-start; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar">
+    <a href="index.html" class="nav-logo">
+      <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 100px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+      <div class="nav-logo-text">
+        <div class="name">Dekay Driving School</div>
+        <div class="tagline">Ablekuma · Accra</div>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="courses.html" class="active">Courses</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="faqs.html">FAQs</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="login.html" class="btn btn-outline">Login</a>
+      <a href="contact.html" class="btn btn-primary"><i class="fas fa-phone-alt"></i> Book a Lesson</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a>
+    <a href="courses.html">Courses</a>
+    <a href="about.html">About</a>
+    <a href="faqs.html">FAQs</a>
+    <a href="contact.html">Contact</a>
+    <a href="login.html" style="color:var(--gold)">Login</a>
+    <a href="contact.html" class="btn btn-primary" style="text-align:center">Book a Lesson</a>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-grid"></div>
+    <div class="page-header-content">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Courses</span>
+      </div>
+      <h1>Our <span>Courses</span> & Pricing</h1>
+      <p>Structured driving programmes for every licence type — taught by certified, patient instructors on Accra roads.</p>
+    </div>
+  </div>
+
+  <!-- COURSE CARDS -->
+  <section class="courses-section" id="courses">
+    <div style="text-align:center; margin-bottom: 52px;" class="reveal">
+      <div class="section-label" style="justify-content:center">All programmes</div>
+      <h2 class="section-title">Pick your <span>licence type</span></h2>
+      <p class="section-sub" style="margin: 0 auto;">Every course includes theory lessons, video modules, in-school quizzes, and a mock DVLA test before you sit the real thing.</p>
+    </div>
+
+    <div class="filter-bar reveal">
+      <button class="filter-btn active" data-filter="all">All courses</button>
+      <button class="filter-btn" data-filter="personal">Personal</button>
+      <button class="filter-btn" data-filter="commercial">Commercial</button>
+    </div>
+
+    <div class="courses-list" id="coursesList">
+      <!-- Dynamically loaded from Firestore -->
+    </div>
+  </section>
+
+  <!-- WHAT'S INCLUDED -->
+  <section class="included-section" id="included">
+    <div class="reveal" style="text-align:center; margin-bottom: 0;">
+      <div class="section-label" style="justify-content:center">Every course</div>
+      <h2 class="section-title">What's <span>always included</span></h2>
+      <p class="section-sub" style="margin: 0 auto;">No hidden extras — every programme at Dekay comes fully equipped from day one.</p>
+    </div>
+    <div class="included-grid">
+      <div class="included-card reveal">
+        <div class="included-icon"><i class="fas fa-play-circle"></i></div>
+        <div class="included-title">Video Lessons</div>
+        <p class="included-desc">Watch theory modules on road signs, rules and safety at your own pace inside the student portal.</p>
+      </div>
+      <div class="included-card reveal" style="transition-delay:0.08s">
+        <div class="included-icon"><i class="fas fa-tasks"></i></div>
+        <div class="included-title">Online Quizzes</div>
+        <p class="included-desc">Test your knowledge with Coursera-style quizzes built by our instructors. Scores tracked in real time.</p>
+      </div>
+      <div class="included-card reveal" style="transition-delay:0.16s">
+        <div class="included-icon"><i class="fas fa-user-tie"></i></div>
+        <div class="included-title">1-on-1 Instruction</div>
+        <p class="included-desc">Every practical lesson is you and your certified instructor — no group lessons, no shortcuts.</p>
+      </div>
+      <div class="included-card reveal" style="transition-delay:0.24s">
+        <div class="included-icon"><i class="fas fa-mobile-alt"></i></div>
+        <div class="included-title">Student Portal</div>
+        <p class="included-desc">Log attendance, track your training stage, view quiz scores and notifications — all on your phone.</p>
+      </div>
+      <div class="included-card reveal" style="transition-delay:0.32s">
+        <div class="included-icon"><i class="fas fa-clipboard-check"></i></div>
+        <div class="included-title">Mock DVLA Test</div>
+        <p class="included-desc">A full internal assessment before your DVLA date so you know exactly what to expect.</p>
+      </div>
+      <div class="included-card reveal" style="transition-delay:0.4s">
+        <div class="included-icon"><i class="fas fa-hands-helping"></i></div>
+        <div class="included-title">DVLA Escort</div>
+        <p class="included-desc">We accompany you on your DVLA test day — our instructors know the examiners and the routes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK COMPARISON -->
+  <section class="compare-section">
+    <div class="reveal">
+      <div class="section-label">Side by side</div>
+      <h2 class="section-title">Quick <span>comparison</span></h2>
+      <p class="section-sub">Not sure which course fits you? Use this table to compare at a glance.</p>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="compare-table reveal">
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Duration</th>
+            <th>Licence type</th>
+            <th>Theory modules</th>
+            <th>Quizzes</th>
+            <th>Mock test</th>
+          </tr>
+        </thead>
+                <tbody id="compareTableBody">
+          <!-- Dynamically loaded -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-box reveal">
+      <div class="section-label" style="justify-content:center">Ready to start?</div>
+      <h2>Book your <span style="color:var(--gold)">free consultation</span></h2>
+      <p>We'll match you to the right course and walk you through the process. No commitment needed.</p>
+      <div class="cta-actions">
+        <a href="contact.html" class="btn btn-primary btn-lg"><i class="fas fa-calendar-check"></i> Book now — it's free</a>
+        <a href="faqs.html" class="btn btn-outline btn-lg">Read the FAQs</a>
+      </div>
+      <div class="cta-contact">
+        <a href="tel:0274211566" class="contact-item"><i class="fas fa-phone"></i> 0274 211 566</a>
+        <a href="tel:0269824898" class="contact-item"><i class="fas fa-phone"></i> 0269 824 898</a>
+        <a href="https://wa.me/233274211566" class="contact-item"><i class="fab fa-whatsapp"></i> WhatsApp us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="margin-bottom:16px; display:inline-flex">
+          <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 65px; margin-bottom: 4px; align-self: right; border-radius: 10px;" />
+          <div class="nav-logo-text">
+            <div class="name">Dekay Driving School</div>
+            <div class="tagline">Ablekuma · Accra</div>
+          </div>
+        </a>
+        <p class="footer-desc">Professional driving training for manual, automatic, motorcycle, bus and truck licences. Located at Ablekuma NIC Junction, Accra.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-btn" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          <a href="#" class="social-btn" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick links</h4>
+        <ul class="footer-links">
+          <li><a href="index.html"><i class="fas fa-chevron-right"></i> Home</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Courses</a></li>
+          <li><a href="about.html"><i class="fas fa-chevron-right"></i> About us</a></li>
+          <li><a href="faqs.html"><i class="fas fa-chevron-right"></i> FAQs</a></li>
+          <li><a href="contact.html"><i class="fas fa-chevron-right"></i> Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Courses</h4>
+        <ul class="footer-links">
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Manual</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Automatic</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Motorcycle</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Commercial bus</a></li>
+          <li><a href="courses.html"><i class="fas fa-chevron-right"></i> Heavy goods</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul class="footer-links">
+          <li><a href="tel:0274211566"><i class="fas fa-phone"></i> 0274 211 566</a></li>
+          <li><a href="tel:0269824898"><i class="fas fa-phone"></i> 0269 824 898</a></li>
+          <li><a href="https://wa.me/233274211566"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+          <li><a href="https://www.google.com/maps?q=Dekay+Driving+School+Ablekuma+Accra+Ghana"><i class="fas fa-map-marker-alt"></i> Ablekuma NIC Junction</a></li>
+          <li><a href="login.html"><i class="fas fa-user"></i> Student portal</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
+        <div style="font-size: 12px; color: var(--text-muted); flex: 1; text-align: left;">
+          &copy; 2026 Dekay Driving School. All rights reserved.
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); flex: 1; text-align: center;">
+          Designed &amp; Maintained by 
+          <a href="https://myportfolio-theta-topaz-43.vercel.app/" target="_blank" style="color: var(--gold); text-decoration: none; transition: color 0.3s ease; font-weight: 600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Prince Antwi Wiafe</a>
+        </div>
+        <div style="display: flex; gap: 16px; flex: 1; justify-content: flex-end; align-items: center;">
+          <a href="#" style="font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Privacy policy</a>
+          <span style="color: var(--text-muted);">|</span>
+          <a href="#" style="font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">Terms of use</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 40); });
+    document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('mobileMenu').classList.toggle('open'); });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  </script>
+  
+    <!-- FIREBASE & DYNAMIC COURSES -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
+      authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
+      projectId: "dekaydrivingschool-6933c",
+      storageBucket: "dekaydrivingschool-6933c.firebasestorage.app",
+      messagingSenderId: "1017266487810",
+      appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b",
+      measurementId: "G-QTR8V6LG85"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadCourses() {
+      const snaps = await getDocs(collection(db, "courses"));
+      const courses = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      renderCourseCards(courses);
+      renderCompareTable(courses);
+      initFilters(courses);   // filter buttons now work with dynamic data
+    }
+
+    function renderCourseCards(courses) {
+      const container = document.getElementById("coursesList");
+      if (!courses.length) {
+        container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:40px;">No courses available yet. Please check back soon.</p>`;
+        return;
+      }
+
+      container.innerHTML = courses.map(course => {
+        const icon = course.icon || "fa-car";
+        const name = course.name || "Untitled Course";
+        const category = course.category || "personal";
+        const level = course.level || "beginner";
+        const duration = course.duration || "—";
+        const price = course.price ? `GH₵ ${course.price}` : "GH₵ —";
+        const desc = course.description || "No description available.";
+
+        // Determine tags based on level / category
+        let tagsHtml = "";
+        if (level === "beginner") tagsHtml += `<span class="course-tag tag-beginner">Beginner friendly</span>`;
+        if (level === "advanced") tagsHtml += `<span class="course-tag tag-advanced">Advanced</span>`;
+        if (category === "commercial") tagsHtml += `<span class="course-tag tag-commercial">Commercial licence</span>`;
+        if (name.includes("Manual")) tagsHtml += `<span class="course-tag tag-popular">Most popular</span>`;
+
+        return `
+          <div class="course-detail-card reveal" data-category="${category}">
+            <div class="course-accent-bar">
+              <div class="course-accent-icon"><i class="fas ${icon}"></i></div>
+              <span class="course-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
+            </div>
+            <div class="course-body">
+              <div class="course-header-row">
+                <div>
+                  <div class="course-name">${name}</div>
+                  <div class="course-tags">${tagsHtml}</div>
+                </div>
+              </div>
+              <p class="course-desc">${desc}</p>
+              <div class="course-meta-row">
+                <div class="course-meta-item"><i class="fas fa-calendar-alt"></i><span><strong>${duration}</strong> · 3 sessions/week</span></div>
+                <div class="course-meta-item"><i class="fas fa-user-tie"></i><span>Certified instructor, 1-on-1</span></div>
+                <div class="course-meta-item"><i class="fas fa-road"></i><span>City + highway driving</span></div>
+              </div>
+              <div class="course-includes">
+                <div class="include-item"><i class="fas fa-check-circle"></i> Theory video modules</div>
+                <div class="include-item"><i class="fas fa-check-circle"></i> Online quizzes</div>
+                <div class="include-item"><i class="fas fa-check-circle"></i> Mock DVLA test</div>
+                <div class="include-item"><i class="fas fa-check-circle"></i> Student portal access</div>
+                <div class="include-item"><i class="fas fa-check-circle"></i> Progress tracking</div>
+              </div>
+            </div>
+            <div class="course-cta">
+              <div class="course-price">
+                <div class="price-label">Starting from</div>
+                <div class="price-value">${price}</div>
+                <div class="price-note">Contact us for exact quote</div>
+              </div>
+              <a href="register.html?course=${encodeURIComponent(name)}" class="btn btn-primary">Enrol now <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Re-attach reveal animations for the new cards
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+
+    function renderCompareTable(courses) {
+      const tbody = document.getElementById("compareTableBody");
+      if (!tbody) return;
+      if (!courses.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">No courses to compare.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = courses.map(course => {
+        const name = course.name || "—";
+        const duration = (course.duration || "—").replace(" – ", " – ").replace(" weeks", " wks");
+        const licenceType = course.category === "commercial" ? "Commercial" : "Personal";
+        return `
+          <tr>
+            <td>${name}</td>
+            <td><span class="duration-pill">${duration}</span></td>
+            <td>${licenceType}</td>
+            <td><i class="fas fa-check check"></i></td>
+            <td><i class="fas fa-check check"></i></td>
+            <td><i class="fas fa-check check"></i></td>
+          </tr>`;
+      }).join('');
+    }
+
+    function initFilters(courses) {
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const cards = document.querySelectorAll('.course-detail-card');
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const filter = btn.dataset.filter;
+
+          document.querySelectorAll('.course-detail-card').forEach(card => {
+            if (filter === 'all' || card.dataset.category === filter) {
+              card.style.display = 'grid';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+    }
+
+    // Load courses on page start
+    loadCourses();
+  </script>
+</body>
+</html>
