@@ -244,6 +244,29 @@
       display: flex;
       flex-direction: column;
     }
+    /* Texture overlay layer */
+    .certificate-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        repeating-linear-gradient(
+          45deg,
+          rgba(0,0,0,0.025) 0px,
+          rgba(0,0,0,0.025) 1px,
+          transparent 1px,
+          transparent 8px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          rgba(0,0,0,0.025) 0px,
+          rgba(0,0,0,0.025) 1px,
+          transparent 1px,
+          transparent 8px
+        );
+      pointer-events: none;
+    }
     .certificate-card::before { content: none; }
     .certificate-card::after  { content: none; }
     /* Left navy accent bar */
@@ -252,6 +275,7 @@
       top: 0; left: 0; bottom: 0;
       width: 14px;
       background: #1a2744;
+      z-index: 2;
     }
     /* Gold top stripe inside accent bar */
     .cert-accent-bar::after {
@@ -265,6 +289,7 @@
       padding: 36px 44px 0 44px;
       position: relative;
       flex: 1;
+      z-index: 1;
     }
     /* No inner border needed */
     .certificate-border {
@@ -379,6 +404,8 @@
       align-items: flex-end;
       padding: 0 44px 24px 62px;
       margin-top: 10px;
+      position: relative;
+      z-index: 1;
     }
     .signature-block { text-align: left; flex: none; }
     .signature-line {
@@ -441,6 +468,8 @@
       color: #1a2744;
       letter-spacing: 0.5px;
       border-radius: 0 0 4px 4px;
+      position: relative;
+      z-index: 1;
     }
     .certificate-serial { display: none; }
     .certificate-course { display: none; }
@@ -552,6 +581,7 @@
 
       <div class="nav-section-label">Communication</div>
       <button class="nav-item" onclick="showPage('notifications', this)"><i class="fas fa-bell"></i> Send notifications</button>
+      <button class="nav-item" onclick="showPage('enquiries', this)"><i class="fas fa-headset"></i> Enquiries <span class="badge" id="enquiriesBadge" style="display:none;"></span></button>
 
       <div class="nav-section-label">System</div>
       <button class="nav-item" onclick="showPage('permissions', this)"><i class="fas fa-shield-alt"></i> Permissions</button>
@@ -972,6 +1002,50 @@
       </div>
     </div>
 
+        <!-- ═══ ENQUIRIES PAGE ═══ -->
+    <div class="page" id="page-enquiries">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Client Enquiries</div>
+        <div style="font-size:14px; color:var(--text-muted)">Contact form submissions from the website</div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+        <select id="enquiryStatusFilter" onchange="filterEnquiries()" style="padding:10px 14px; background:var(--navy-mid); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); font-size:13px; font-family:'Inter',sans-serif; outline:none; cursor:pointer;">
+          <option value="">All statuses</option>
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="booked">Booked</option>
+          <option value="closed">Closed</option>
+        </select>
+        <button class="btn btn-outline" onclick="loadEnquiries(); showToast('Refreshed ✓', 'success')" style="white-space:nowrap;">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Experience</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="enquiriesTableBody">
+              <tr><td colspan="9" style="text-align:center; padding:32px;">Loading enquiries…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
 
         <!-- ═══ COURSES (Admin) ═══ -->
     <div class="page" id="page-courses">
@@ -1218,15 +1292,15 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Course <span>*</span></label>
-              <select id="newClassCourse" class="form-select">
-                <option value="">Select course…</option>
-              </select>
-            </div>
-            <div class="form-group">
               <label class="form-label">Instructor <span>*</span></label>
               <select id="newClassInstructor" class="form-select">
                 <option value="">Select instructor…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Course <span>*</span></label>
+              <select id="newClassCourse" class="form-select">
+                <option value="">Select course…</option>
               </select>
             </div>
           </div>
@@ -2936,89 +3010,93 @@
     }
   });
 
-    // ── STAGE STATUS HELPER ──
-  function getStageStatus(stageNum, progressData, currentStage) {
-    if (stageNum < currentStage) return { status: 'done' };
-    if (stageNum === currentStage) return { status: 'current' };
-    return { status: 'pending' };
-  }
-
-  // ── HORIZONTAL STAGE PIPELINE ──
     // ── BUILD STAGE PIPELINE FOR ADMIN MODAL ──
-  function buildStagePipeline(stage, progressData, studentId) {
+  function buildStagePipeline(stage, studentData, studentId) {
     const stages = [
-      { label: "Registration", desc: "Enrolled and profile set up", stage: 1 },
-      { label: "Theory lessons", desc: "Watch all video modules", stage: 2 },
-      { label: "Theory test", desc: "Pass the online quiz (60%+)", stage: 3 },
-      { label: "Practical lessons", desc: "Behind-the-wheel training", stage: 4 },
-      { label: "Assessment", desc: "Mock DVLA test (70%+)", stage: 5 },
-      { label: "DVLA Ready", desc: "Ready for official test", stage: 6 }
+      { num: 1, label: 'Registration',    icon: 'fa-user-plus' },
+      { num: 2, label: 'Theory Lessons',  icon: 'fa-play-circle' },
+      { num: 3, label: 'Theory Test',     icon: 'fa-tasks' },
+      { num: 4, label: 'Practical',       icon: 'fa-car' },
+      { num: 5, label: 'Assessment',      icon: 'fa-clipboard-check' },
+      { num: 6, label: 'DVLA Ready',      icon: 'fa-id-card' },
     ];
 
-    // DVLA Ready = 95% completion
-    const dvlaReady = stage >= 6 || progressData?.dvlaReady === true;
+    const stageColors = {
+      done:    { bg: 'rgba(76,175,80,0.15)',  border: '#4CAF50', text: '#4CAF50',   badge: 'rgba(76,175,80,0.2)'  },
+      current: { bg: 'rgba(245,166,35,0.15)', border: '#F5A623', text: '#F5A623',   badge: 'rgba(245,166,35,0.2)' },
+      pending: { bg: 'rgba(28,50,89,0.6)',    border: 'rgba(245,166,35,0.2)', text: '#8B9AB0', badge: 'rgba(28,50,89,0.4)' },
+    };
 
-    return stages.map(s => {
-      const st = s.stage;
-      const status = getStageStatus(st, progressData, stage);
-      
-      let dotClass = 'pending';
-      let tagClass = 'pending-c';
-      let label = 'Locked';
-      
-      if (status.status === 'done') {
-        dotClass = 'done';
-        tagClass = 'done-c';
-        label = '✓ Complete';
-      } else if (status.status === 'current') {
-        dotClass = 'current';
-        tagClass = 'current-c';
-        label = '▶ In Progress';
-      }
-      
-      // Override for DVLA Ready (Stage 6) when completed
-      if (st === 6 && dvlaReady) {
-        dotClass = 'done';
-        tagClass = 'done-c';
-        label = '✓ DVLA Ready 🏆';
-      }
-      
-      // Add DVLA Ready button for Stage 6
-      let dvlaButtonHtml = '';
-      if (st === 6 && !dvlaReady && studentId) {
-        dvlaButtonHtml = `
-          <button class="btn btn-gold btn-animated" onclick="openDvlaChecklist('${studentId}')" style="margin-top:8px;font-size:12px;padding:6px 16px;">
-            <i class="fas fa-check-circle"></i> Mark DVLA Ready
-          </button>
-        `;
-      } else if (st === 6 && dvlaReady) {
-        dvlaButtonHtml = `
-          <button class="btn btn-outline" style="margin-top:8px;font-size:12px;padding:6px 16px;cursor:default;opacity:0.7;" disabled>
-            <i class="fas fa-check-circle"></i> DVLA Ready ✓
-          </button>
-        `;
-      }
+    const getState = (n) => {
+      if (n < stage) return 'done';
+      if (n === stage) return 'current';
+      return 'pending';
+    };
 
-      const isClickable = st <= 6 && (st === 1 || st === 6 || st > 1);
-      const clickAttr = isClickable ? `onclick="setStudentStage('${studentId}', ${st})"` : '';
-      const style = st === 6 && dvlaReady ? 'border-color: var(--success);' : '';
+    const stagesHtml = stages.map((s, idx) => {
+      const state = getState(s.num);
+      const c = stageColors[state];
+      const isClickable = s.num >= 2;
+      const dotContent = state === 'done'
+        ? `<i class="fas fa-check" style="font-size:14px;"></i>`
+        : `<i class="fas ${s.icon}" style="font-size:13px;"></i>`;
+      const pulse = state === 'current' ? 'animation:stagePulse 2s ease-in-out infinite;' : '';
+      const labelText = state === 'done' ? '✓ Done' : state === 'current' ? '▶ Active' : 'Pending';
 
       return `
-        <div class="pipeline-step-item" style="cursor:${isClickable ? 'pointer' : 'default'};">
-          <div class="ps-dot-wrap">
-            <div class="ps-dot ${dotClass}" ${clickAttr} style="${style}">
-              ${dotClass === 'done' ? '<i class="fas fa-check"></i>' : st}
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;position:relative;">
+          ${idx < stages.length - 1 ? `
+            <div style="position:absolute;top:22px;left:calc(50% + 22px);right:calc(-50% + 22px);height:2px;background:${state === 'done' ? '#4CAF50' : 'rgba(245,166,35,0.2)'};z-index:0;transition:background 0.3s;"></div>
+          ` : ''}
+          <div
+            ${isClickable && studentId ? `onclick="setStudentStage('${studentId}', ${s.num})"` : ''}
+            title="${isClickable ? `Set to Stage ${s.num}: ${s.label}` : 'Stage 1 is set automatically on approval'}"
+            style="
+              width:44px;height:44px;border-radius:50%;
+              background:${c.bg};border:2px solid ${c.border};
+              display:flex;align-items:center;justify-content:center;
+              color:${c.text};cursor:${isClickable && studentId ? 'pointer' : 'default'};
+              position:relative;z-index:1;
+              transition:all 0.25s ease;
+              ${pulse}
+            "
+            onmouseover="${isClickable && studentId ? `this.style.transform='scale(1.12)';this.style.boxShadow='0 4px 16px rgba(245,166,35,0.3)'` : ''}"
+            onmouseout="${isClickable && studentId ? `this.style.transform='scale(1)';this.style.boxShadow='none'` : ''}"
+          >
+            ${dotContent}
+          </div>
+          <div style="margin-top:8px;text-align:center;">
+            <div style="font-size:10px;font-weight:700;color:${c.text};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;" title="${s.label}">${s.label}</div>
+            <div style="margin-top:3px;">
+              <span style="display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:50px;background:${c.badge};color:${c.text};">
+                ${labelText}
+              </span>
             </div>
           </div>
-          <div class="ps-info">
-            <div class="ps-title">${s.label}</div>
-            <div class="ps-desc">${s.desc}</div>
-            <span class="ps-tag tag-${tagClass}">${label}</span>
-            ${status.approvedBy ? `<div style="font-size:9px;color:var(--text-muted);margin-top:2px;">by ${status.approvedBy}</div>` : ''}
-          </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
+
+    const pipelineHtml = `
+      <style>
+        @keyframes stagePulse {
+          0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,0.3)}
+          50%{box-shadow:0 0 0 8px rgba(245,166,35,0)}
+        }
+      </style>
+      <div style="
+        display:flex;align-items:flex-start;
+        background:var(--navy);border:1px solid var(--border);
+        border-radius:var(--radius-lg);padding:20px 16px 16px;
+        gap:0;overflow-x:auto;
+      ">
+        ${stagesHtml}
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">
+        <i class="fas fa-info-circle"></i> Click a stage bubble (2–6) to advance or move the student. Stage 1 is set automatically on approval.
+      </div>
+    `;
+
+    return pipelineHtml;
   }
 
     // ── SET STUDENT STAGE (Admin) ──
@@ -3048,6 +3126,7 @@
       showToast("Could not update stage.", "error");
     }
   };
+
 
   
 
@@ -3084,7 +3163,7 @@
     }
 
     try {
-      // Only update the fields that changed - preserve all others
+      
             // Update users collection
       await updateDoc(doc(db, "users", uid), {
         firstName, lastName, phone, ghCardNumber,
@@ -3185,8 +3264,8 @@
   };
 
 
-    // ── APPROVE STUDENT ──
-    window.approveStudent = async function(uid) {
+// ── APPROVE STUDENT ──
+window.approveStudent = async function(uid) {
     if (!(await showConfirm("Approve student", "Approve this student? They will be able to sign in."))) return;
     try {
       const adminName = document.getElementById("adminName").textContent;
@@ -3233,6 +3312,30 @@
         });
       } else {
         await setDoc(progressRef, defaultProgress);
+      }
+      
+       // ── SEND APPROVAL EMAIL VIA SERVERLESS FUNCTION ──
+      const student = allStudents.find(s => s.id === uid);
+      if (student && student.email) {
+        fetch('https://dekay-driving-school.vercel.app/api/send-approval-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to_name: student.firstName || 'Student',
+            course_name: student.courseType || 'your course',
+            to_email: student.email,
+            login_link: window.location.origin + '/login.html'
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            console.log("✅ Approval email sent to", student.email);
+          } else {
+            console.warn("⚠️ Email may not have sent:", data.error);
+          }
+        })
+        .catch(err => console.warn("⚠️ Email request failed:", err));
       }
       
       showToast("Student approved ✓", "success");
@@ -5659,7 +5762,7 @@
     await loadStudentPermissions();
   }
 
-  // ══════════════════════════════════════
+    // ══════════════════════════════════════
   // PAGE NAVIGATION & UI HELPERS (from the old regular script)
   // ══════════════════════════════════════
   function showPage(name, btn) {
@@ -5672,17 +5775,45 @@
       lessons:'Video Lessons', quizzes:'Quizzes', courses:'Courses',
       instructors:'Instructors', classes:'Classes',
       resources:'Resources', permissions:'Permissions',
-      notifications:'Send Notifications', settings:'Settings'
+      notifications:'Send Notifications', enquiries:'Enquiries', settings:'Settings'
     };
     document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
-    // Load permissions when that page is shown
-    if (name === "permissions") {
-      loadAllPermissions();
+    
+    // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
+    if (name === "students") {
+      loadStudents().then(() => buildOverview());
     }
-    // Load resources when that page is shown
+    if (name === "overview") {
+      buildOverview();
+    }
+    if (name === "attendance") {
+      loadAttendance();
+    }
+    if (name === "lessons") {
+      loadLessons();
+    }
+    if (name === "quizzes") {
+      loadQuizzes();
+    }
+    if (name === "courses") {
+      loadCourses();
+    }
+    if (name === "instructors") {
+      loadInstructors();
+    }
+    if (name === "classes") {
+      loadClasses();
+    }
     if (name === "resources") {
       loadAdminResources();
     }
+    if (name === "permissions") {
+      loadAllPermissions();
+    }
+        if (name === "enquiries") {
+      loadEnquiries();
+    }
+    
     if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
   }
 
@@ -6174,9 +6305,10 @@
     }
   };
 
-    
 
-  // ══════════════════════════════════════
+
+  
+    // ══════════════════════════════════════
   // DVLA CHECKLIST FUNCTIONS
   // ══════════════════════════════════════
   
@@ -6439,7 +6571,7 @@
       return null;
     }
   }
-
+  
 </script>
 </body>
 </html>

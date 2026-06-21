@@ -581,6 +581,7 @@
 
       <div class="nav-section-label">Communication</div>
       <button class="nav-item" onclick="showPage('notifications', this)"><i class="fas fa-bell"></i> Send notifications</button>
+      <button class="nav-item" onclick="showPage('enquiries', this)"><i class="fas fa-headset"></i> Enquiries <span class="badge" id="enquiriesBadge" style="display:none;"></span></button>
 
       <div class="nav-section-label">System</div>
       <button class="nav-item" onclick="showPage('permissions', this)"><i class="fas fa-shield-alt"></i> Permissions</button>
@@ -995,6 +996,50 @@
             <thead><tr><th>Quiz title</th><th>Questions</th><th>Pass mark</th><th>Avg. score</th><th>Completion</th><th>Actions</th></tr></thead>
             <tbody id="adminQuizTable">
               <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading quizzes…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+        <!-- ═══ ENQUIRIES PAGE ═══ -->
+    <div class="page" id="page-enquiries">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Client Enquiries</div>
+        <div style="font-size:14px; color:var(--text-muted)">Contact form submissions from the website</div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+        <select id="enquiryStatusFilter" onchange="filterEnquiries()" style="padding:10px 14px; background:var(--navy-mid); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); font-size:13px; font-family:'Inter',sans-serif; outline:none; cursor:pointer;">
+          <option value="">All statuses</option>
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="booked">Booked</option>
+          <option value="closed">Closed</option>
+        </select>
+        <button class="btn btn-outline" onclick="loadEnquiries(); showToast('Refreshed ✓', 'success')" style="white-space:nowrap;">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Experience</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="enquiriesTableBody">
+              <tr><td colspan="9" style="text-align:center; padding:32px;">Loading enquiries…</td></tr>
             </tbody>
           </table>
         </div>
@@ -5730,7 +5775,7 @@ window.approveStudent = async function(uid) {
       lessons:'Video Lessons', quizzes:'Quizzes', courses:'Courses',
       instructors:'Instructors', classes:'Classes',
       resources:'Resources', permissions:'Permissions',
-      notifications:'Send Notifications', settings:'Settings'
+      notifications:'Send Notifications', enquiries:'Enquiries', settings:'Settings'
     };
     document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
     
@@ -5764,6 +5809,9 @@ window.approveStudent = async function(uid) {
     }
     if (name === "permissions") {
       loadAllPermissions();
+    }
+        if (name === "enquiries") {
+      loadEnquiries();
     }
     
     if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
@@ -6523,6 +6571,105 @@ window.approveStudent = async function(uid) {
       return null;
     }
   }
+
+    // ══════════════════════════════════════
+  // ENQUIRIES
+  // ══════════════════════════════════════
+  let allEnquiries = [];
+
+  async function loadEnquiries() {
+    const tbody = document.getElementById("enquiriesTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;">Loading…</td></tr>`;
+
+    try {
+      const q = query(collection(db, "enquiries"), orderBy("createdAt", "desc"));
+      const snaps = await getDocs(q);
+      allEnquiries = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // Update badge
+      const newCount = allEnquiries.filter(e => e.status === "new").length;
+      const badge = document.getElementById("enquiriesBadge");
+      if (badge) {
+        badge.textContent = newCount || '';
+        badge.style.display = newCount > 0 ? '' : 'none';
+      }
+      
+      renderEnquiries(allEnquiries);
+    } catch(e) {
+      console.error("Error loading enquiries:", e);
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--error);">Could not load enquiries.</td></tr>`;
+    }
+  }
+
+  function renderEnquiries(enquiries) {
+    const tbody = document.getElementById("enquiriesTableBody");
+    const filterStatus = document.getElementById("enquiryStatusFilter")?.value || '';
+    
+    let filtered = enquiries;
+    if (filterStatus) {
+      filtered = enquiries.filter(e => e.status === filterStatus);
+    }
+    
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;">No enquiries found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(e => {
+      let dateStr = '—';
+      if (e.createdAt?.toDate) {
+        dateStr = e.createdAt.toDate().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+      }
+      const statusColors = {
+        new: 'var(--warn)',
+        contacted: 'var(--info)',
+        booked: 'var(--success)',
+        closed: 'var(--text-muted)'
+      };
+      const statusColor = statusColors[e.status] || 'var(--text-muted)';
+      
+      return `<tr>
+        <td style="font-size:12px;">${dateStr}</td>
+        <td><strong>${escapeHtml(e.firstName)} ${escapeHtml(e.lastName || '')}</strong></td>
+        <td><a href="tel:${escapeHtml(e.phone)}" style="color:var(--gold);text-decoration:none;">${escapeHtml(e.phone)}</a></td>
+        <td style="font-size:12px;">${e.email ? `<a href="mailto:${escapeHtml(e.email)}" style="color:var(--text-light);">${escapeHtml(e.email)}</a>` : '—'}</td>
+        <td><span class="stage-pill">${escapeHtml(e.courseType || '—')}</span></td>
+        <td style="font-size:12px;">${escapeHtml(e.experience || '—')}</td>
+        <td style="font-size:12px;max-width:200px;white-space:normal;">${escapeHtml(e.message || '—')}</td>
+        <td>
+          <select onchange="updateEnquiryStatus('${e.id}', this.value)" style="padding:5px 8px; background:var(--navy); border:1px solid var(--border); border-radius:6px; color:${statusColor}; font-size:11px; font-weight:600; cursor:pointer;">
+            <option value="new" ${e.status === 'new' ? 'selected' : ''}>🆕 New</option>
+            <option value="contacted" ${e.status === 'contacted' ? 'selected' : ''}>📞 Contacted</option>
+            <option value="booked" ${e.status === 'booked' ? 'selected' : ''}>✅ Booked</option>
+            <option value="closed" ${e.status === 'closed' ? 'selected' : ''}>🔒 Closed</option>
+          </select>
+        </td>
+        <td>
+          <a href="https://wa.me/233${escapeHtml(e.phone?.replace(/^0+/, '') || '')}" target="_blank" class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:11px;" title="WhatsApp">
+            <i class="fab fa-whatsapp"></i> Chat
+          </a>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  window.filterEnquiries = function() {
+    renderEnquiries(allEnquiries);
+  };
+
+  window.updateEnquiryStatus = async function(enquiryId, newStatus) {
+    try {
+      await updateDoc(doc(db, "enquiries", enquiryId), { status: newStatus });
+      const enquiry = allEnquiries.find(e => e.id === enquiryId);
+      if (enquiry) enquiry.status = newStatus;
+      renderEnquiries(allEnquiries);
+      showToast("Status updated ✓", "success");
+    } catch(e) {
+      console.error("Error updating status:", e);
+      showToast("Could not update status.", "error");
+    }
+  };
   
 </script>
 </body>
