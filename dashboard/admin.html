@@ -1079,14 +1079,16 @@
         <div class="modal-body">
           <div class="form-group">
   <label class="form-label">Course name <span>*</span></label>
-  <select id="newCourseName" class="form-select">
+  <select id="newCourseName" class="form-select" onchange="toggleNewCourseCustomInput(this)">
     <option value="">Select course…</option>
     <option value="Manual">Manual Transmission</option>
     <option value="Automatic">Automatic Transmission</option>
     <option value="Motorcycle">Motorcycle</option>
     <option value="Commercial Bus">Commercial Bus</option>
     <option value="Truck / HGV">Truck / HGV</option>
+    <option value="__custom__">+ Type a custom course name…</option>
   </select>
+  <input type="text" id="newCourseNameCustom" class="form-input" placeholder="Enter custom course name…" style="display:none; margin-top:8px;" />
 </div>
           <div class="form-row">
             <div class="form-group">
@@ -1158,14 +1160,16 @@
           <input type="hidden" id="editCourseId" />
           <div class="form-group">
             <label class="form-label">Course name <span>*</span></label>
-            <select id="editCourseName" class="form-select">
+            <select id="editCourseName" class="form-select" onchange="toggleEditCourseCustomInput(this)">
               <option value="">Select course…</option>
               <option value="Manual">Manual Transmission</option>
               <option value="Automatic">Automatic Transmission</option>
               <option value="Motorcycle">Motorcycle</option>
               <option value="Commercial Bus">Commercial Bus</option>
               <option value="Truck / HGV">Truck / HGV</option>
+              <option value="__custom__">+ Type a custom course name…</option>
             </select>
+            <input type="text" id="editCourseNameCustom" class="form-input" placeholder="Enter custom course name…" style="display:none; margin-top:8px;" />
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -2257,8 +2261,23 @@
   }
 
   // ── ADD COURSE ──
+  window.toggleNewCourseCustomInput = function(sel) {
+    const customInput = document.getElementById("newCourseNameCustom");
+    customInput.style.display = sel.value === "__custom__" ? "block" : "none";
+    if (sel.value !== "__custom__") customInput.value = "";
+  };
+
+  window.toggleEditCourseCustomInput = function(sel) {
+    const customInput = document.getElementById("editCourseNameCustom");
+    customInput.style.display = sel.value === "__custom__" ? "block" : "none";
+    if (sel.value !== "__custom__") customInput.value = "";
+  };
+
   window.addCourse = async function() {
-    const name     = document.getElementById("newCourseName").value.trim();
+    const selectVal = document.getElementById("newCourseName").value;
+    const name = selectVal === "__custom__"
+      ? document.getElementById("newCourseNameCustom").value.trim()
+      : selectVal.trim();
     const category = document.getElementById("newCourseCategory").value;
     const duration = document.getElementById("newCourseDuration").value.trim();
     const price    = document.getElementById("newCoursePrice").value.trim();
@@ -2308,7 +2327,17 @@
     if (!course) return showToast("Course not found.", "error");
 
     document.getElementById("editCourseId").value     = course.id;
-    document.getElementById("editCourseName").value   = course.name || '';
+    const knownCourses = ["Manual","Automatic","Motorcycle","Commercial Bus","Truck / HGV"];
+    const isKnown = knownCourses.includes(course.name);
+    document.getElementById("editCourseName").value = isKnown ? (course.name || '') : '__custom__';
+    const editCustomInput = document.getElementById("editCourseNameCustom");
+    if (!isKnown && course.name) {
+      editCustomInput.style.display = "block";
+      editCustomInput.value = course.name;
+    } else {
+      editCustomInput.style.display = "none";
+      editCustomInput.value = "";
+    }
     document.getElementById("editCourseCategory").value = course.category || 'personal';
     document.getElementById("editCourseDuration").value = course.duration || '';
     document.getElementById("editCoursePrice").value   = course.price || '';
@@ -2321,8 +2350,11 @@
 
   // ── UPDATE COURSE ──
   window.updateCourse = async function() {
-    const id       = document.getElementById("editCourseId").value;
-    const name     = document.getElementById("editCourseName").value.trim();
+    const id = document.getElementById("editCourseId").value;
+    const editSelectVal = document.getElementById("editCourseName").value;
+    const name = editSelectVal === "__custom__"
+      ? document.getElementById("editCourseNameCustom").value.trim()
+      : editSelectVal.trim();
     const category = document.getElementById("editCourseCategory").value;
     const duration = document.getElementById("editCourseDuration").value.trim();
     const price    = document.getElementById("editCoursePrice").value.trim();
