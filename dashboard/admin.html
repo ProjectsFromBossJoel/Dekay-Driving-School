@@ -4615,13 +4615,13 @@ window.approveStudent = async function(uid) {
         if (certs.length === 0) {
           return '<div style="color:var(--text-muted);font-size:13px;">No certifications.</div>';
         }
-        return certs.map((c, idx) => {
-          const name = c.name || `Certification ${idx + 1}`;
-          const url = c.documentUrl || c.url || null;
-          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
-            <span style="font-size:13px;font-weight:500;">${escapeHtml(name)}</span>
-            ${url ? `<a href="${url}" target="_blank" class="btn btn-icon btn-outline" title="Download document" style="padding:4px 10px;font-size:12px;"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
-          </div>`;
+                              return certs.map((c, idx) => {
+                      const name = c.name || `Certification ${idx + 1}`;
+                      const url = c.documentUrl || c.url || null;
+                      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
+                        <input type="text" class="cert-name-input" data-index="${idx}" value="${escapeHtml(name)}" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--white);font-size:13px;" placeholder="Certification name" />
+                        ${url ? `<a href="${url}" download class="btn btn-outline" style="padding:4px 14px;font-size:12px;border-radius:6px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
+                      </div>`;
         }).join('');
       }
       
