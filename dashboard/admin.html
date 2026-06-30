@@ -4364,7 +4364,7 @@ window.approveStudent = async function(uid) {
                     return `<div style="color:var(--text-light);font-size:13px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">${escapeHtml(certs)}</div>`;
                   }
                   if (Array.isArray(certs)) {
-                      return certs.map((c, idx) => {
+                                            return certs.map((c, idx) => {
                       const name = c.name || `Certification ${idx + 1}`;
                       const url = c.documentUrl || c.url || null;
                       return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
