@@ -543,23 +543,11 @@
             <div class="pf-group"><label>Certifications</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius); white-space: pre-wrap;" id="viewCertifications">—</div></div>
             <div class="pf-group"><label>Years of experience</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewExperience">—</div></div>
 
-            <!-- Ghana Card Images (view‑only) -->
+            <!-- Ghana Card Number -->
             <div class="profile-section-title" style="margin-top:24px;">Ghana Card</div>
-            <div class="pf-row">
-              <div class="pf-group">
-                <label>Front side</label>
-                <div id="viewFrontImage" style="margin-top:4px;">
-                  <img id="currentFrontImg" src="" style="max-width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox(this.src)" />
-                  <div style="font-size:11px; color:var(--text-muted);">Click image to enlarge</div>
-                </div>
-              </div>
-              <div class="pf-group">
-                <label>Back side</label>
-                <div id="viewBackImage" style="margin-top:4px;">
-                  <img id="currentBackImg" src="" style="max-width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox(this.src)" />
-                  <div style="font-size:11px; color:var(--text-muted);">Click image to enlarge</div>
-                </div>
-              </div>
+            <div class="pf-group">
+              <label>Ghana Card Number</label>
+              <div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewGhCardNumber">—</div>
             </div>
 
             <!-- Guarantor -->
@@ -756,22 +744,8 @@
           document.getElementById("viewRef2Email").textContent = instructorData.references[1].email || '—';
           document.getElementById("viewRef2Phone").textContent = instructorData.references[1].phone || '—';
         }
-        // Load Ghana Card images preview (read‑only)
-        if (instructorData.ghCardFront) {
-          document.getElementById("currentFrontImg").src = instructorData.ghCardFront;
-          document.getElementById("currentFrontImg").style.display = "block";
-        } else {
-          document.getElementById("currentFrontImg").style.display = "none";
-          // Show a placeholder text
-          document.getElementById("viewFrontImage").innerHTML += '<div style="font-size:12px; color:var(--text-muted);">No front image</div>';
-        }
-        if (instructorData.ghCardBack) {
-          document.getElementById("currentBackImg").src = instructorData.ghCardBack;
-          document.getElementById("currentBackImg").style.display = "block";
-        } else {
-          document.getElementById("currentBackImg").style.display = "none";
-          document.getElementById("viewBackImage").innerHTML += '<div style="font-size:12px; color:var(--text-muted);">No back image</div>';
-        }
+        // Load Ghana Card Number (read‑only)
+        document.getElementById("viewGhCardNumber").textContent = instructorData.ghCardNumber || '—';
 
         const initials = (instructorData.firstName?.[0] || '') + (instructorData.lastName?.[0] || '') || '--';
         document.getElementById("avatarInitials").textContent = initials;
