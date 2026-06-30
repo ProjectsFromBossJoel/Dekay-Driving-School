@@ -4354,11 +4354,16 @@ window.approveStudent = async function(uid) {
           </div>
 
           <div class="bio-section">
-            <div class="bio-section-title">Ghana Card (read‑only)</div>
-            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-              ${i.ghCardFront ? `<div><div style="color: var(--text-muted); font-size: 11px;">Front side</div><img src="${i.ghCardFront}" style="width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox('${i.ghCardFront}')" /></div>` : '<div>No front image</div>'}
-              ${i.ghCardBack ? `<div><div style="color: var(--text-muted); font-size: 11px;">Back side</div><img src="${i.ghCardBack}" style="width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox('${i.ghCardBack}')" /></div>` : '<div>No back image</div>'}
+            <div class="bio-section-title">Ghana Card</div>
+            <div class="form-group">
+              <label class="form-label">Ghana Card Number</label>
+              <input type="text" id="editGhCardNumber" class="form-input" value="${escapeHtml(i.ghCardNumber || '')}" placeholder="e.g., GHA-123456789-1" />
             </div>
+            ${(i.ghCardFront || i.ghCardBack) ? `
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px;">
+              ${i.ghCardFront ? `<div><div style="color: var(--text-muted); font-size: 11px;">Front side</div><img src="${i.ghCardFront}" style="width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox('${i.ghCardFront}')" /></div>` : ''}
+              ${i.ghCardBack ? `<div><div style="color: var(--text-muted); font-size: 11px;">Back side</div><img src="${i.ghCardBack}" style="width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox('${i.ghCardBack}')" /></div>` : ''}
+            </div>` : ''}
           </div>
 
           <div class="bio-section">
@@ -4482,6 +4487,7 @@ window.approveStudent = async function(uid) {
       const firstName = document.getElementById("editFirstName")?.value.trim();
       const lastName = document.getElementById("editLastName")?.value.trim();
       const phone = document.getElementById("editPhone")?.value.trim();
+      const ghCardNumber = document.getElementById("editGhCardNumber")?.value.trim();
       const dob = document.getElementById("editDob")?.value;
       const qualifications = document.getElementById("editQualifications")?.value.trim();
       const certifications = document.getElementById("editCertifications")?.value.trim();
@@ -4516,7 +4522,7 @@ window.approveStudent = async function(uid) {
 
       try {
         await updateDoc(doc(db, "instructors", currentInstructorUid), {
-          firstName, lastName, phone, dob,
+          firstName, lastName, phone, ghCardNumber, dob,
           qualifications, certifications, experience,
           guarantor, references,
           assignedCourses: assignedCourses

@@ -230,6 +230,25 @@
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
     }
+
+    .cert-row {
+      margin-bottom: 8px;
+    }
+    .cert-row .file-upload-area {
+      padding: 8px 12px;
+    }
+    .cert-remove-btn {
+      display: none;
+    }
+    .cert-remove-btn.visible {
+      display: inline-block
+    }
+    .cert-add-btn {
+      transition: background var(--transition);
+    }
+    .cert-add-btn:hover {
+      background: var(--gold-light);
+    }
   </style>
 </head>
 <body>
@@ -321,35 +340,21 @@
         </div>
       </div>
 
-      <!-- Ghana Card Uploads -->
-      <div class="form-section-title">Ghana Card</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Front side <span>*</span></label>
-          <div class="file-upload-area" onclick="document.getElementById('ghCardFront').click()">
-            <i class="fas fa-id-card"></i>
-            <span class="file-upload-text" id="frontUploadText">Tap to upload front</span>
-            <div class="file-upload-preview" id="frontPreview"></div>
-          </div>
-          <input type="file" id="ghCardFront" accept="image/*" style="display:none" onchange="previewFile(this, 'frontPreview', 'frontUploadText')" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Back side <span>*</span></label>
-          <div class="file-upload-area" onclick="document.getElementById('ghCardBack').click()">
-            <i class="fas fa-id-card"></i>
-            <span class="file-upload-text" id="backUploadText">Tap to upload back</span>
-            <div class="file-upload-preview" id="backPreview"></div>
-          </div>
-          <input type="file" id="ghCardBack" accept="image/*" style="display:none" onchange="previewFile(this, 'backPreview', 'backUploadText')" />
+      <!-- Ghana Card Number -->
+      <div class="form-group">
+        <label class="form-label">Ghana Card Number <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-id-card input-icon"></i>
+          <input type="text" id="ghanaCardNumber" class="form-input" placeholder="GHA-XXXXXXXXXX" />
         </div>
       </div>
 
-      <!-- Profile Photo -->
-      <div class="form-section-title">Profile Photo <span style="color:var(--text-muted); font-weight:normal;">(Optional)</span></div>
+      <!-- Passport Picture -->
+      <div class="form-section-title">Passport Picture <span style="color:var(--error);">*</span></div>
       <div class="form-group">
         <div class="file-upload-area" onclick="document.getElementById('profilePhoto').click()">
           <i class="fas fa-camera"></i>
-          <span class="file-upload-text" id="profileUploadText">Tap to upload profile picture</span>
+          <span class="file-upload-text" id="profileUploadText">Tap to upload passport picture</span>
           <div class="file-upload-preview" id="profilePreview"></div>
         </div>
         <input type="file" id="profilePhoto" accept="image/*" style="display:none" onchange="previewFile(this, 'profilePreview', 'profileUploadText')" />
@@ -365,12 +370,44 @@
           <input type="text" id="qualifications" class="form-input" placeholder="e.g. BSc. Mechanical Engineering, Driving Instructor Certificate" />
         </div>
       </div>
+      <!-- Certifications -->
       <div class="form-group">
         <label class="form-label">Certifications</label>
-        <div class="input-wrap">
-          <i class="fas fa-award input-icon"></i>
-          <input type="text" id="certifications" class="form-input" placeholder="e.g. DVLA Approved Instructor, Defensive Driving" />
+        <div id="certificationsContainer">
+          <!-- Template row (hidden) for cloning -->
+          <div class="cert-row" id="certRowTemplate" style="display:none;">
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+              <div style="flex:1;">
+                <input type="text" class="cert-name form-input" placeholder="Name/Type of Certification" style="padding-left:16px;" />
+              </div>
+              <div style="flex:1;">
+                <div class="file-upload-area cert-file-upload" style="padding:8px 12px; cursor:pointer;" onclick="this.querySelector('input[type=file]').click()">
+                  <i class="fas fa-upload"></i>
+                  <span class="cert-file-text">Upload document</span>
+                  <input type="file" class="cert-file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="handleCertFileChange(this)" />
+                </div>
+              </div>
+              <button type="button" class="cert-remove-btn" style="background:transparent; border:none; color:var(--error); cursor:pointer; font-size:18px;" onclick="removeCertRow(this)"><i class="fas fa-times-circle"></i></button>
+            </div>
+          </div>
+          <!-- Initial row (visible) -->
+          <div class="cert-row">
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+              <div style="flex:1;">
+                <input type="text" class="cert-name form-input" placeholder="Name/Type of Certification" style="padding-left:16px;" />
+              </div>
+              <div style="flex:1;">
+                <div class="file-upload-area cert-file-upload" style="padding:8px 12px; cursor:pointer;" onclick="this.querySelector('input[type=file]').click()">
+                  <i class="fas fa-upload"></i>
+                  <span class="cert-file-text">Upload document</span>
+                  <input type="file" class="cert-file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="handleCertFileChange(this)" />
+                </div>
+              </div>
+              <button type="button" class="cert-remove-btn" style="background:transparent; border:none; color:var(--error); cursor:pointer; font-size:18px; display:none;" onclick="removeCertRow(this)"><i class="fas fa-times-circle"></i></button>
+            </div>
+          </div>
         </div>
+        <button type="button" class="cert-add-btn" onclick="addCertificationRow()" style="background:var(--gold); color:var(--navy); border:none; border-radius:50%; width:30px; height:30px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-top:6px;"><i class="fas fa-plus"></i></button>
       </div>
       <div class="form-group">
         <label class="form-label">Years of experience <span>*</span></label>
@@ -562,8 +599,8 @@
       reader.readAsDataURL(file);
     };
 
-    // Upload image to Cloudinary and return URL
-    async function uploadImage(source) {
+    // Upload file to Cloudinary (supports images, PDFs, etc.)
+    async function uploadFile(source) {
       // source can be:
       // - a file input element (<input type="file">)
       // - a File object (from input.files[0])
@@ -582,10 +619,6 @@
         console.warn("No file provided for upload");
         return null;
       }
-      if (!file.type.startsWith('image/')) {
-        showToast("Please select an image file.", "error");
-        return null;
-      }
 
       const fd = new FormData();
       fd.append("file", file);
@@ -593,7 +626,8 @@
       if (CLOUDINARY_FOLDER) fd.append("folder", CLOUDINARY_FOLDER);
 
       try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+        // Use auto resource type to handle any file type
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
           method: "POST",
           body: fd
         });
@@ -602,10 +636,59 @@
         return data.secure_url;
       } catch (err) {
         console.error("Cloudinary error:", err);
-        showToast("Image upload failed. Please try again.", "error");
+        showToast("File upload failed. Please try again.", "error");
         return null;
       }
     }
+
+    // --- Certification dynamic rows ---
+    window.addCertificationRow = function() {
+      const container = document.getElementById('certificationsContainer');
+      const template = document.getElementById('certRowTemplate');
+      const newRow = template.cloneNode(true);
+      newRow.id = '';
+      newRow.style.display = 'block';
+      // reset file input and text
+      const fileInput = newRow.querySelector('.cert-file-input');
+      fileInput.value = '';
+      const fileText = newRow.querySelector('.cert-file-text');
+      fileText.textContent = 'Upload document';
+      // show remove button
+      const removeBtn = newRow.querySelector('.cert-remove-btn');
+      removeBtn.style.display = 'inline-block';
+      // update onchange to call handleCertFileChange
+      fileInput.onchange = function() { handleCertFileChange(this); };
+      container.appendChild(newRow);
+      updateRemoveButtons();
+    };
+
+    window.removeCertRow = function(btn) {
+      const row = btn.closest('.cert-row');
+      if (row) {
+        row.remove();
+        updateRemoveButtons();
+      }
+    };
+
+    function updateRemoveButtons() {
+      const rows = document.querySelectorAll('.cert-row');
+      rows.forEach((row, index) => {
+        const removeBtn = row.querySelector('.cert-remove-btn');
+        if (rows.length > 1) {
+          removeBtn.style.display = 'inline-block';
+        } else {
+          removeBtn.style.display = 'none';
+        }
+      });
+    }
+
+    window.handleCertFileChange = function(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const parentUploadArea = input.closest('.file-upload-area');
+      const textSpan = parentUploadArea.querySelector('.cert-file-text');
+      textSpan.textContent = file.name;
+    };
 
     // ── Manual registration ──
         window.handleRegister = async function() {
@@ -614,10 +697,10 @@
       const email           = document.getElementById("email").value.trim();
       const phone           = document.getElementById("phone").value.trim();
       const dob             = document.getElementById("dob").value;
-      const ghFrontFile     = document.getElementById("ghCardFront").files[0];
-      const ghBackFile      = document.getElementById("ghCardBack").files[0];
+      const ghanaCardNumber = document.getElementById("ghanaCardNumber").value.trim();
+      const profileFile     = document.getElementById("profilePhoto").files[0];
       const qualifications  = document.getElementById("qualifications").value.trim();
-      const certifications  = document.getElementById("certifications").value.trim();
+      // certifications will be collected from dynamic rows
       const experience      = document.getElementById("experience").value.trim();
       const guarantorName   = document.getElementById("guarantorName").value.trim();
       const guarantorEmail  = document.getElementById("guarantorEmail").value.trim();
@@ -633,7 +716,7 @@
 
       setError("");
 
-      if (!firstName || !lastName || !email || !phone || !dob || !qualifications || !experience || !guarantorName || !guarantorEmail || !guarantorPhone || !ref1Name || !password) {
+      if (!firstName || !lastName || !email || !phone || !dob || !qualifications || !experience || !guarantorName || !guarantorEmail || !guarantorPhone || !ref1Name || !password || !profileFile) {
         setError("Please fill in all required fields.");
         return;
       }
@@ -662,11 +745,38 @@
         }
         const uid = data.localId;
 
-        // 2. Upload images (allow failures – we'll store null if upload fails)
-        const [ghFrontUrl, ghBackUrl] = await Promise.all([
-          ghFrontFile ? uploadImage(ghFrontFile) : Promise.resolve(null),
-          ghBackFile ? uploadImage(ghBackFile) : Promise.resolve(null)
-        ]);
+        // 2. Upload profile photo
+        const profilePhotoUrl = await uploadFile(profileFile);
+        if (!profilePhotoUrl) {
+          // uploadImage already shows toast on error
+          btn.disabled = false;
+          btn.classList.remove("loading");
+          return;
+        }
+
+        // Collect certifications from dynamic rows
+        const certRows = document.querySelectorAll('.cert-row');
+        const certsToUpload = [];
+        certRows.forEach(row => {
+          const nameInput = row.querySelector('.cert-name');
+          const fileInput = row.querySelector('.cert-file-input');
+          const name = nameInput.value.trim();
+          const file = fileInput.files[0];
+          if (name && file) {
+            certsToUpload.push({ name, file });
+          }
+        });
+
+        // Upload certification documents
+        let certResults = [];
+        if (certsToUpload.length > 0) {
+          const certUploadPromises = certsToUpload.map(async (cert) => {
+            const url = await uploadFile(cert.file);
+            if (!url) throw new Error('Failed to upload certification document for ' + cert.name);
+            return { name: cert.name, documentUrl: url };
+          });
+          certResults = await Promise.all(certUploadPromises);
+        }
 
         // 3. Sign in to Firestore (since we just created the user)
         await signInWithEmailAndPassword(auth, email, password);
@@ -678,10 +788,10 @@
           email,
           phone,
           dob,
-          ghCardFront: ghFrontUrl,
-          ghCardBack: ghBackUrl,
+          ghanaCardNumber: ghanaCardNumber,
+          profilePhoto: profilePhotoUrl,   // <-- new field
           qualifications,
-          certifications,
+          certifications: certResults,
           experience: parseInt(experience),
           guarantor: {
             name: guarantorName,
@@ -703,14 +813,28 @@
         // Reset form
         document.querySelectorAll(".form-input, .form-select").forEach(el => el.value = "");
         document.getElementById("dob").value = "";
-        ["frontPreview", "backPreview"].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = 'none';
+        document.getElementById("ghanaCardNumber").value = "";
+        document.getElementById("profilePhoto").value = "";
+        document.getElementById("profilePreview").style.display = "none";
+        document.getElementById("profileUploadText").textContent = "Tap to upload passport picture";
+
+        // Reset certifications: keep only first row, clear its inputs and file
+        const container = document.getElementById('certificationsContainer');
+        const rows = container.querySelectorAll('.cert-row');
+        rows.forEach((row, index) => {
+          if (index === 0) {
+            // Keep first row, clear inputs
+            const nameInput = row.querySelector('.cert-name');
+            const fileInput = row.querySelector('.cert-file-input');
+            const fileText = row.querySelector('.cert-file-text');
+            nameInput.value = '';
+            fileInput.value = '';
+            fileText.textContent = 'Upload document';
+          } else {
+            row.remove();
+          }
         });
-        document.getElementById("frontUploadText").textContent = "Tap to upload front";
-        document.getElementById("backUploadText").textContent = "Tap to upload back";
-        document.getElementById("ghCardFront").value = "";
-        document.getElementById("ghCardBack").value = "";
+        updateRemoveButtons();
 
       } catch (e) {
         console.error(e);
@@ -763,6 +887,8 @@
         btn.disabled = false; btn.style.opacity = "1";
       }
     };
+    // Initialize remove buttons (hide on first row)
+    updateRemoveButtons();
   </script>
 </body>
 </html>
