@@ -4383,7 +4383,7 @@ window.approveStudent = async function(uid) {
             <div class="bio-section-title">Ghana Card</div>
             <div class="form-group">
               <label class="form-label">Ghana Card Number</label>
-              <input type="text" id="editGhCardNumber" class="form-input" value="${escapeHtml(i.ghCardNumber || '')}" placeholder="e.g., GHA-123456789-1" />
+              <input type="text" id="editGhCardNumber" class="form-input" value="${escapeHtml(i.ghanaCardNumber || i.ghCardNumber || '')}" placeholder="e.g., GHA-123456789-1" />
             </div>
             ${(i.ghCardFront || i.ghCardBack) ? `
             <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px;">
@@ -4513,7 +4513,7 @@ window.approveStudent = async function(uid) {
       const firstName = document.getElementById("editFirstName")?.value.trim();
       const lastName = document.getElementById("editLastName")?.value.trim();
       const phone = document.getElementById("editPhone")?.value.trim();
-      const ghCardNumber = document.getElementById("editGhCardNumber")?.value.trim();
+      const ghanaCardNumber = document.getElementById("editGhCardNumber")?.value.trim();
       const dob = document.getElementById("editDob")?.value;
       const qualifications = document.getElementById("editQualifications")?.value.trim();
 
@@ -4572,11 +4572,11 @@ window.approveStudent = async function(uid) {
 
       try {
         await updateDoc(doc(db, "instructors", currentInstructorUid), {
-          firstName, lastName, phone, ghCardNumber, dob,
+          firstName, lastName, phone, ghanaCardNumber, dob,
           qualifications, experience,
           guarantor, references,
           assignedCourses: assignedCourses,
-          certifications: updatedCertifications   // save the updated names
+          certifications: updatedCertifications
         });
         showToast("Instructor updated successfully ✓", "success");
         // Refresh the instructors list and close modal
@@ -4587,7 +4587,7 @@ window.approveStudent = async function(uid) {
         showToast("Update failed. Check permissions.", "error");
       }
     };
-
+    
     // Helper to escape HTML
     function escapeHtml(str) {
       if (!str) return '';
