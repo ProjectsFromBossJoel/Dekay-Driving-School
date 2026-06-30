@@ -727,7 +727,18 @@
         document.getElementById("viewPhone").textContent = instructorData.phone || '—';
         document.getElementById("viewDob").textContent = instructorData.dob || '—';
         document.getElementById("viewQualifications").textContent = instructorData.qualifications || '—';
-        document.getElementById("viewCertifications").textContent = instructorData.certifications || '—';
+        // Format certifications: if it's an array, show only the names joined by comma
+        let certDisplay = '—';
+        const certs = instructorData.certifications;
+        if (certs) {
+          if (Array.isArray(certs)) {
+            const names = certs.map(c => c?.name || '').filter(Boolean);
+            certDisplay = names.length > 0 ? names.join(', ') : '—';
+          } else if (typeof certs === 'string') {
+            certDisplay = certs;
+          }
+        }
+        document.getElementById("viewCertifications").textContent = certDisplay;
         document.getElementById("viewExperience").textContent = instructorData.experience ? `${instructorData.experience} years` : '—';
 
         // Load guarantor
@@ -1509,68 +1520,7 @@
       document.getElementById("statStageProgress").textContent = `Stage ${avgStage}`;
     }
 
-       window.updateInstructorProfile = async function() {
-      const firstName = document.getElementById("settingsFirstName").value.trim();
-      const lastName = document.getElementById("settingsLastName").value.trim();
-      const phone = document.getElementById("settingsPhone").value.trim();
-      const dob = document.getElementById("settingsDob").value;
-      const qualifications = document.getElementById("settingsQualifications").value.trim();
-      const certifications = document.getElementById("settingsCertifications").value.trim();
-      const experience = parseInt(document.getElementById("settingsExperience").value) || 0;
-
-      // Guarantor
-      const guarantor = {
-        name: document.getElementById("settingsGuarantorName").value.trim(),
-        email: document.getElementById("settingsGuarantorEmail").value.trim(),
-        phone: document.getElementById("settingsGuarantorPhone").value.trim()
-      };
-      // References
-      const references = [
-        {
-          name: document.getElementById("settingsRef1Name").value.trim(),
-          email: document.getElementById("settingsRef1Email").value.trim(),
-          phone: document.getElementById("settingsRef1Phone").value.trim()
-        },
-        {
-          name: document.getElementById("settingsRef2Name").value.trim(),
-          email: document.getElementById("settingsRef2Email").value.trim(),
-          phone: document.getElementById("settingsRef2Phone").value.trim()
-        }
-      ];
-
-      if (!firstName || !lastName) {
-        showToast("First and last name are required", "error");
-        return;
-      }
-
-      try {
-        await updateDoc(doc(db, "instructors", currentUser.uid), {
-          firstName, lastName, phone, dob,
-          qualifications, certifications, experience,
-          guarantor, references
-        });
-        // Update local data
-        instructorData = {
-          ...instructorData,
-          firstName, lastName, phone, dob,
-          qualifications, certifications, experience,
-          guarantor, references
-        };
-        // Update UI
-        document.getElementById("instructorName").textContent = `${firstName} ${lastName}`;
-        document.getElementById("dashInstructorName").textContent = firstName;
-        document.getElementById("instructorFullName").textContent = `${firstName} ${lastName}`;
-        showToast("Profile updated successfully", "success");
-        // Reload dependent data
-        await loadMyStudents();
-        await loadAttendanceRecords();
-        await loadQuizStats();
-        updateDashboardStats();
-      } catch(e) {
-        console.error("Update error:", e);
-        showToast("Update failed. Check your permissions.", "error");
-      }
-    };
+       // Profile is read‑only – no update function needed
 
     window.uploadInstructorAvatar = async function(input) {
       const file = input.files[0]; if (!file) return;
