@@ -4301,6 +4301,7 @@ window.approveStudent = async function(uid) {
         const snap = await getDoc(doc(db, "instructors", uid));
         if (!snap.exists()) return showToast("Instructor not found.", "error");
         const i = snap.data();
+        window._currentCertifications = i.certifications;  // store for later saving
         
         // Fetch courses for dropdown
         let coursesOptions = '';
@@ -4350,7 +4351,32 @@ window.approveStudent = async function(uid) {
           <div class="bio-section">
             <div class="bio-section-title">Professional details</div>
             <div class="form-group"><label class="form-label">Qualifications</label><textarea id="editQualifications" class="form-input" rows="2">${escapeHtml(i.qualifications || '')}</textarea></div>
-            <div class="form-group"><label class="form-label">Certifications</label><textarea id="editCertifications" class="form-input" rows="2">${escapeHtml(i.certifications || '')}</textarea></div>
+            <div class="form-group">
+              <label class="form-label">Certifications</label>
+              <div id="certificationsContainer">
+                ${(() => {
+                  const certs = i.certifications;
+                  if (!certs || (Array.isArray(certs) && certs.length === 0)) {
+                    return '<div style="color:var(--text-muted);font-size:13px;">No certifications.</div>';
+                  }
+                  if (typeof certs === 'string') {
+                    // Legacy string - show as read-only
+                    return `<div style="color:var(--text-light);font-size:13px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">${escapeHtml(certs)}</div>`;
+                  }
+                  if (Array.isArray(certs)) {
+                    return certs.map((c, idx) => {
+                      const name = c.name || `Certification ${idx + 1}`;
+                      const url = c.documentUrl || c.url || null;
+                      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
+                        <input type="text" class="cert-name-input" data-index="${idx}" value="${escapeHtml(name)}" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--white);font-size:13px;" placeholder="Certification name" />
+                        ${url ? `<a href="${url}" target="_blank" class="btn btn-icon btn-outline" title="Download document" style="padding:4px 10px;font-size:12px;"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
+                      </div>`;
+                    }).join('');
+                  }
+                  return '<div style="color:var(--text-muted);font-size:13px;">Invalid certifications data.</div>';
+                })()}
+              </div>
+            </div>
           </div>
 
           <div class="bio-section">
@@ -4490,7 +4516,7 @@ window.approveStudent = async function(uid) {
       const ghCardNumber = document.getElementById("editGhCardNumber")?.value.trim();
       const dob = document.getElementById("editDob")?.value;
       const qualifications = document.getElementById("editQualifications")?.value.trim();
-      const certifications = document.getElementById("editCertifications")?.value.trim();
+
       const experience = parseInt(document.getElementById("editExperience")?.value) || 0;
 
       const guarantor = {
@@ -4515,6 +4541,30 @@ window.approveStudent = async function(uid) {
       const courseCheckboxes = document.querySelectorAll('.instr-course-checkbox:checked');
       const assignedCourses = Array.from(courseCheckboxes).map(cb => cb.value);
 
+      // --- Collect updated certification names ---
+      const certNameInputs = document.querySelectorAll('.cert-name-input');
+      let updatedCertifications = [];
+      const originalCerts = window._currentCertifications;
+      if (originalCerts && Array.isArray(originalCerts) && certNameInputs.length > 0) {
+        // We have an array and inputs – update names preserving documents
+        certNameInputs.forEach((input, idx) => {
+          const newName = input.value.trim();
+          if (newName) {
+            const orig = originalCerts[idx] || {};
+            updatedCertifications.push({
+              name: newName,
+              documentUrl: orig.documentUrl || orig.url || null
+            });
+          }
+        });
+      } else if (typeof originalCerts === 'string') {
+        // Keep as string (legacy) – do not modify
+        updatedCertifications = originalCerts;
+      } else {
+        // Fallback: keep original
+        updatedCertifications = originalCerts;
+      }
+
       if (!firstName || !lastName) {
         showToast("First name and last name are required.", "error");
         return;
@@ -4523,9 +4573,10 @@ window.approveStudent = async function(uid) {
       try {
         await updateDoc(doc(db, "instructors", currentInstructorUid), {
           firstName, lastName, phone, ghCardNumber, dob,
-          qualifications, certifications, experience,
+          qualifications, experience,
           guarantor, references,
-          assignedCourses: assignedCourses
+          assignedCourses: assignedCourses,
+          certifications: updatedCertifications   // save the updated names
         });
         showToast("Instructor updated successfully ✓", "success");
         // Refresh the instructors list and close modal
@@ -4548,6 +4599,33 @@ window.approveStudent = async function(uid) {
       }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
         return c;
       });
+    }
+
+    // ── RENDER CERTIFICATIONS WITH DOWNLOAD BUTTONS ──
+    function renderCertifications(certs) {
+      if (!certs) return '<div style="color:var(--text-muted);font-size:13px;">No certifications provided.</div>';
+      
+      // If it's a string (legacy data), show as text
+      if (typeof certs === 'string') {
+        return `<div style="color:var(--text-light);font-size:13px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">${escapeHtml(certs)}</div>`;
+      }
+      
+      // If it's an array
+      if (Array.isArray(certs)) {
+        if (certs.length === 0) {
+          return '<div style="color:var(--text-muted);font-size:13px;">No certifications.</div>';
+        }
+        return certs.map((c, idx) => {
+          const name = c.name || `Certification ${idx + 1}`;
+          const url = c.documentUrl || c.url || null;
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
+            <span style="font-size:13px;font-weight:500;">${escapeHtml(name)}</span>
+            ${url ? `<a href="${url}" target="_blank" class="btn btn-icon btn-outline" title="Download document" style="padding:4px 10px;font-size:12px;"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
+          </div>`;
+        }).join('');
+      }
+      
+      return '<div style="color:var(--text-muted);font-size:13px;">Invalid certifications data.</div>';
     }
 
 
