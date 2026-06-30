@@ -4364,12 +4364,12 @@ window.approveStudent = async function(uid) {
                     return `<div style="color:var(--text-light);font-size:13px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">${escapeHtml(certs)}</div>`;
                   }
                   if (Array.isArray(certs)) {
-                    return certs.map((c, idx) => {
+                      return certs.map((c, idx) => {
                       const name = c.name || `Certification ${idx + 1}`;
                       const url = c.documentUrl || c.url || null;
                       return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
                         <input type="text" class="cert-name-input" data-index="${idx}" value="${escapeHtml(name)}" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--white);font-size:13px;" placeholder="Certification name" />
-                        ${url ? `<a href="${url}" target="_blank" class="btn btn-icon btn-outline" title="Download document" style="padding:4px 10px;font-size:12px;"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
+                        ${url ? `<button class="btn btn-outline" style="padding:4px 14px;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;cursor:pointer;" onclick="downloadCertFile('${url}', '${escapeHtml(name)}')"><i class="fas fa-download"></i> Download</button>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
                       </div>`;
                     }).join('');
                   }
@@ -4620,13 +4620,35 @@ window.approveStudent = async function(uid) {
                       const url = c.documentUrl || c.url || null;
                       return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
                         <input type="text" class="cert-name-input" data-index="${idx}" value="${escapeHtml(name)}" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--white);font-size:13px;" placeholder="Certification name" />
-                        ${url ? `<a href="${url}" download class="btn btn-outline" style="padding:4px 14px;font-size:12px;border-radius:6px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
+                        ${url ? `<button class="btn btn-outline" style="padding:4px 14px;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;cursor:pointer;" onclick="downloadCertFile('${url}', '${escapeHtml(name)}')"><i class="fas fa-download"></i> Download</button>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
                       </div>`;
         }).join('');
       }
       
       return '<div style="color:var(--text-muted);font-size:13px;">Invalid certifications data.</div>';
     }
+
+    
+
+    // ── DOWNLOAD CERTIFICATION FILE ──
+    window.downloadCertFile = function(url, name) {
+      if (!url) {
+        showToast("No document available.", "error");
+        return;
+      }
+      // Convert image URL to raw if it's a non-image file (e.g., PDF)
+      let downloadUrl = url;
+      // If it's a Cloudinary image URL but the file is probably a PDF, try raw endpoint
+      if (url.includes('/image/upload/') && url.toLowerCase().includes('.pdf')) {
+        downloadUrl = url.replace('/image/upload/', '/raw/upload/');
+      }
+      // Add fl_attachment to force download
+      const separator = downloadUrl.includes('?') ? '&' : '?';
+      downloadUrl = downloadUrl + separator + 'fl_attachment=1';
+      // Open in new tab – this will trigger download
+      window.open(downloadUrl, '_blank');
+      showToast(`Downloading: ${name || 'document'}`, "success");
+    };
 
 
 
