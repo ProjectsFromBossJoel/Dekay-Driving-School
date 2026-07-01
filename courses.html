@@ -127,6 +127,7 @@
     .tag-beginner { background: rgba(76,175,80,0.12); color: #4CAF50; }
     .tag-commercial { background: rgba(33,150,243,0.12); color: #64B5F6; }
     .tag-advanced { background: rgba(156,39,176,0.12); color: #CE93D8; }
+    .tag-intermediate { background: rgba(255,152,0,0.12); color: #FFA726; }
 
     .course-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; max-width: 600px; }
     .course-meta-row { display: flex; gap: 28px; flex-wrap: wrap; }
@@ -488,16 +489,26 @@
       container.innerHTML = courses.map(course => {
         const icon = course.icon || "fa-car";
         const name = course.name || "Untitled Course";
-        const category = course.category || "personal";
-        const level = course.level || "beginner";
+        const category = (course.category || "personal").toLowerCase();
+        const level = (course.level || "beginner").toLowerCase();
         const duration = course.duration || "—";
         const price = course.price ? `GH₵ ${course.price}` : "GH₵ —";
         const desc = course.description || "No description available.";
 
         // Determine tags based on level / category
         let tagsHtml = "";
-        if (level === "beginner") tagsHtml += `<span class="course-tag tag-beginner">Beginner friendly</span>`;
-        if (level === "advanced") tagsHtml += `<span class="course-tag tag-advanced">Advanced</span>`;
+        // Level tags
+        if (level === "beginner") {
+          tagsHtml += `<span class="course-tag tag-beginner">Beginner friendly</span>`;
+        } else if (level === "intermediate") {
+          tagsHtml += `<span class="course-tag tag-intermediate">Intermediate</span>`;
+        } else if (level === "advanced") {
+          tagsHtml += `<span class="course-tag tag-advanced">Advanced</span>`;
+        } else if (level) {
+          // Fallback for any other level value
+          tagsHtml += `<span class="course-tag">${level.charAt(0).toUpperCase() + level.slice(1)}</span>`;
+        }
+
         if (category === "commercial") tagsHtml += `<span class="course-tag tag-commercial">Commercial licence</span>`;
         if (name.includes("Manual")) tagsHtml += `<span class="course-tag tag-popular">Most popular</span>`;
 
