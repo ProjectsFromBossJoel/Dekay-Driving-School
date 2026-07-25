@@ -1246,7 +1246,7 @@
         const data = d.data();
         const parentPath = data.parentPath || null;
         const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
-        return { name: data.name, parentPath, path };
+        return { name: data.name, description: data.description || '', parentPath, path };
       });
       const defaultFolderObjs = DEFAULT_LESSON_FOLDERS.map(name => ({ name, parentPath: null, path: name }));
       const knownPaths = new Set([...defaultFolderObjs, ...customFolders].map(f => f.path));
@@ -1260,11 +1260,16 @@
         }));
       const merged = [...defaultFolderObjs, ...customFolders, ...impliedFolders];
       const seen = new Set();
-      allLessonFolders = merged.filter(f => {
+      const dedupedFolders = merged.filter(f => {
         if (seen.has(f.path)) return false;
         seen.add(f.path);
         return true;
       }).sort((a,b) => a.name.localeCompare(b.name));
+
+      const studentCourse = (studentData.courseType || (Array.isArray(studentData.courseTypes) && studentData.courseTypes[0]) || '').trim().toLowerCase();
+      allLessonFolders = studentCourse
+        ? dedupedFolders.filter(f => f.path.split('/')[0].trim().toLowerCase() === studentCourse)
+        : dedupedFolders;
 
       const progressSnap = await getDoc(doc(db, "lessonProgress", currentUser.uid));
       window._lessonProgress = progressSnap.exists() ? progressSnap.data() : {};
@@ -1337,6 +1342,7 @@
           <div style="width:48px;height:48px;border-radius:12px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;margin:0 auto 12px;"><i class="fas fa-folder"></i></div>
           <div style="font-weight:600;font-size:14px;">${escapeHtml(f.name)}</div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${count} video${count === 1 ? '' : 's'}</div>
+          ${f.description ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${escapeHtml(f.description)}</div>` : ''}
         </div>`;
     }).join('');
   }
