@@ -2173,6 +2173,32 @@
     </div>
   </div>
 
+   <!-- ── EDIT LESSON FOLDER MODAL ── -->
+  <div class="modal-overlay" id="editFolderModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <div class="modal-title">Edit folder</div>
+        <button class="modal-close" onclick="closeModal('editFolderModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editFolderId" />
+        <div class="form-group">
+          <label class="form-label">Folder name <span>*</span></label>
+          <input type="text" id="editFolderTitle" class="form-input" placeholder="Folder name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="editFolderDescription" class="form-textarea" placeholder="Brief description…"></textarea>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);"><i class="fas fa-info-circle"></i> Renaming will automatically update any subfolders and lessons stored inside this folder.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('editFolderModal')">Cancel</button>
+        <button class="btn btn-gold" onclick="updateLessonFolder()"><i class="fas fa-save"></i> Save changes</button>
+      </div>
+    </div>
+  </div>
+
     <!-- CONFIRMATION MODAL -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal" style="max-width:400px">
@@ -4225,20 +4251,31 @@ window.approveStudent = async function(uid) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
 
+    const progWrap = document.getElementById("editLessonUploadProgressWrap");
+    const progBar = document.getElementById("editLessonUploadProgressBar");
+    const progPct = document.getElementById("editLessonUploadProgressPct");
+    const progLabel = document.getElementById("editLessonUploadProgressLabel");
+
     try {
       const updates = { title, category, duration, folder };
       const cloudinaryFolder = `lessons/${folder}`;
 
       if (videoFile) {
+        progWrap.style.display = "block";
+        progBar.style.width = "0%";
+        progPct.textContent = "0%";
+        progLabel.textContent = "Uploading video…";
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading video…';
         const videoFd = new FormData();
         videoFd.append("file", videoFile);
         videoFd.append("upload_preset", LESSON_UPLOAD_PRESET);
         videoFd.append("resource_type", "video");
         videoFd.append("folder", cloudinaryFolder);
-        const videoRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, { method: "POST", body: videoFd });
-        const videoData = await videoRes.json();
-        if (!videoRes.ok) throw new Error(videoData.error?.message || "Video upload failed");
+        const videoData = await uploadToCloudinaryWithProgress(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`,
+          videoFd,
+          (pct) => { progBar.style.width = pct + "%"; progPct.textContent = pct + "%"; }
+        );
         updates.videoUrl = videoData.secure_url;
         updates.videoDurationSec = videoData.duration || null;
         if (!thumbFile) {
@@ -4247,16 +4284,24 @@ window.approveStudent = async function(uid) {
       }
 
       if (thumbFile) {
+        progWrap.style.display = "block";
+        progBar.style.width = "0%";
+        progPct.textContent = "0%";
+        progLabel.textContent = "Uploading thumbnail…";
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading thumbnail…';
         const thumbFd = new FormData();
         thumbFd.append("file", thumbFile);
         thumbFd.append("upload_preset", LESSON_UPLOAD_PRESET);
         thumbFd.append("folder", cloudinaryFolder);
-        const thumbRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: thumbFd });
-        const thumbData = await thumbRes.json();
-        if (thumbRes.ok) updates.thumbnailUrl = thumbData.secure_url;
+        const thumbData = await uploadToCloudinaryWithProgress(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+          thumbFd,
+          (pct) => { progBar.style.width = pct + "%"; progPct.textContent = pct + "%"; }
+        );
+        updates.thumbnailUrl = thumbData.secure_url;
       }
 
+      progLabel.textContent = "Saving…";
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
       await updateDoc(doc(db, "lessons", id), updates);
 
@@ -4270,6 +4315,7 @@ window.approveStudent = async function(uid) {
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalHTML;
+      progWrap.style.display = "none";
     }
   };
 
@@ -4289,6 +4335,15 @@ window.approveStudent = async function(uid) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading video…';
 
+    const progWrap = document.getElementById("lessonUploadProgressWrap");
+    const progBar = document.getElementById("lessonUploadProgressBar");
+    const progPct = document.getElementById("lessonUploadProgressPct");
+    const progLabel = document.getElementById("lessonUploadProgressLabel");
+    progWrap.style.display = "block";
+    progBar.style.width = "0%";
+    progPct.textContent = "0%";
+    progLabel.textContent = "Uploading video…";
+
     try {
       const cloudinaryFolder = `lessons/${folder}`;
       const videoFd = new FormData();
@@ -4296,27 +4351,36 @@ window.approveStudent = async function(uid) {
       videoFd.append("upload_preset", LESSON_UPLOAD_PRESET);
       videoFd.append("resource_type", "video");
       videoFd.append("folder", cloudinaryFolder);
-      const videoRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, { method: "POST", body: videoFd });
-      const videoData = await videoRes.json();
-      if (!videoRes.ok) throw new Error(videoData.error?.message || "Video upload failed");
+      const videoData = await uploadToCloudinaryWithProgress(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`,
+        videoFd,
+        (pct) => { progBar.style.width = pct + "%"; progPct.textContent = pct + "%"; }
+      );
       const videoUrl = videoData.secure_url;
       const videoDurationSec = videoData.duration || null;
 
       let thumbUrl = "";
       if (thumbFile) {
+        progLabel.textContent = "Uploading thumbnail…";
+        progBar.style.width = "0%";
+        progPct.textContent = "0%";
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading thumbnail…';
         const thumbFd = new FormData();
         thumbFd.append("file", thumbFile);
         thumbFd.append("upload_preset", LESSON_UPLOAD_PRESET);
         thumbFd.append("folder", cloudinaryFolder);
-        const thumbRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: thumbFd });
-        const thumbData = await thumbRes.json();
-        if (thumbRes.ok) thumbUrl = thumbData.secure_url;
+        const thumbData = await uploadToCloudinaryWithProgress(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+          thumbFd,
+          (pct) => { progBar.style.width = pct + "%"; progPct.textContent = pct + "%"; }
+        );
+        thumbUrl = thumbData.secure_url;
       } else {
         // Auto-generate a thumbnail from the video at 1s using Cloudinary transformation
         thumbUrl = videoUrl.replace('/video/upload/', '/video/upload/so_1,f_jpg/').replace(/\.[^/.]+$/, '.jpg');
       }
 
+      progLabel.textContent = "Saving…";
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
       await addDoc(collection(db, "lessons"), {
         title, videoUrl, category, duration, folder,
@@ -4335,6 +4399,7 @@ window.approveStudent = async function(uid) {
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalHTML;
+      progWrap.style.display = "none";
     }
   };
 

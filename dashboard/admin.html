@@ -2081,6 +2081,15 @@
           </div>
           <input type="file" id="lessonVideoFile" accept="video/*" style="display:none" onchange="previewLessonVideo(this)" />
           <video id="lessonVideoPreview" controls style="display:none; width:100%; margin-top:8px; border-radius:8px; border:1px solid var(--border);"></video>
+          <div id="lessonUploadProgressWrap" style="display:none; margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+              <span id="lessonUploadProgressLabel">Uploading video…</span>
+              <span id="lessonUploadProgressPct">0%</span>
+            </div>
+            <div style="height:8px; background:var(--navy-light); border-radius:50px; overflow:hidden;">
+              <div id="lessonUploadProgressBar" style="height:100%; width:0%; background:var(--gold); border-radius:50px; transition:width 0.15s ease;"></div>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Thumbnail image</label>
@@ -2134,6 +2143,15 @@
           </div>
           <input type="file" id="editLessonVideoFile" accept="video/*" style="display:none" onchange="previewEditLessonVideo(this)" />
           <video id="editLessonVideoPreview" controls style="display:none; width:100%; margin-top:8px; border-radius:8px; border:1px solid var(--border);"></video>
+          <div id="editLessonUploadProgressWrap" style="display:none; margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+              <span id="editLessonUploadProgressLabel">Uploading video…</span>
+              <span id="editLessonUploadProgressPct">0%</span>
+            </div>
+            <div style="height:8px; background:var(--navy-light); border-radius:50px; overflow:hidden;">
+              <div id="editLessonUploadProgressBar" style="height:100%; width:0%; background:var(--gold); border-radius:50px; transition:width 0.15s ease;"></div>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Thumbnail image</label>
@@ -2179,6 +2197,32 @@
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('addFolderModal')">Cancel</button>
         <button class="btn btn-gold" onclick="createLessonFolder()"><i class="fas fa-folder-plus"></i> Create folder</button>
+      </div>
+    </div>
+  </div>
+
+   <!-- ── EDIT LESSON FOLDER MODAL ── -->
+  <div class="modal-overlay" id="editFolderModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <div class="modal-title">Edit folder</div>
+        <button class="modal-close" onclick="closeModal('editFolderModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editFolderId" />
+        <div class="form-group">
+          <label class="form-label">Folder name <span>*</span></label>
+          <input type="text" id="editFolderTitle" class="form-input" placeholder="Folder name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="editFolderDescription" class="form-textarea" placeholder="Brief description…"></textarea>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);"><i class="fas fa-info-circle"></i> Renaming will automatically update any subfolders and lessons stored inside this folder.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('editFolderModal')">Cancel</button>
+        <button class="btn btn-gold" onclick="updateLessonFolder()"><i class="fas fa-save"></i> Save changes</button>
       </div>
     </div>
   </div>
@@ -2908,8 +2952,12 @@
       const deleteBtn = f.id
         ? `<button class="btn btn-icon btn-danger" title="Delete folder" style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();deleteLessonFolder('${f.id}','${f.path.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>`
         : '';
+      const editFolderBtn = f.id
+        ? `<button class="btn btn-icon btn-outline" title="Edit folder" style="position:absolute;top:10px;right:44px;" onclick="event.stopPropagation();openEditFolderModal('${f.id}')"><i class="fas fa-eye"></i></button>`
+        : '';
       return `
         <div class="stat-card" style="cursor:pointer;position:relative;" onclick="openLessonFolder('${f.path.replace(/'/g, "\\'")}')">
+          ${editFolderBtn}
           ${deleteBtn}
           <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-folder" style="color:var(--gold)"></i></div>
           <div class="stat-card-value" style="font-size:18px;">${escapeHtml(f.name)}</div>
@@ -3025,6 +3073,73 @@
     } catch(e) {
       console.error(e);
       showToast("Could not create folder. Try again.", "error");
+    }
+  };
+
+  window.openEditFolderModal = function(folderId) {
+    const folder = allLessonFolders.find(f => f.id === folderId);
+    if (!folder) return showToast("Folder not found.", "error");
+    document.getElementById("editFolderId").value = folder.id;
+    document.getElementById("editFolderTitle").value = folder.name || '';
+    document.getElementById("editFolderDescription").value = folder.description || '';
+    openModal("editFolderModal");
+  };
+
+  window.updateLessonFolder = async function() {
+    const folderId = document.getElementById("editFolderId").value;
+    const newName = document.getElementById("editFolderTitle").value.trim();
+    const newDescription = document.getElementById("editFolderDescription").value.trim();
+    if (!newName) { showToast("Folder name is required.", "error"); return; }
+
+    const folder = allLessonFolders.find(f => f.id === folderId);
+    if (!folder) { showToast("Folder not found.", "error"); return; }
+
+    const oldPath = folder.path;
+    const newPath = folder.parentPath ? `${folder.parentPath}/${newName}` : newName;
+
+    if (newPath !== oldPath && allLessonFolders.some(f => f.id !== folderId && f.path.toLowerCase() === newPath.toLowerCase())) {
+      showToast("A folder with that name already exists here.", "error");
+      return;
+    }
+
+    const btn = document.querySelector("#editFolderModal .btn-gold");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+    try {
+      await updateDoc(doc(db, "lessonFolders", folderId), { name: newName, description: newDescription, path: newPath });
+
+      if (newPath !== oldPath) {
+        // Cascade: update any subfolders nested under the renamed folder
+        const affectedSubfolders = allLessonFolders.filter(f => f.id !== folderId && f.path.startsWith(oldPath + '/'));
+        for (const sf of affectedSubfolders) {
+          const updatedPath = newPath + sf.path.slice(oldPath.length);
+          const updatedParentPath = sf.parentPath === oldPath ? newPath : (newPath + sf.parentPath.slice(oldPath.length));
+          await updateDoc(doc(db, "lessonFolders", sf.id), { path: updatedPath, parentPath: updatedParentPath });
+        }
+        // Cascade: update lessons stored directly in this folder or its subfolders
+        const affectedLessons = allLessonsFlat.filter(l => l.folder === oldPath || (l.folder || '').startsWith(oldPath + '/'));
+        for (const lesson of affectedLessons) {
+          const updatedFolder = newPath + lesson.folder.slice(oldPath.length);
+          await updateDoc(doc(db, "lessons", lesson.id), { folder: updatedFolder });
+        }
+        // Keep current browse location in sync if we're viewing inside the renamed folder
+        if (currentLessonFolderPath === oldPath) currentLessonFolderPath = newPath;
+        else if (currentLessonFolderPath && currentLessonFolderPath.startsWith(oldPath + '/')) {
+          currentLessonFolderPath = newPath + currentLessonFolderPath.slice(oldPath.length);
+        }
+      }
+
+      closeModal("editFolderModal");
+      showToast("Folder updated ✓", "success");
+      await loadLessons();
+    } catch(e) {
+      console.error(e);
+      showToast("Could not update folder. Try again.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
     }
   };
 
@@ -4169,6 +4284,28 @@ window.approveStudent = async function(uid) {
     showToast("Record deleted.", "success");
   };
 
+  // ── XHR UPLOAD HELPER (supports progress, fetch() cannot track upload %) ──
+  function uploadToCloudinaryWithProgress(url, formData, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", url);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+          else reject(new Error(data.error?.message || "Upload failed"));
+        } catch(e) { reject(e); }
+      };
+      xhr.onerror = () => reject(new Error("Network error during upload"));
+      xhr.send(formData);
+    });
+  }
+
   // ── LESSONS ──
   window.previewLessonVideo = function(input) {
     const file = input.files[0];
@@ -4266,20 +4403,31 @@ window.approveStudent = async function(uid) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
 
+    const progWrap = document.getElementById("editLessonUploadProgressWrap");
+    const progBar = document.getElementById("editLessonUploadProgressBar");
+    const progPct = document.getElementById("editLessonUploadProgressPct");
+    const progLabel = document.getElementById("editLessonUploadProgressLabel");
+
     try {
       const updates = { title, category, duration, folder };
       const cloudinaryFolder = `lessons/${folder}`;
 
       if (videoFile) {
+        progWrap.style.display = "block";
+        progBar.style.width = "0%";
+        progPct.textContent = "0%";
+        progLabel.textContent = "Uploading video…";
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading video…';
         const videoFd = new FormData();
         videoFd.append("file", videoFile);
         videoFd.append("upload_preset", LESSON_UPLOAD_PRESET);
         videoFd.append("resource_type", "video");
         videoFd.append("folder", cloudinaryFolder);
-        const videoRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, { method: "POST", body: videoFd });
-        const videoData = await videoRes.json();
-        if (!videoRes.ok) throw new Error(videoData.error?.message || "Video upload failed");
+        const videoData = await uploadToCloudinaryWithProgress(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`,
+          videoFd,
+          (pct) => { progBar.style.width = pct + "%"; progPct.textContent = pct + "%"; }
+        );
         updates.videoUrl = videoData.secure_url;
         updates.videoDurationSec = videoData.duration || null;
         if (!thumbFile) {
@@ -4288,16 +4436,24 @@ window.approveStudent = async function(uid) {
       }
 
       if (thumbFile) {
+        progWrap.style.display = "block";
+        progBar.style.width = "0%";
+        progPct.textContent = "0%";
+        progLabel.textContent = "Uploading thumbnail…";
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading thumbnail…';
         const thumbFd = new FormData();
         thumbFd.append("file", thumbFile);
         thumbFd.append("upload_preset", LESSON_UPLOAD_PRESET);
         thumbFd.append("folder", cloudinaryFolder);
-        const thumbRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: thumbFd });
-        const thumbData = await thumbRes.json();
-        if (thumbRes.ok) updates.thumbnailUrl = thumbData.secure_url;
+        const thumbData = await uploadToCloudinaryWithProgress(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+          thumbFd,
+          (pct) => { progBar.style.width = pct + "%"; progPct.textContent = pct + "%"; }
+        );
+        updates.thumbnailUrl = thumbData.secure_url;
       }
 
+      progLabel.textContent = "Saving…";
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
       await updateDoc(doc(db, "lessons", id), updates);
 
@@ -4311,6 +4467,7 @@ window.approveStudent = async function(uid) {
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalHTML;
+      progWrap.style.display = "none";
     }
   };
 
@@ -4330,6 +4487,15 @@ window.approveStudent = async function(uid) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading video…';
 
+    const progWrap = document.getElementById("lessonUploadProgressWrap");
+    const progBar = document.getElementById("lessonUploadProgressBar");
+    const progPct = document.getElementById("lessonUploadProgressPct");
+    const progLabel = document.getElementById("lessonUploadProgressLabel");
+    progWrap.style.display = "block";
+    progBar.style.width = "0%";
+    progPct.textContent = "0%";
+    progLabel.textContent = "Uploading video…";
+
     try {
       const cloudinaryFolder = `lessons/${folder}`;
       const videoFd = new FormData();
@@ -4337,27 +4503,36 @@ window.approveStudent = async function(uid) {
       videoFd.append("upload_preset", LESSON_UPLOAD_PRESET);
       videoFd.append("resource_type", "video");
       videoFd.append("folder", cloudinaryFolder);
-      const videoRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, { method: "POST", body: videoFd });
-      const videoData = await videoRes.json();
-      if (!videoRes.ok) throw new Error(videoData.error?.message || "Video upload failed");
+      const videoData = await uploadToCloudinaryWithProgress(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`,
+        videoFd,
+        (pct) => { progBar.style.width = pct + "%"; progPct.textContent = pct + "%"; }
+      );
       const videoUrl = videoData.secure_url;
       const videoDurationSec = videoData.duration || null;
 
       let thumbUrl = "";
       if (thumbFile) {
+        progLabel.textContent = "Uploading thumbnail…";
+        progBar.style.width = "0%";
+        progPct.textContent = "0%";
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading thumbnail…';
         const thumbFd = new FormData();
         thumbFd.append("file", thumbFile);
         thumbFd.append("upload_preset", LESSON_UPLOAD_PRESET);
         thumbFd.append("folder", cloudinaryFolder);
-        const thumbRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: thumbFd });
-        const thumbData = await thumbRes.json();
-        if (thumbRes.ok) thumbUrl = thumbData.secure_url;
+        const thumbData = await uploadToCloudinaryWithProgress(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+          thumbFd,
+          (pct) => { progBar.style.width = pct + "%"; progPct.textContent = pct + "%"; }
+        );
+        thumbUrl = thumbData.secure_url;
       } else {
         // Auto-generate a thumbnail from the video at 1s using Cloudinary transformation
         thumbUrl = videoUrl.replace('/video/upload/', '/video/upload/so_1,f_jpg/').replace(/\.[^/.]+$/, '.jpg');
       }
 
+      progLabel.textContent = "Saving…";
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
       await addDoc(collection(db, "lessons"), {
         title, videoUrl, category, duration, folder,
@@ -4376,6 +4551,7 @@ window.approveStudent = async function(uid) {
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalHTML;
+      progWrap.style.display = "none";
     }
   };
 
