@@ -1336,12 +1336,14 @@
     }
     foldersGrid.style.display = "grid";
     foldersGrid.innerHTML = subfolders.map(f => {
-      const count = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+      const videoCount = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+      const subfolderCount = allLessonFolders.filter(sf => (sf.parentPath || null) === f.path).length;
+      const count = videoCount + subfolderCount;
       return `
         <div class="video-item" style="cursor:pointer;text-align:center;padding:24px 14px;" onclick="openLessonFolder('${f.path.replace(/'/g, "\\'")}')">
           <div style="width:48px;height:48px;border-radius:12px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;margin:0 auto 12px;"><i class="fas fa-folder"></i></div>
           <div style="font-weight:600;font-size:14px;">${escapeHtml(f.name)}</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${count} video${count === 1 ? '' : 's'}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${count} file${count === 1 ? '' : 's'}</div>
           ${f.description ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${escapeHtml(f.description)}</div>` : ''}
         </div>`;
     }).join('');

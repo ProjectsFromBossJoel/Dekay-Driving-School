@@ -2902,7 +2902,9 @@
       return;
     }
    grid.innerHTML = subfolders.map(f => {
-      const count = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+      const videoCount = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+      const subfolderCount = allLessonFolders.filter(sf => (sf.parentPath || null) === f.path).length;
+      const count = videoCount + subfolderCount;
       const deleteBtn = f.id
         ? `<button class="btn btn-icon btn-danger" title="Delete folder" style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();deleteLessonFolder('${f.id}','${f.path.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>`
         : '';
@@ -2911,7 +2913,7 @@
           ${deleteBtn}
           <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-folder" style="color:var(--gold)"></i></div>
           <div class="stat-card-value" style="font-size:18px;">${escapeHtml(f.name)}</div>
-          <div class="stat-card-label">${count} video${count === 1 ? '' : 's'}</div>
+          <div class="stat-card-label">${count} file${count === 1 ? '' : 's'}</div>
           ${f.description ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${escapeHtml(f.description)}</div>` : ''}
         </div>`;
     }).join('');
