@@ -595,19 +595,28 @@
 
     <!-- ═══ LESSONS PAGE ═══ -->
     <div class="page" id="page-lessons">
-      <div style="margin-bottom:24px;">
-        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Video Lessons</div>
-        <div style="font-size:14px; color:var(--text-muted)">Watch theory modules at your own pace. Progress is tracked automatically.</div>
+      <div style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="font-size:22px; font-weight:700; margin-bottom:4px;" id="lessonsPageTitle">Video Lessons</div>
+          <div style="font-size:14px; color:var(--text-muted)" id="lessonsPageSub">Select a course folder to watch its video lessons.</div>
+        </div>
+        <button class="btn-sm btn-sm-outline" id="lessonBackBtn" onclick="lessonFolderGoUp()" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
       </div>
 
-      <div style="margin-bottom:24px;">
+      <div id="lessonBreadcrumb" style="font-size:12px;color:var(--text-muted);margin-bottom:16px;display:none;"></div>
+
+      <div class="video-grid" id="lessonFoldersGrid">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading folders…</div>
+      </div>
+
+      <div id="lessonProgressWrap" style="margin:24px 0; display:none;">
         <div class="prog-bar-wrap">
-          <div class="prog-bar-label"><span>Overall completion</span><span id="lessonCompletePct">0%</span></div>
+          <div class="prog-bar-label"><span>Folder completion</span><span id="lessonCompletePct">0%</span></div>
           <div class="prog-bar-track"><div class="prog-bar-fill" id="lessonProgressBar" style="width:0%"></div></div>
         </div>
       </div>
 
-      <div class="video-grid" id="videoGrid">
+      <div class="video-grid" id="videoGrid" style="display:none;">
         <!-- Injected by JS -->
       </div>
     </div>
@@ -997,6 +1006,9 @@
 
   let currentUser = null;
   let studentData = {};
+  let allLessonFolders = [];
+  let allLessonsFlat = [];
+  let currentLessonFolderPath = null;
 
   // ══════════════════════════════════════
   // AUTH GUARD
@@ -1220,53 +1232,171 @@
   // ══════════════════════════════════════
   // LOAD LESSONS
   // ══════════════════════════════════════
+  const DEFAULT_LESSON_FOLDERS = ['Motorcycle','Driving Polishing','Automatic','Manual','Intensive Lessons'];
+
   async function loadLessons() {
     try {
-      const snaps = await getDocs(collection(db, "lessons"));
-      const lessons = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      const [lessonSnaps, folderSnaps] = await Promise.all([
+        getDocs(collection(db, "lessons")),
+        getDocs(collection(db, "lessonFolders"))
+      ]);
+      allLessonsFlat = lessonSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      const customFolders = folderSnaps.docs.map(d => {
+        const data = d.data();
+        const parentPath = data.parentPath || null;
+        const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
+        return { name: data.name, parentPath, path };
+      });
+      const defaultFolderObjs = DEFAULT_LESSON_FOLDERS.map(name => ({ name, parentPath: null, path: name }));
+      const knownPaths = new Set([...defaultFolderObjs, ...customFolders].map(f => f.path));
+      const impliedFolders = allLessonsFlat
+        .map(l => l.folder)
+        .filter(p => p && !knownPaths.has(p))
+        .map(p => ({
+          name: p.includes('/') ? p.substring(p.lastIndexOf('/') + 1) : p,
+          parentPath: p.includes('/') ? p.substring(0, p.lastIndexOf('/')) : null,
+          path: p
+        }));
+      const merged = [...defaultFolderObjs, ...customFolders, ...impliedFolders];
+      const seen = new Set();
+      allLessonFolders = merged.filter(f => {
+        if (seen.has(f.path)) return false;
+        seen.add(f.path);
+        return true;
+      }).sort((a,b) => a.name.localeCompare(b.name));
+
       const progressSnap = await getDoc(doc(db, "lessonProgress", currentUser.uid));
-      const progress = progressSnap.exists() ? progressSnap.data() : {};
+      window._lessonProgress = progressSnap.exists() ? progressSnap.data() : {};
 
-      const watched  = lessons.filter(l => (progress[l.id] || 0) >= 80).length;
-      const total    = lessons.length || 5;
-      const pct      = total > 0 ? Math.round((watched / total) * 100) : 0;
-
+      const watched = allLessonsFlat.filter(l => (window._lessonProgress[l.id] || 0) >= 80).length;
+      const total   = allLessonsFlat.length || 0;
       document.getElementById("dashLessons").textContent = `${watched}/${total}`;
-      document.getElementById("lessonCompletePct").textContent = `${pct}%`;
-      document.getElementById("lessonProgressBar").style.width  = `${pct}%`;
 
-      const grid = document.getElementById("videoGrid");
-      if (!lessons.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">No lessons published yet. Check back soon.</div>`;
-        return;
-      }
-
-      grid.innerHTML = lessons.map(l => {
-        const pctWatched = progress[l.id] || 0;
-        const done = pctWatched >= 80;
-        return `
-          <div class="video-item" onclick="playLesson('${l.id}','${l.videoUrl}','${l.title}')">
-            <div class="video-thumb">
-              <img src="${l.thumbnailUrl || ''}" alt="${l.title}" onerror="this.style.display='none'" />
-              <div class="video-play-overlay">
-                <div class="play-circle" style="${done ? 'background:var(--success)' : ''}">
-                  <i class="fas ${done ? 'fa-check' : 'fa-play'}"></i>
-                </div>
-              </div>
-            </div>
-            <div class="video-progress-strip"><div class="fill" style="width:${pctWatched}%"></div></div>
-            <div class="video-info">
-              <span class="video-tag">${l.category || 'Theory'}</span>
-              <div class="video-name">${l.title}</div>
-              <div class="video-meta-row">
-                <span><i class="fas fa-clock"></i> ${l.duration || '—'}</span>
-                <span><i class="fas fa-eye"></i> ${pctWatched}% watched</span>
-                ${done ? '<span style="color:var(--success)"><i class="fas fa-check-circle"></i> Complete</span>' : ''}
-              </div>
-            </div>
-          </div>`;
-      }).join('');
+      renderLessonFolderView();
     } catch(e) { console.error(e); }
+  }
+
+  function renderLessonBreadcrumb(path) {
+    const segments = path.split('/');
+    let acc = '';
+    const parts = segments.map((seg, idx) => {
+      acc = acc ? `${acc}/${seg}` : seg;
+      const isLast = idx === segments.length - 1;
+      return isLast
+        ? `<span style="color:var(--gold);font-weight:600;">${escapeHtml(seg)}</span>`
+        : `<span style="cursor:pointer;text-decoration:underline;" onclick="openLessonFolder('${acc.replace(/'/g, "\\'")}')">${escapeHtml(seg)}</span>`;
+    });
+    const rootLink = `<span style="cursor:pointer;text-decoration:underline;" onclick="backToLessonFolders()">All folders</span>`;
+    return [rootLink, ...parts].join(' <i class="fas fa-chevron-right" style="font-size:9px;margin:0 4px;"></i> ');
+  }
+
+  function renderLessonFolderView() {
+    const path = currentLessonFolderPath;
+    const titleEl = document.getElementById("lessonsPageTitle");
+    const subEl = document.getElementById("lessonsPageSub");
+    const backBtn = document.getElementById("lessonBackBtn");
+    const breadcrumbEl = document.getElementById("lessonBreadcrumb");
+    const foldersGrid = document.getElementById("lessonFoldersGrid");
+    const progressWrap = document.getElementById("lessonProgressWrap");
+    const videoGrid = document.getElementById("videoGrid");
+
+    if (!path) {
+      titleEl.textContent = "Video Lessons";
+      subEl.textContent = "Select a course folder to watch its video lessons.";
+      backBtn.style.display = "none";
+      breadcrumbEl.style.display = "none";
+      progressWrap.style.display = "none";
+      videoGrid.style.display = "none";
+      foldersGrid.style.display = "grid";
+    } else {
+      const segments = path.split('/');
+      titleEl.textContent = segments[segments.length - 1];
+      subEl.textContent = `Videos inside "${path}".`;
+      backBtn.style.display = "inline-flex";
+      breadcrumbEl.style.display = "block";
+      breadcrumbEl.innerHTML = renderLessonBreadcrumb(path);
+      progressWrap.style.display = "block";
+      videoGrid.style.display = "grid";
+      renderVideosForFolder(path);
+    }
+
+    const subfolders = allLessonFolders.filter(f => (f.parentPath || null) === path);
+    if (!subfolders.length) {
+      foldersGrid.innerHTML = path
+        ? ''
+        : `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No folders yet. Check back soon.</div>`;
+      if (path) foldersGrid.style.display = "none";
+      return;
+    }
+    foldersGrid.style.display = "grid";
+    foldersGrid.innerHTML = subfolders.map(f => {
+      const count = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+      return `
+        <div class="video-item" style="cursor:pointer;text-align:center;padding:24px 14px;" onclick="openLessonFolder('${f.path.replace(/'/g, "\\'")}')">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;margin:0 auto 12px;"><i class="fas fa-folder"></i></div>
+          <div style="font-weight:600;font-size:14px;">${escapeHtml(f.name)}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${count} video${count === 1 ? '' : 's'}</div>
+        </div>`;
+    }).join('');
+  }
+
+  window.openLessonFolder = function(path) {
+    currentLessonFolderPath = path;
+    renderLessonFolderView();
+  };
+  window.backToLessonFolders = function() {
+    currentLessonFolderPath = null;
+    renderLessonFolderView();
+  };
+  window.lessonFolderGoUp = function() {
+    if (!currentLessonFolderPath) return;
+    const idx = currentLessonFolderPath.lastIndexOf('/');
+    currentLessonFolderPath = idx === -1 ? null : currentLessonFolderPath.substring(0, idx);
+    renderLessonFolderView();
+  };
+
+  function renderVideosForFolder(path) {
+    const progress = window._lessonProgress || {};
+    const lessons = allLessonsFlat.filter(l => (l.folder || '') === path);
+    const grid = document.getElementById("videoGrid");
+
+    const watched = lessons.filter(l => (progress[l.id] || 0) >= 80).length;
+    const total = lessons.length || 0;
+    const pct = total > 0 ? Math.round((watched / total) * 100) : 0;
+    document.getElementById("lessonCompletePct").textContent = `${pct}%`;
+    document.getElementById("lessonProgressBar").style.width = `${pct}%`;
+
+    if (!lessons.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">No lessons in this folder yet.</div>`;
+      return;
+    }
+
+    grid.innerHTML = lessons.map(l => {
+      const pctWatched = progress[l.id] || 0;
+      const done = pctWatched >= 80;
+      return `
+        <div class="video-item" onclick="playLesson('${l.id}','${l.videoUrl}','${(l.title||'').replace(/'/g, "\\'")}')">
+          <div class="video-thumb">
+            <img src="${l.thumbnailUrl || ''}" alt="${l.title}" onerror="this.style.display='none'" />
+            <div class="video-play-overlay">
+              <div class="play-circle" style="${done ? 'background:var(--success)' : ''}">
+                <i class="fas ${done ? 'fa-check' : 'fa-play'}"></i>
+              </div>
+            </div>
+          </div>
+          <div class="video-progress-strip"><div class="fill" style="width:${pctWatched}%"></div></div>
+          <div class="video-info">
+            <span class="video-tag">${l.category || 'Theory'}</span>
+            <div class="video-name">${l.title}</div>
+            <div class="video-meta-row">
+              <span><i class="fas fa-clock"></i> ${l.duration || '—'}</span>
+              <span><i class="fas fa-eye"></i> ${pctWatched}% watched</span>
+              ${done ? '<span style="color:var(--success)"><i class="fas fa-check-circle"></i> Complete</span>' : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
   }
 
   // ══════════════════════════════════════
@@ -1813,12 +1943,66 @@
   // ══════════════════════════════════════
   // PLAY LESSON
   // ══════════════════════════════════════
+  let _videoProgressSaveTimer = null;
+  let _currentLessonId = null;
+  let _currentLessonBestPct = 0;
+
   window.playLesson = function(id, url, title) {
-    window.open(url, "_blank");
-    updateDoc(doc(db, "lessonProgress", currentUser.uid), { [id]: 100 }).catch(() =>
-      setDoc(doc(db, "lessonProgress", currentUser.uid), { [id]: 100 }, { merge: true })
-    );
+    _currentLessonId = id;
+    _currentLessonBestPct = (window._lessonProgress && window._lessonProgress[id]) || 0;
+
+    document.getElementById("lessonVideoModalTitle").textContent = title || "Lesson";
+    const player = document.getElementById("lessonVideoPlayer");
+    player.pause();
+    player.src = url;
+    document.getElementById("lessonVideoPct").textContent = `${_currentLessonBestPct}%`;
+    document.getElementById("lessonVideoProgBar").style.width = `${_currentLessonBestPct}%`;
+
+    document.getElementById("lessonVideoModal").classList.add("open");
+    player.play().catch(() => {});
   };
+
+  function handleLessonVideoProgress() {
+    const player = document.getElementById("lessonVideoPlayer");
+    if (!player.duration || isNaN(player.duration)) return;
+    const pct = Math.min(100, Math.round((player.currentTime / player.duration) * 100));
+    if (pct > _currentLessonBestPct) {
+      _currentLessonBestPct = pct;
+      document.getElementById("lessonVideoPct").textContent = `${pct}%`;
+      document.getElementById("lessonVideoProgBar").style.width = `${pct}%`;
+      clearTimeout(_videoProgressSaveTimer);
+      _videoProgressSaveTimer = setTimeout(saveLessonProgress, 3000);
+    }
+  }
+
+  async function saveLessonProgress() {
+    if (!_currentLessonId) return;
+    try {
+      await setDoc(doc(db, "lessonProgress", currentUser.uid), { [_currentLessonId]: _currentLessonBestPct }, { merge: true });
+      if (!window._lessonProgress) window._lessonProgress = {};
+      window._lessonProgress[_currentLessonId] = _currentLessonBestPct;
+    } catch(e) { console.error("Could not save lesson progress:", e); }
+  }
+
+  window.closeLessonVideoModal = function() {
+    const player = document.getElementById("lessonVideoPlayer");
+    player.pause();
+    clearTimeout(_videoProgressSaveTimer);
+    saveLessonProgress().then(() => {
+      document.getElementById("lessonVideoModal").classList.remove("open");
+      player.removeAttribute("src");
+      player.load();
+      if (currentLessonFolderPath) renderVideosForFolder(currentLessonFolderPath);
+    });
+  };
+
+  document.getElementById("lessonVideoPlayer").addEventListener("timeupdate", handleLessonVideoProgress);
+  document.getElementById("lessonVideoPlayer").addEventListener("ended", () => {
+    _currentLessonBestPct = 100;
+    document.getElementById("lessonVideoPct").textContent = "100%";
+    document.getElementById("lessonVideoProgBar").style.width = "100%";
+    saveLessonProgress();
+  });
 
   // ══════════════════════════════════════
   // QUIZZES
@@ -2053,6 +2237,7 @@
       });
     }
     if (name === "lessons") {
+      currentLessonFolderPath = null;
       loadLessons();
     }
     if (name === "quizzes") {
