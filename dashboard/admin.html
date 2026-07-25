@@ -2162,6 +2162,12 @@
           <input type="file" id="editLessonThumbFile" accept="image/*" style="display:none" onchange="previewEditLessonThumb(this)" />
           <img id="editLessonThumbPreview" src="" style="display:none; max-width:160px; margin-top:8px; border-radius:8px; border:1px solid var(--border);" />
         </div>
+
+        <!-- Watch Progress -->
+        <div class="bio-section"><div class="bio-section-title">Watch Progress <span id="editLessonAvgCompletion" style="font-weight:normal;color:var(--text-muted);"></span></div></div>
+        <div id="editLessonWatchersList" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+          <div style="color:var(--text-muted);font-size:12px;">No data yet.</div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeEditLessonModal()">Cancel</button>
@@ -2875,11 +2881,31 @@
 
   async function loadLessons() {
     try {
-      const [lessonSnaps, folderSnaps] = await Promise.all([
+      const [lessonSnaps, folderSnaps, progressSnaps] = await Promise.all([
         getDocs(collection(db, "lessons")),
-        getDocs(collection(db, "lessonFolders"))
+        getDocs(collection(db, "lessonFolders")),
+        getDocs(collection(db, "lessonProgress"))
       ]);
       allLessonsFlat = lessonSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Map studentId -> { lessonId: pct }
+      window._allLessonProgress = {};
+      progressSnaps.docs.forEach(d => { window._allLessonProgress[d.id] = d.data(); });
+
+      // Attach avgCompletion + per-student watcher list to each lesson
+      allLessonsFlat.forEach(l => {
+        const watchers = [];
+        Object.entries(window._allLessonProgress).forEach(([studentId, progressMap]) => {
+          if (progressMap && progressMap[l.id] !== undefined) {
+            watchers.push({ studentId, pct: progressMap[l.id] });
+          }
+        });
+        l.avgCompletion = watchers.length
+          ? Math.round(watchers.reduce((sum, w) => sum + w.pct, 0) / watchers.length)
+          : 0;
+        l.watchers = watchers;
+      });
+
       window._allLessons = allLessonsFlat;
 
       const customFolders = folderSnaps.docs.map(d => {
@@ -3013,8 +3039,17 @@
       <td><div style="font-weight:600">${l.title}</div></td>
       <td><span class="stage-pill">${l.category || 'Theory'}</span></td>
       <td style="color:var(--text-muted)">${l.duration || '—'}</td>
-      <td style="color:var(--gold)">${l.avgCompletion || '—'}%</td>
-      <td style="color:var(--text-muted);font-size:12px">${l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString('en-GB') : '—'}</td>
+      <td style="color:var(--gold)">${(l.avgCompletion !== undefined && l.avgCompletion !== null) ? l.avgCompletion + '%' : '—'}</td>
+      <td style="color:var(--text-muted);font-size:12px">${(() => {
+        if (!l.createdAt?.toDate) return '—';
+        const d = l.createdAt.toDate();
+        const dateStr = d.toLocaleDateString('en-GB');
+        let hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        return `<div>${dateStr}</div><div style="font-size:10px;">${hours}:${minutes} ${ampm}</div>`;
+      })()}</td>
       <td style="display:flex;gap:6px;">
         <button class="btn btn-icon btn-outline" title="View / Edit" onclick="openEditLessonModal('${l.id}')"><i class="fas fa-eye"></i></button>
         <button class="btn btn-icon btn-danger" onclick="deleteLesson('${l.id}')"><i class="fas fa-trash"></i></button>
@@ -4382,6 +4417,29 @@ window.approveStudent = async function(uid) {
     const thumbPreview = document.getElementById("editLessonThumbPreview");
     thumbPreview.src = lesson.thumbnailUrl || '';
     thumbPreview.style.display = lesson.thumbnailUrl ? 'block' : 'none';
+
+    // Watch progress list
+    const watchers = lesson.watchers || [];
+    const avgEl = document.getElementById("editLessonAvgCompletion");
+    if (avgEl) avgEl.textContent = watchers.length ? `— Avg. ${lesson.avgCompletion || 0}% (${watchers.length} student${watchers.length > 1 ? 's' : ''})` : '';
+    const watchersListEl = document.getElementById("editLessonWatchersList");
+    if (watchersListEl) {
+      if (!watchers.length) {
+        watchersListEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No students have started this lesson yet.</div>';
+      } else {
+        const sorted = [...watchers].sort((a, b) => b.pct - a.pct);
+        watchersListEl.innerHTML = sorted.map(w => {
+          const student = allStudents.find(s => s.id === w.studentId);
+          const name = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : w.studentId;
+          const pct = Math.round(w.pct);
+          const color = pct >= 80 ? 'var(--success)' : 'var(--gold)';
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">
+            <span style="font-size:12px;">${escapeHtml(name)}</span>
+            <span style="font-size:12px;font-weight:700;color:${color};">${pct}%</span>
+          </div>`;
+        }).join('');
+      }
+    }
 
     openModal("editLessonModal");
   };
