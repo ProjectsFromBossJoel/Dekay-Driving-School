@@ -962,13 +962,23 @@
     <div class="page" id="page-lessons">
       <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
-          <div class="page-title">Video Lessons</div>
-          <div class="page-sub">Manage theory video modules published to student portals.</div>
+          <div class="page-title" id="lessonsPageTitle">Video Lessons</div>
+          <div class="page-sub" id="lessonsPageSub">Select a course folder to manage its video lessons.</div>
         </div>
-        <button class="btn btn-gold" onclick="openAddLessonModal()"><i class="fas fa-plus"></i> Add lesson</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-outline" id="lessonBackBtn" onclick="lessonFolderGoUp()" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
+          <button class="btn btn-outline" onclick="openAddFolderModal()"><i class="fas fa-folder-plus"></i> New folder</button>
+          <button class="btn btn-gold" id="lessonAddLessonBtn" onclick="openAddLessonModal()" style="display:none;"><i class="fas fa-plus"></i> Add lesson</button>
+        </div>
       </div>
 
-      <div class="card">
+      <div id="lessonBreadcrumb" style="font-size:12px;color:var(--text-muted);margin-bottom:16px;display:none;"></div>
+
+      <div class="stat-grid" id="lessonFoldersGrid" style="grid-template-columns:repeat(4,1fr); margin-bottom:24px;">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading folders…</div>
+      </div>
+
+      <div class="card" id="lessonTableCard" style="display:none;">
         <div style="overflow-x:auto">
           <table class="data-table">
             <thead><tr><th>Title</th><th>Category</th><th>Duration</th><th>Completion avg.</th><th>Published</th><th>Actions</th></tr></thead>
@@ -2046,6 +2056,10 @@
         <button class="modal-close" onclick="closeModal('addLessonModal')"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Course folder <span>*</span></label>
+          <select id="lessonFolder" class="form-select"></select>
+        </div>
         <div class="form-group"><label class="form-label">Lesson title <span>*</span></label><input type="text" id="lessonTitle" class="form-input" placeholder="e.g. Road signs — warning signs" /></div>
         <div class="form-row">
           <div class="form-group">
@@ -2060,18 +2074,101 @@
           <div class="form-group"><label class="form-label">Duration</label><input type="text" id="lessonDuration" class="form-input" placeholder="e.g. 8:30" /></div>
         </div>
         <div class="form-group">
-          <label class="form-label">Video URL <span>*</span></label>
-          <input type="url" id="lessonUrl" class="form-input" placeholder="https://…" />
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Paste a YouTube, Cloudinary, or direct MP4 URL.</div>
+          <label class="form-label">Video file <span>*</span></label>
+          <div id="lessonVideoUploadArea" style="padding:12px 16px; background:var(--navy); border:1.5px dashed var(--border); border-radius:var(--radius); cursor:pointer; text-align:center;" onclick="document.getElementById('lessonVideoFile').click()">
+            <i class="fas fa-video" style="color:var(--gold);margin-right:6px;"></i>
+            <span id="lessonVideoText" style="font-size:12px;color:var(--text-muted);">Tap to upload lesson video (MP4)</span>
+          </div>
+          <input type="file" id="lessonVideoFile" accept="video/*" style="display:none" onchange="previewLessonVideo(this)" />
+          <video id="lessonVideoPreview" controls style="display:none; width:100%; margin-top:8px; border-radius:8px; border:1px solid var(--border);"></video>
         </div>
         <div class="form-group">
-          <label class="form-label">Thumbnail URL</label>
-          <input type="url" id="lessonThumb" class="form-input" placeholder="https://… (leave blank for auto)" />
+          <label class="form-label">Thumbnail image</label>
+          <div id="lessonThumbUploadArea" style="padding:12px 16px; background:var(--navy); border:1.5px dashed var(--border); border-radius:var(--radius); cursor:pointer; text-align:center;" onclick="document.getElementById('lessonThumbFile').click()">
+            <i class="fas fa-image" style="color:var(--gold);margin-right:6px;"></i>
+            <span id="lessonThumbText" style="font-size:12px;color:var(--text-muted);">Tap to upload thumbnail (leave blank for auto)</span>
+          </div>
+          <input type="file" id="lessonThumbFile" accept="image/*" style="display:none" onchange="previewLessonThumb(this)" />
+          <img id="lessonThumbPreview" src="" style="display:none; max-width:160px; margin-top:8px; border-radius:8px; border:1px solid var(--border);" />
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('addLessonModal')">Cancel</button>
         <button class="btn btn-gold" onclick="addLesson()"><i class="fas fa-plus"></i> Publish lesson</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EDIT LESSON MODAL ── -->
+  <div class="modal-overlay" id="editLessonModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Edit lesson</div>
+        <button class="modal-close" onclick="closeEditLessonModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editLessonId" />
+        <div class="form-group">
+          <label class="form-label">Course folder <span>*</span></label>
+          <select id="editLessonFolder" class="form-select"></select>
+        </div>
+        <div class="form-group"><label class="form-label">Lesson title <span>*</span></label><input type="text" id="editLessonTitle" class="form-input" /></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="editLessonCategory" class="form-select">
+              <option value="Theory">Theory</option>
+              <option value="Road safety">Road safety</option>
+              <option value="Practical tips">Practical tips</option>
+              <option value="DVLA prep">DVLA prep</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Duration</label><input type="text" id="editLessonDuration" class="form-input" placeholder="e.g. 8:30" /></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Video file</label>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Leave untouched to keep the current video, or upload a new file to replace it.</div>
+          <div id="editLessonVideoUploadArea" style="padding:12px 16px; background:var(--navy); border:1.5px dashed var(--border); border-radius:var(--radius); cursor:pointer; text-align:center;" onclick="document.getElementById('editLessonVideoFile').click()">
+            <i class="fas fa-video" style="color:var(--gold);margin-right:6px;"></i>
+            <span id="editLessonVideoText" style="font-size:12px;color:var(--text-muted);">Tap to replace video</span>
+          </div>
+          <input type="file" id="editLessonVideoFile" accept="video/*" style="display:none" onchange="previewEditLessonVideo(this)" />
+          <video id="editLessonVideoPreview" controls style="display:none; width:100%; margin-top:8px; border-radius:8px; border:1px solid var(--border);"></video>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Thumbnail image</label>
+          <div id="editLessonThumbUploadArea" style="padding:12px 16px; background:var(--navy); border:1.5px dashed var(--border); border-radius:var(--radius); cursor:pointer; text-align:center;" onclick="document.getElementById('editLessonThumbFile').click()">
+            <i class="fas fa-image" style="color:var(--gold);margin-right:6px;"></i>
+            <span id="editLessonThumbText" style="font-size:12px;color:var(--text-muted);">Tap to replace thumbnail</span>
+          </div>
+          <input type="file" id="editLessonThumbFile" accept="image/*" style="display:none" onchange="previewEditLessonThumb(this)" />
+          <img id="editLessonThumbPreview" src="" style="display:none; max-width:160px; margin-top:8px; border-radius:8px; border:1px solid var(--border);" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeEditLessonModal()">Cancel</button>
+        <button class="btn btn-gold" onclick="updateLesson()"><i class="fas fa-save"></i> Save changes</button>
+      </div>
+    </div>
+  </div>
+
+    <!-- ── ADD LESSON FOLDER MODAL ── -->
+  <div class="modal-overlay" id="addFolderModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <div class="modal-title">New course folder</div>
+        <button class="modal-close" onclick="closeModal('addFolderModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Folder name <span>*</span></label>
+          <input type="text" id="newFolderName" class="form-input" placeholder="e.g. Motorcycle" />
+          <div id="newFolderParentHint" style="font-size:11px;color:var(--text-muted);margin-top:6px;">This folder will be created at the top level.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('addFolderModal')">Cancel</button>
+        <button class="btn btn-gold" onclick="createLessonFolder()"><i class="fas fa-folder-plus"></i> Create folder</button>
       </div>
     </div>
   </div>
@@ -2135,11 +2232,15 @@
   // Cloudinary config (for admin avatar uploads)
   const CLOUDINARY_CLOUD = "drs2xpwho";
   const CLOUDINARY_PRESET = "admin_avatars";
+  const LESSON_UPLOAD_PRESET = "lesson_videos_upload";
 
   // ── STATE ──
   let adminUser = null;
   let allStudents = [];
   let allAttendance = [];
+  let allLessonFolders = [];
+  let allLessonsFlat = [];
+  let currentLessonFolderPath = null;
 
   // ══════════════════════════════════════
   // AUTH GUARD (only one listener!)
@@ -2716,27 +2817,186 @@
     }
   };
 
+  const DEFAULT_LESSON_FOLDERS = ['Motorcycle','Driving Polishing','Automatic','Manual','Intensive Lessons'];
+
   async function loadLessons() {
     try {
-      const snaps = await getDocs(collection(db, "lessons"));
-      const lessons = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
-      const tbody = document.getElementById("lessonsTable");
-      if (!lessons.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No lessons added yet.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = lessons.map(l => `<tr>
-        <td><div style="font-weight:600">${l.title}</div></td>
-        <td><span class="stage-pill">${l.category || 'Theory'}</span></td>
-        <td style="color:var(--text-muted)">${l.duration || '—'}</td>
-        <td style="color:var(--gold)">${l.avgCompletion || '—'}%</td>
-        <td style="color:var(--text-muted);font-size:12px">${l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString('en-GB') : '—'}</td>
-        <td style="display:flex;gap:6px;">
-          <a href="${l.videoUrl}" target="_blank" class="btn btn-icon btn-outline"><i class="fas fa-external-link-alt"></i></a>
-          <button class="btn btn-icon btn-danger" onclick="deleteLesson('${l.id}')"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`).join('');
+      const [lessonSnaps, folderSnaps] = await Promise.all([
+        getDocs(collection(db, "lessons")),
+        getDocs(collection(db, "lessonFolders"))
+      ]);
+      allLessonsFlat = lessonSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      window._allLessons = allLessonsFlat;
+
+      const customFolders = folderSnaps.docs.map(d => {
+        const data = d.data();
+        const parentPath = data.parentPath || null;
+        const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
+        return { name: data.name, parentPath, path };
+      });
+
+      const defaultFolderObjs = DEFAULT_LESSON_FOLDERS.map(name => ({ name, parentPath: null, path: name }));
+
+      const knownPaths = new Set([...defaultFolderObjs, ...customFolders].map(f => f.path));
+      const impliedFolders = allLessonsFlat
+        .map(l => l.folder)
+        .filter(p => p && !knownPaths.has(p))
+        .map(p => ({
+          name: p.includes('/') ? p.substring(p.lastIndexOf('/') + 1) : p,
+          parentPath: p.includes('/') ? p.substring(0, p.lastIndexOf('/')) : null,
+          path: p
+        }));
+
+      const merged = [...defaultFolderObjs, ...customFolders, ...impliedFolders];
+      const seen = new Set();
+      allLessonFolders = merged.filter(f => {
+        if (seen.has(f.path)) return false;
+        seen.add(f.path);
+        return true;
+      }).sort((a,b) => a.name.localeCompare(b.name));
+
+      renderLessonFolderView();
     } catch(e) { console.error(e); }
+  }
+
+  function renderLessonBreadcrumb(path) {
+    const segments = path.split('/');
+    let acc = '';
+    const parts = segments.map((seg, idx) => {
+      acc = acc ? `${acc}/${seg}` : seg;
+      const isLast = idx === segments.length - 1;
+      return isLast
+        ? `<span style="color:var(--gold);font-weight:600;">${escapeHtml(seg)}</span>`
+        : `<span style="cursor:pointer;text-decoration:underline;" onclick="openLessonFolder('${acc.replace(/'/g, "\\'")}')">${escapeHtml(seg)}</span>`;
+    });
+    const rootLink = `<span style="cursor:pointer;text-decoration:underline;" onclick="backToLessonFolders()">All folders</span>`;
+    return [rootLink, ...parts].join(' <i class="fas fa-chevron-right" style="font-size:9px;margin:0 4px;"></i> ');
+  }
+
+  function renderLessonFolderView() {
+    const path = currentLessonFolderPath;
+    const titleEl = document.getElementById("lessonsPageTitle");
+    const subEl = document.getElementById("lessonsPageSub");
+    const backBtn = document.getElementById("lessonBackBtn");
+    const addLessonBtn = document.getElementById("lessonAddLessonBtn");
+    const breadcrumbEl = document.getElementById("lessonBreadcrumb");
+    const tableCard = document.getElementById("lessonTableCard");
+
+    if (!path) {
+      titleEl.textContent = "Video Lessons";
+      subEl.textContent = "Select a course folder to manage its video lessons.";
+      backBtn.style.display = "none";
+      breadcrumbEl.style.display = "none";
+      addLessonBtn.style.display = "none";
+      tableCard.style.display = "none";
+    } else {
+      const segments = path.split('/');
+      titleEl.textContent = segments[segments.length - 1];
+      subEl.textContent = `Videos and subfolders inside "${path}".`;
+      backBtn.style.display = "inline-flex";
+      addLessonBtn.style.display = "inline-flex";
+      breadcrumbEl.style.display = "block";
+      breadcrumbEl.innerHTML = renderLessonBreadcrumb(path);
+      tableCard.style.display = "block";
+      renderLessonsTableForFolder(path);
+    }
+
+    const subfolders = allLessonFolders.filter(f => (f.parentPath || null) === path);
+    const grid = document.getElementById("lessonFoldersGrid");
+    if (!subfolders.length) {
+      grid.innerHTML = path
+        ? `<div style="grid-column:1/-1;color:var(--text-muted);font-size:13px;padding:8px 0;">No subfolders here.</div>`
+        : `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No folders yet. Create one to get started.</div>`;
+      return;
+    }
+    grid.innerHTML = subfolders.map(f => {
+      const count = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+      return `
+        <div class="stat-card" style="cursor:pointer;" onclick="openLessonFolder('${f.path.replace(/'/g, "\\'")}')">
+          <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-folder" style="color:var(--gold)"></i></div>
+          <div class="stat-card-value" style="font-size:18px;">${escapeHtml(f.name)}</div>
+          <div class="stat-card-label">${count} video${count === 1 ? '' : 's'}</div>
+        </div>`;
+    }).join('');
+  }
+
+  window.openLessonFolder = function(path) {
+    currentLessonFolderPath = path;
+    renderLessonFolderView();
+  };
+
+  window.backToLessonFolders = function() {
+    currentLessonFolderPath = null;
+    renderLessonFolderView();
+  };
+
+  window.lessonFolderGoUp = function() {
+    if (!currentLessonFolderPath) return;
+    const idx = currentLessonFolderPath.lastIndexOf('/');
+    currentLessonFolderPath = idx === -1 ? null : currentLessonFolderPath.substring(0, idx);
+    renderLessonFolderView();
+  };
+
+  function renderLessonsTableForFolder(path) {
+    const tbody = document.getElementById("lessonsTable");
+    if (!tbody) return;
+    const lessons = allLessonsFlat.filter(l => (l.folder || '') === path);
+    if (!lessons.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No lessons in this folder yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = lessons.map(l => `<tr>
+      <td><div style="font-weight:600">${l.title}</div></td>
+      <td><span class="stage-pill">${l.category || 'Theory'}</span></td>
+      <td style="color:var(--text-muted)">${l.duration || '—'}</td>
+      <td style="color:var(--gold)">${l.avgCompletion || '—'}%</td>
+      <td style="color:var(--text-muted);font-size:12px">${l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString('en-GB') : '—'}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-icon btn-outline" title="View / Edit" onclick="openEditLessonModal('${l.id}')"><i class="fas fa-eye"></i></button>
+        <button class="btn btn-icon btn-danger" onclick="deleteLesson('${l.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+  }
+
+  window.openAddFolderModal = function() {
+    document.getElementById("newFolderName").value = '';
+    const hint = document.getElementById("newFolderParentHint");
+    if (hint) hint.textContent = currentLessonFolderPath
+      ? `This folder will be created inside "${currentLessonFolderPath}".`
+      : `This folder will be created at the top level.`;
+    openModal("addFolderModal");
+  };
+
+  window.createLessonFolder = async function() {
+    const name = document.getElementById("newFolderName").value.trim();
+    if (!name) { showToast("Enter a folder name.", "error"); return; }
+    const parentPath = currentLessonFolderPath || null;
+    const path = parentPath ? `${parentPath}/${name}` : name;
+    if (allLessonFolders.some(f => f.path.toLowerCase() === path.toLowerCase())) {
+      showToast("A folder with that name already exists here.", "error");
+      return;
+    }
+    try {
+      await addDoc(collection(db, "lessonFolders"), { name, parentPath, path, createdAt: serverTimestamp() });
+      closeModal("addFolderModal");
+      showToast("Folder created ✓", "success");
+      await loadLessons();
+    } catch(e) {
+      console.error(e);
+      showToast("Could not create folder. Try again.", "error");
+    }
+  };
+
+  function populateLessonFolderSelect(selectId, selectedValue) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const sorted = [...allLessonFolders].sort((a,b) => a.path.localeCompare(b.path));
+    sel.innerHTML = sorted.map(f => {
+      const depth = f.path.split('/').length - 1;
+      const indent = depth > 0 ? '— '.repeat(depth) : '';
+      return `<option value="${escapeHtml(f.path)}">${indent}${escapeHtml(f.name)}</option>`;
+    }).join('');
+    if (selectedValue) sel.value = selectedValue;
   }
 
   async function loadQuizzes() {
@@ -3869,17 +4129,213 @@ window.approveStudent = async function(uid) {
   };
 
   // ── LESSONS ──
+  window.previewLessonVideo = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const video = document.getElementById("lessonVideoPreview");
+    video.src = URL.createObjectURL(file);
+    video.style.display = "block";
+    document.getElementById("lessonVideoText").textContent = file.name;
+  };
+
+  window.previewLessonThumb = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.getElementById("lessonThumbPreview");
+      img.src = e.target.result;
+      img.style.display = "block";
+      document.getElementById("lessonThumbText").textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.previewEditLessonVideo = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const video = document.getElementById("editLessonVideoPreview");
+    video.src = URL.createObjectURL(file);
+    video.style.display = "block";
+    document.getElementById("editLessonVideoText").textContent = file.name;
+  };
+
+  window.previewEditLessonThumb = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.getElementById("editLessonThumbPreview");
+      img.src = e.target.result;
+      img.style.display = "block";
+      document.getElementById("editLessonThumbText").textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.closeEditLessonModal = function() {
+    const video = document.getElementById("editLessonVideoPreview");
+    if (video) {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    }
+    closeModal("editLessonModal");
+  };
+
+  window.openEditLessonModal = function(lessonId) {
+    const lesson = (window._allLessons || []).find(l => l.id === lessonId);
+    if (!lesson) return showToast("Lesson not found.", "error");
+
+    document.getElementById("editLessonId").value = lesson.id;
+    document.getElementById("editLessonTitle").value = lesson.title || '';
+    document.getElementById("editLessonCategory").value = lesson.category || 'Theory';
+    document.getElementById("editLessonDuration").value = lesson.duration || '';
+    document.getElementById("editLessonVideoFile").value = '';
+    document.getElementById("editLessonThumbFile").value = '';
+    document.getElementById("editLessonVideoText").textContent = 'Tap to replace video';
+    document.getElementById("editLessonThumbText").textContent = 'Tap to replace thumbnail';
+    populateLessonFolderSelect("editLessonFolder", lesson.folder || currentLessonFolderPath || (allLessonFolders[0] && allLessonFolders[0].path));
+
+    const videoPreview = document.getElementById("editLessonVideoPreview");
+    videoPreview.src = lesson.videoUrl || '';
+    videoPreview.style.display = lesson.videoUrl ? 'block' : 'none';
+
+    const thumbPreview = document.getElementById("editLessonThumbPreview");
+    thumbPreview.src = lesson.thumbnailUrl || '';
+    thumbPreview.style.display = lesson.thumbnailUrl ? 'block' : 'none';
+
+    openModal("editLessonModal");
+  };
+
+  window.updateLesson = async function() {
+    const id       = document.getElementById("editLessonId").value;
+    const title    = document.getElementById("editLessonTitle").value.trim();
+    const folder   = document.getElementById("editLessonFolder").value;
+    const category = document.getElementById("editLessonCategory").value;
+    const duration = document.getElementById("editLessonDuration").value.trim();
+    const videoFile = document.getElementById("editLessonVideoFile").files[0];
+    const thumbFile = document.getElementById("editLessonThumbFile").files[0];
+
+    if (!title) { showToast("Title is required.", "error"); return; }
+    if (!folder) { showToast("Select a course folder.", "error"); return; }
+
+    const btn = document.querySelector("#editLessonModal .btn-gold");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+    try {
+      const updates = { title, category, duration, folder };
+      const cloudinaryFolder = `lessons/${folder}`;
+
+      if (videoFile) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading video…';
+        const videoFd = new FormData();
+        videoFd.append("file", videoFile);
+        videoFd.append("upload_preset", LESSON_UPLOAD_PRESET);
+        videoFd.append("resource_type", "video");
+        videoFd.append("folder", cloudinaryFolder);
+        const videoRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, { method: "POST", body: videoFd });
+        const videoData = await videoRes.json();
+        if (!videoRes.ok) throw new Error(videoData.error?.message || "Video upload failed");
+        updates.videoUrl = videoData.secure_url;
+        updates.videoDurationSec = videoData.duration || null;
+        if (!thumbFile) {
+          updates.thumbnailUrl = videoData.secure_url.replace('/video/upload/', '/video/upload/so_1,f_jpg/').replace(/\.[^/.]+$/, '.jpg');
+        }
+      }
+
+      if (thumbFile) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading thumbnail…';
+        const thumbFd = new FormData();
+        thumbFd.append("file", thumbFile);
+        thumbFd.append("upload_preset", LESSON_UPLOAD_PRESET);
+        thumbFd.append("folder", cloudinaryFolder);
+        const thumbRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: thumbFd });
+        const thumbData = await thumbRes.json();
+        if (thumbRes.ok) updates.thumbnailUrl = thumbData.secure_url;
+      }
+
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+      await updateDoc(doc(db, "lessons", id), updates);
+
+      closeModal("editLessonModal");
+      showToast("Lesson updated ✓", "success");
+      await loadLessons();
+      openLessonFolder(folder);
+    } catch(e) {
+      console.error(e);
+      showToast("Could not update lesson. Try again.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  };
+
   window.addLesson = async function() {
     const title    = document.getElementById("lessonTitle").value.trim();
-    const url      = document.getElementById("lessonUrl").value.trim();
+    const folder   = document.getElementById("lessonFolder").value;
     const category = document.getElementById("lessonCategory").value;
     const duration = document.getElementById("lessonDuration").value.trim();
-    const thumb    = document.getElementById("lessonThumb").value.trim();
-    if (!title || !url) { showToast("Title and URL are required.", "error"); return; }
-    await addDoc(collection(db, "lessons"), { title, videoUrl: url, category, duration, thumbnailUrl: thumb, createdAt: serverTimestamp() });
-    closeModal("addLessonModal");
-    showToast("Lesson published ✓", "success");
-    await loadLessons();
+    const videoFile = document.getElementById("lessonVideoFile").files[0];
+    const thumbFile = document.getElementById("lessonThumbFile").files[0];
+
+    if (!title || !videoFile) { showToast("Title and video file are required.", "error"); return; }
+    if (!folder) { showToast("Select a course folder.", "error"); return; }
+
+    const btn = document.querySelector("#addLessonModal .btn-gold");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading video…';
+
+    try {
+      const cloudinaryFolder = `lessons/${folder}`;
+      const videoFd = new FormData();
+      videoFd.append("file", videoFile);
+      videoFd.append("upload_preset", LESSON_UPLOAD_PRESET);
+      videoFd.append("resource_type", "video");
+      videoFd.append("folder", cloudinaryFolder);
+      const videoRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, { method: "POST", body: videoFd });
+      const videoData = await videoRes.json();
+      if (!videoRes.ok) throw new Error(videoData.error?.message || "Video upload failed");
+      const videoUrl = videoData.secure_url;
+      const videoDurationSec = videoData.duration || null;
+
+      let thumbUrl = "";
+      if (thumbFile) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading thumbnail…';
+        const thumbFd = new FormData();
+        thumbFd.append("file", thumbFile);
+        thumbFd.append("upload_preset", LESSON_UPLOAD_PRESET);
+        thumbFd.append("folder", cloudinaryFolder);
+        const thumbRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: thumbFd });
+        const thumbData = await thumbRes.json();
+        if (thumbRes.ok) thumbUrl = thumbData.secure_url;
+      } else {
+        // Auto-generate a thumbnail from the video at 1s using Cloudinary transformation
+        thumbUrl = videoUrl.replace('/video/upload/', '/video/upload/so_1,f_jpg/').replace(/\.[^/.]+$/, '.jpg');
+      }
+
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+      await addDoc(collection(db, "lessons"), {
+        title, videoUrl, category, duration, folder,
+        videoDurationSec,
+        thumbnailUrl: thumbUrl,
+        createdAt: serverTimestamp()
+      });
+
+      closeModal("addLessonModal");
+      showToast("Lesson published ✓", "success");
+      await loadLessons();
+      openLessonFolder(folder);
+    } catch(e) {
+      console.error(e);
+      showToast("Could not publish lesson. Try again.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
   };
 
   window.deleteLesson = async function(id) {
@@ -4989,7 +5445,18 @@ window.approveStudent = async function(uid) {
   };
 
 
-  window.openAddLessonModal = () => openModal("addLessonModal");
+  window.openAddLessonModal = () => {
+    document.getElementById("lessonTitle").value = '';
+    document.getElementById("lessonDuration").value = '';
+    document.getElementById("lessonVideoFile").value = '';
+    document.getElementById("lessonThumbFile").value = '';
+    document.getElementById("lessonVideoPreview").style.display = 'none';
+    document.getElementById("lessonThumbPreview").style.display = 'none';
+    document.getElementById("lessonVideoText").textContent = 'Tap to upload lesson video (MP4)';
+    document.getElementById("lessonThumbText").textContent = 'Tap to upload thumbnail (leave blank for auto)';
+    populateLessonFolderSelect("lessonFolder", currentLessonFolderPath || (allLessonFolders[0] && allLessonFolders[0].path));
+    openModal("addLessonModal");
+  };
   window.openAddCourseModal = () => openModal("addCourseModal");
   window.openAddQuizModal   = () => showToast("Quiz builder coming soon — add via Firestore for now.", "success");
 
@@ -5928,6 +6395,7 @@ window.approveStudent = async function(uid) {
       loadAttendance();
     }
     if (name === "lessons") {
+      backToLessonFolders();
       loadLessons();
     }
     if (name === "quizzes") {
