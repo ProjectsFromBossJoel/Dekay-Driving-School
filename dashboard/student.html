@@ -1232,8 +1232,6 @@
   // ══════════════════════════════════════
   // LOAD LESSONS
   // ══════════════════════════════════════
-  const DEFAULT_LESSON_FOLDERS = ['Motorcycle','Driving Polishing','Automatic','Manual','Intensive Lessons'];
-
   async function loadLessons() {
     try {
       const [lessonSnaps, folderSnaps] = await Promise.all([
@@ -1246,25 +1244,9 @@
         const data = d.data();
         const parentPath = data.parentPath || null;
         const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
-        return { name: data.name, description: data.description || '', parentPath, path };
+        return { id: d.id, name: data.name, description: data.description || '', parentPath, path };
       });
-      const defaultFolderObjs = DEFAULT_LESSON_FOLDERS.map(name => ({ name, parentPath: null, path: name }));
-      const knownPaths = new Set([...defaultFolderObjs, ...customFolders].map(f => f.path));
-      const impliedFolders = allLessonsFlat
-        .map(l => l.folder)
-        .filter(p => p && !knownPaths.has(p))
-        .map(p => ({
-          name: p.includes('/') ? p.substring(p.lastIndexOf('/') + 1) : p,
-          parentPath: p.includes('/') ? p.substring(0, p.lastIndexOf('/')) : null,
-          path: p
-        }));
-      const merged = [...defaultFolderObjs, ...customFolders, ...impliedFolders];
-      const seen = new Set();
-      const dedupedFolders = merged.filter(f => {
-        if (seen.has(f.path)) return false;
-        seen.add(f.path);
-        return true;
-      }).sort((a,b) => a.name.localeCompare(b.name));
+      const dedupedFolders = customFolders.sort((a,b) => a.name.localeCompare(b.name));
 
       const studentCourse = (studentData.courseType || (Array.isArray(studentData.courseTypes) && studentData.courseTypes[0]) || '').trim().toLowerCase();
       allLessonFolders = studentCourse
