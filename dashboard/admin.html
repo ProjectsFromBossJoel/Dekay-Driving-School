@@ -1145,6 +1145,15 @@
             <input type="file" id="quizCsvFile" accept=".csv" class="form-input" />
           </div>
           <div id="quizCsvPreview" style="font-size:12px;color:var(--text-muted);"></div>
+          <div id="quizCsvProgressWrap" style="display:none; margin-top:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+              <span id="quizCsvProgressLabel">Importing questions…</span>
+              <span id="quizCsvProgressPct">0%</span>
+            </div>
+            <div style="height:8px; background:var(--navy-light); border-radius:50px; overflow:hidden;">
+              <div id="quizCsvProgressBar" style="height:100%; width:0%; background:var(--gold); border-radius:50px; transition:width 0.15s ease;"></div>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="closeModal('quizCsvModal')">Cancel</button>
@@ -3873,6 +3882,9 @@
   window.openQuizCsvModal = function() {
     document.getElementById("quizCsvFile").value = '';
     document.getElementById("quizCsvPreview").textContent = '';
+    document.getElementById("quizCsvProgressWrap").style.display = 'none';
+    document.getElementById("quizCsvProgressBar").style.width = '0%';
+    document.getElementById("quizCsvProgressPct").textContent = '0%';
     _pendingCsvRows = [];
     openModal("quizCsvModal");
   };
@@ -3893,10 +3905,27 @@
   window.importQuizCsv = async function() {
     const quizId = document.getElementById("editQuizId").value;
     if (!_pendingCsvRows.length) { showToast("Choose a CSV file first.", "error"); return; }
+
+    const importBtn = document.querySelector("#quizCsvModal .btn-gold");
+    const originalBtnHTML = importBtn.innerHTML;
+    const progWrap = document.getElementById("quizCsvProgressWrap");
+    const progBar = document.getElementById("quizCsvProgressBar");
+    const progPct = document.getElementById("quizCsvProgressPct");
+    const progLabel = document.getElementById("quizCsvProgressLabel");
+
+    importBtn.disabled = true;
+    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing…';
+    progWrap.style.display = "block";
+    progBar.style.width = "0%";
+    progPct.textContent = "0%";
+    progLabel.textContent = "Importing questions…";
+
     try {
       let order = currentQuizQuestions.length;
+      const total = _pendingCsvRows.length;
+      let done = 0;
       for (const row of _pendingCsvRows) {
-        if (!row.text || !row.optA || !row.optB || !row.correctLabel) continue;
+        if (!row.text || !row.optA || !row.optB || !row.correctLabel) { done++; continue; }
         const options = [
           { label: 'A', text: row.optA }, { label: 'B', text: row.optB },
           ...(row.optC ? [{ label: 'C', text: row.optC }] : []),
@@ -3906,6 +3935,10 @@
           quizId, text: row.text, imageUrl: row.imageUrl, options, correctLabel: row.correctLabel,
           order: order++, createdAt: serverTimestamp()
         });
+        done++;
+        const pct = Math.round((done / total) * 100);
+        progBar.style.width = pct + "%";
+        progPct.textContent = pct + "%";
       }
       await updateDoc(doc(db, "quizzes", quizId), { questionCount: order });
       closeModal("quizCsvModal");
@@ -3915,6 +3948,10 @@
     } catch(e) {
       console.error(e);
       showToast("Import failed. Check the CSV format.", "error");
+    } finally {
+      importBtn.disabled = false;
+      importBtn.innerHTML = originalBtnHTML;
+      progWrap.style.display = "none";
     }
   };
 
