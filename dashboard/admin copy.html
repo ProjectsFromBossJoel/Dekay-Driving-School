@@ -2081,6 +2081,15 @@
           </div>
           <input type="file" id="lessonVideoFile" accept="video/*" style="display:none" onchange="previewLessonVideo(this)" />
           <video id="lessonVideoPreview" controls style="display:none; width:100%; margin-top:8px; border-radius:8px; border:1px solid var(--border);"></video>
+          <div id="lessonUploadProgressWrap" style="display:none; margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+              <span id="lessonUploadProgressLabel">Uploading video…</span>
+              <span id="lessonUploadProgressPct">0%</span>
+            </div>
+            <div style="height:8px; background:var(--navy-light); border-radius:50px; overflow:hidden;">
+              <div id="lessonUploadProgressBar" style="height:100%; width:0%; background:var(--gold); border-radius:50px; transition:width 0.15s ease;"></div>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Thumbnail image</label>
@@ -2134,6 +2143,15 @@
           </div>
           <input type="file" id="editLessonVideoFile" accept="video/*" style="display:none" onchange="previewEditLessonVideo(this)" />
           <video id="editLessonVideoPreview" controls style="display:none; width:100%; margin-top:8px; border-radius:8px; border:1px solid var(--border);"></video>
+          <div id="editLessonUploadProgressWrap" style="display:none; margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+              <span id="editLessonUploadProgressLabel">Uploading video…</span>
+              <span id="editLessonUploadProgressPct">0%</span>
+            </div>
+            <div style="height:8px; background:var(--navy-light); border-radius:50px; overflow:hidden;">
+              <div id="editLessonUploadProgressBar" style="height:100%; width:0%; background:var(--gold); border-radius:50px; transition:width 0.15s ease;"></div>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Thumbnail image</label>
@@ -2144,6 +2162,12 @@
           <input type="file" id="editLessonThumbFile" accept="image/*" style="display:none" onchange="previewEditLessonThumb(this)" />
           <img id="editLessonThumbPreview" src="" style="display:none; max-width:160px; margin-top:8px; border-radius:8px; border:1px solid var(--border);" />
         </div>
+
+        <!-- Watch Progress -->
+        <div class="bio-section"><div class="bio-section-title">Watch Progress <span id="editLessonAvgCompletion" style="font-weight:normal;color:var(--text-muted);"></span></div></div>
+        <div id="editLessonWatchersList" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+          <div style="color:var(--text-muted);font-size:12px;">No data yet.</div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeEditLessonModal()">Cancel</button>
@@ -2152,18 +2176,28 @@
     </div>
   </div>
 
-    <!-- ── ADD LESSON FOLDER MODAL ── -->
+   <!-- ── ADD LESSON FOLDER MODAL ── -->
   <div class="modal-overlay" id="addFolderModal">
     <div class="modal" style="max-width:420px;">
       <div class="modal-header">
-        <div class="modal-title">New course folder</div>
+        <div class="modal-title" id="addFolderModalTitle">New course folder</div>
         <button class="modal-close" onclick="closeModal('addFolderModal')"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Folder name <span>*</span></label>
-          <input type="text" id="newFolderName" class="form-input" placeholder="e.g. Motorcycle" />
+        <div class="form-group" id="newFolderCourseGroup">
+          <label class="form-label">Course <span>*</span></label>
+          <select id="newFolderCourseSelect" class="form-select">
+            <option value="">Select course…</option>
+          </select>
           <div id="newFolderParentHint" style="font-size:11px;color:var(--text-muted);margin-top:6px;">This folder will be created at the top level.</div>
+        </div>
+        <div class="form-group" id="newFolderTitleGroup" style="display:none;">
+          <label class="form-label">Subfolder title <span>*</span></label>
+          <input type="text" id="newFolderTitle" class="form-input" placeholder="e.g. Advanced" />
+        </div>
+        <div class="form-group" id="newFolderDescGroup" style="display:none;">
+          <label class="form-label">Description</label>
+          <textarea id="newFolderDescription" class="form-textarea" placeholder="Brief description of this subfolder…"></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -2878,28 +2912,10 @@
         const data = d.data();
         const parentPath = data.parentPath || null;
         const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
-        return { name: data.name, parentPath, path };
+        return { id: d.id, name: data.name, description: data.description || '', parentPath, path };
       });
 
-      const defaultFolderObjs = DEFAULT_LESSON_FOLDERS.map(name => ({ name, parentPath: null, path: name }));
-
-      const knownPaths = new Set([...defaultFolderObjs, ...customFolders].map(f => f.path));
-      const impliedFolders = allLessonsFlat
-        .map(l => l.folder)
-        .filter(p => p && !knownPaths.has(p))
-        .map(p => ({
-          name: p.includes('/') ? p.substring(p.lastIndexOf('/') + 1) : p,
-          parentPath: p.includes('/') ? p.substring(0, p.lastIndexOf('/')) : null,
-          path: p
-        }));
-
-      const merged = [...defaultFolderObjs, ...customFolders, ...impliedFolders];
-      const seen = new Set();
-      allLessonFolders = merged.filter(f => {
-        if (seen.has(f.path)) return false;
-        seen.add(f.path);
-        return true;
-      }).sort((a,b) => a.name.localeCompare(b.name));
+      allLessonFolders = customFolders.sort((a,b) => a.name.localeCompare(b.name));
 
       renderLessonFolderView();
     } catch(e) { console.error(e); }
@@ -2955,20 +2971,48 @@
         : `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No folders yet. Create one to get started.</div>`;
       return;
     }
-    grid.innerHTML = subfolders.map(f => {
-      const count = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+   grid.innerHTML = subfolders.map(f => {
+      const videoCount = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+      const subfolderCount = allLessonFolders.filter(sf => (sf.parentPath || null) === f.path).length;
+      const count = videoCount + subfolderCount;
+      const deleteBtn = f.id
+        ? `<button class="btn btn-icon btn-danger" title="Delete folder" style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();deleteLessonFolder('${f.id}','${f.path.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>`
+        : '';
+      const editFolderBtn = f.id
+        ? `<button class="btn btn-icon btn-outline" title="Edit folder" style="position:absolute;top:10px;right:44px;" onclick="event.stopPropagation();openEditFolderModal('${f.id}')"><i class="fas fa-eye"></i></button>`
+        : '';
       return `
-        <div class="stat-card" style="cursor:pointer;" onclick="openLessonFolder('${f.path.replace(/'/g, "\\'")}')">
+        <div class="stat-card" style="cursor:pointer;position:relative;" onclick="openLessonFolder('${f.path.replace(/'/g, "\\'")}')">
+          ${editFolderBtn}
+          ${deleteBtn}
           <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-folder" style="color:var(--gold)"></i></div>
           <div class="stat-card-value" style="font-size:18px;">${escapeHtml(f.name)}</div>
-          <div class="stat-card-label">${count} video${count === 1 ? '' : 's'}</div>
+          <div class="stat-card-label">${count} file${count === 1 ? '' : 's'}</div>
+          ${f.description ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${escapeHtml(f.description)}</div>` : ''}
         </div>`;
     }).join('');
   }
 
-  window.openLessonFolder = function(path) {
+ window.openLessonFolder = function(path) {
     currentLessonFolderPath = path;
     renderLessonFolderView();
+  };
+
+  window.deleteLessonFolder = async function(folderId, folderPath) {
+    const hasVideos = allLessonsFlat.some(l => (l.folder || '') === folderPath);
+    const hasSubfolders = allLessonFolders.some(f => (f.parentPath || null) === folderPath);
+    const warning = (hasVideos || hasSubfolders)
+      ? "This folder contains videos or subfolders. Deleting it will not delete those items, but they will become orphaned. Delete anyway?"
+      : "Delete this folder?";
+    if (!(await showConfirm("Delete folder", warning))) return;
+    try {
+      await deleteDoc(doc(db, "lessonFolders", folderId));
+      showToast("Folder deleted.", "success");
+      await loadLessons();
+    } catch(e) {
+      console.error(e);
+      showToast("Could not delete folder. Try again.", "error");
+    }
   };
 
   window.backToLessonFolders = function() {
@@ -3013,32 +3057,124 @@
     </tr>`).join('');
   }
 
-  window.openAddFolderModal = function() {
-    document.getElementById("newFolderName").value = '';
+ window.openAddFolderModal = async function() {
+    const isTopLevel = !currentLessonFolderPath;
+    document.getElementById("newFolderCourseGroup").style.display = isTopLevel ? "block" : "none";
+    document.getElementById("newFolderTitleGroup").style.display = isTopLevel ? "none" : "block";
+    document.getElementById("newFolderDescGroup").style.display = isTopLevel ? "none" : "block";
+    document.getElementById("addFolderModalTitle").textContent = isTopLevel ? "New course folder" : "New subfolder";
+    document.getElementById("newFolderTitle").value = '';
+    document.getElementById("newFolderDescription").value = '';
     const hint = document.getElementById("newFolderParentHint");
-    if (hint) hint.textContent = currentLessonFolderPath
-      ? `This folder will be created inside "${currentLessonFolderPath}".`
-      : `This folder will be created at the top level.`;
+    if (hint) hint.textContent = isTopLevel
+      ? "This folder will be created at the top level."
+      : `This subfolder will be created inside "${currentLessonFolderPath}".`;
+    if (isTopLevel) {
+      const sel = document.getElementById("newFolderCourseSelect");
+      sel.innerHTML = '<option value="">Select course…</option>';
+      try {
+        const coursesSnap = await getDocs(collection(db, "courses"));
+        coursesSnap.docs.forEach(d => {
+          const name = d.data().name || d.data().title;
+          if (name) sel.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+        });
+      } catch(e) { console.error(e); }
+    }
     openModal("addFolderModal");
   };
 
   window.createLessonFolder = async function() {
-    const name = document.getElementById("newFolderName").value.trim();
-    if (!name) { showToast("Enter a folder name.", "error"); return; }
+    const isTopLevel = !currentLessonFolderPath;
     const parentPath = currentLessonFolderPath || null;
+    let name, description = '';
+    if (isTopLevel) {
+      name = document.getElementById("newFolderCourseSelect").value.trim();
+      if (!name) { showToast("Select a course.", "error"); return; }
+    } else {
+      name = document.getElementById("newFolderTitle").value.trim();
+      description = document.getElementById("newFolderDescription").value.trim();
+      if (!name) { showToast("Enter a subfolder title.", "error"); return; }
+    }
     const path = parentPath ? `${parentPath}/${name}` : name;
     if (allLessonFolders.some(f => f.path.toLowerCase() === path.toLowerCase())) {
       showToast("A folder with that name already exists here.", "error");
       return;
     }
     try {
-      await addDoc(collection(db, "lessonFolders"), { name, parentPath, path, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "lessonFolders"), { name, description, parentPath, path, createdAt: serverTimestamp() });
       closeModal("addFolderModal");
       showToast("Folder created ✓", "success");
       await loadLessons();
     } catch(e) {
       console.error(e);
       showToast("Could not create folder. Try again.", "error");
+    }
+  };
+
+  window.openEditFolderModal = function(folderId) {
+    const folder = allLessonFolders.find(f => f.id === folderId);
+    if (!folder) return showToast("Folder not found.", "error");
+    document.getElementById("editFolderId").value = folder.id;
+    document.getElementById("editFolderTitle").value = folder.name || '';
+    document.getElementById("editFolderDescription").value = folder.description || '';
+    openModal("editFolderModal");
+  };
+
+  window.updateLessonFolder = async function() {
+    const folderId = document.getElementById("editFolderId").value;
+    const newName = document.getElementById("editFolderTitle").value.trim();
+    const newDescription = document.getElementById("editFolderDescription").value.trim();
+    if (!newName) { showToast("Folder name is required.", "error"); return; }
+
+    const folder = allLessonFolders.find(f => f.id === folderId);
+    if (!folder) { showToast("Folder not found.", "error"); return; }
+
+    const oldPath = folder.path;
+    const newPath = folder.parentPath ? `${folder.parentPath}/${newName}` : newName;
+
+    if (newPath !== oldPath && allLessonFolders.some(f => f.id !== folderId && f.path.toLowerCase() === newPath.toLowerCase())) {
+      showToast("A folder with that name already exists here.", "error");
+      return;
+    }
+
+    const btn = document.querySelector("#editFolderModal .btn-gold");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+    try {
+      await updateDoc(doc(db, "lessonFolders", folderId), { name: newName, description: newDescription, path: newPath });
+
+      if (newPath !== oldPath) {
+        // Cascade: update any subfolders nested under the renamed folder
+        const affectedSubfolders = allLessonFolders.filter(f => f.id !== folderId && f.path.startsWith(oldPath + '/'));
+        for (const sf of affectedSubfolders) {
+          const updatedPath = newPath + sf.path.slice(oldPath.length);
+          const updatedParentPath = sf.parentPath === oldPath ? newPath : (newPath + sf.parentPath.slice(oldPath.length));
+          await updateDoc(doc(db, "lessonFolders", sf.id), { path: updatedPath, parentPath: updatedParentPath });
+        }
+        // Cascade: update lessons stored directly in this folder or its subfolders
+        const affectedLessons = allLessonsFlat.filter(l => l.folder === oldPath || (l.folder || '').startsWith(oldPath + '/'));
+        for (const lesson of affectedLessons) {
+          const updatedFolder = newPath + lesson.folder.slice(oldPath.length);
+          await updateDoc(doc(db, "lessons", lesson.id), { folder: updatedFolder });
+        }
+        // Keep current browse location in sync if we're viewing inside the renamed folder
+        if (currentLessonFolderPath === oldPath) currentLessonFolderPath = newPath;
+        else if (currentLessonFolderPath && currentLessonFolderPath.startsWith(oldPath + '/')) {
+          currentLessonFolderPath = newPath + currentLessonFolderPath.slice(oldPath.length);
+        }
+      }
+
+      closeModal("editFolderModal");
+      showToast("Folder updated ✓", "success");
+      await loadLessons();
+    } catch(e) {
+      console.error(e);
+      showToast("Could not update folder. Try again.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
     }
   };
 
@@ -4182,6 +4318,28 @@ window.approveStudent = async function(uid) {
     await loadAttendance();
     showToast("Record deleted.", "success");
   };
+
+  // ── XHR UPLOAD HELPER (supports progress, fetch() cannot track upload %) ──
+  function uploadToCloudinaryWithProgress(url, formData, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", url);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+          else reject(new Error(data.error?.message || "Upload failed"));
+        } catch(e) { reject(e); }
+      };
+      xhr.onerror = () => reject(new Error("Network error during upload"));
+      xhr.send(formData);
+    });
+  }
 
   // ── LESSONS ──
   window.previewLessonVideo = function(input) {

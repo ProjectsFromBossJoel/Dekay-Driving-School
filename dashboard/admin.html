@@ -994,20 +994,161 @@
     <div class="page" id="page-quizzes">
       <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
-          <div class="page-title">Quizzes</div>
-          <div class="page-sub">Manage theory quizzes and view student scores.</div>
+          <div class="page-title" id="quizPageTitle">Quizzes</div>
+          <div class="page-sub" id="quizPageSub">Select a course folder to manage its quiz categories.</div>
         </div>
-        <button class="btn btn-gold" onclick="openAddQuizModal()"><i class="fas fa-plus"></i> Add quiz</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-outline" id="quizBackBtn" onclick="quizFolderGoUp()" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
+          <button class="btn btn-outline" onclick="openAddQuizCategoryModal()"><i class="fas fa-folder-plus"></i> New category</button>
+          <button class="btn btn-gold" id="quizAddQuizBtn" onclick="openAddQuizModal()" style="display:none;"><i class="fas fa-plus"></i> Add quiz</button>
+        </div>
       </div>
 
-      <div class="card">
+      <div id="quizBreadcrumb" style="font-size:12px;color:var(--text-muted);margin-bottom:16px;display:none;"></div>
+
+      <div class="stat-grid" id="quizFoldersGrid" style="grid-template-columns:repeat(4,1fr); margin-bottom:24px;">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading categories…</div>
+      </div>
+
+      <div class="card" id="quizTableCard" style="display:none;">
         <div style="overflow-x:auto">
           <table class="data-table">
             <thead><tr><th>Quiz title</th><th>Questions</th><th>Pass mark</th><th>Avg. score</th><th>Completion</th><th>Actions</th></tr></thead>
             <tbody id="adminQuizTable">
-              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading quizzes…</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No quizzes in this category yet.</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADD/EDIT QUIZ CATEGORY MODAL ── -->
+    <div class="modal-overlay" id="addQuizCategoryModal">
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-header">
+          <div class="modal-title" id="addQuizCategoryModalTitle">New course folder</div>
+          <button class="modal-close" onclick="closeModal('addQuizCategoryModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editQuizCategoryId" />
+          <div class="form-group" id="newQuizCategoryCourseGroup">
+            <label class="form-label">Course <span>*</span></label>
+            <select id="newQuizCategoryCourseSelect" class="form-select">
+              <option value="">Select course…</option>
+            </select>
+            <div id="newQuizCategoryParentHint" style="font-size:11px;color:var(--text-muted);margin-top:6px;">This folder will be created at the top level.</div>
+          </div>
+          <div class="form-group" id="newQuizCategoryTitleGroup" style="display:none;">
+            <label class="form-label">Category name <span>*</span></label>
+            <input type="text" id="newQuizCategoryTitle" class="form-input" placeholder="e.g. Defensive Driving" />
+          </div>
+          <div class="form-group" id="newQuizCategoryDescGroup" style="display:none;">
+            <label class="form-label">Description</label>
+            <textarea id="newQuizCategoryDescription" class="form-textarea" placeholder="Brief description of this category…"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('addQuizCategoryModal')">Cancel</button>
+          <button class="btn btn-gold" id="quizCategorySaveBtn" onclick="saveQuizCategory()"><i class="fas fa-folder-plus"></i> Create</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADD/EDIT QUIZ MODAL ── -->
+    <div class="modal-overlay" id="editQuizModal">
+      <div class="modal" style="max-width:640px;">
+        <div class="modal-header">
+          <div class="modal-title" id="editQuizModalTitle">New quiz</div>
+          <button class="modal-close" onclick="closeModal('editQuizModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editQuizId" />
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Quiz title <span>*</span></label><input type="text" id="editQuizTitle" class="form-input" placeholder="e.g. Highway Code — General" /></div>
+            <div class="form-group"><label class="form-label">Pass mark (%)</label><input type="number" id="editQuizPassMark" class="form-input" value="60" min="1" max="100" /></div>
+          </div>
+          <div id="quizQuestionsSection" style="display:none;">
+            <div class="bio-section" style="display:flex;align-items:center;justify-content:space-between;">
+              <div class="bio-section-title" style="margin-bottom:0;">Questions <span id="quizQuestionCount" style="color:var(--text-muted);font-weight:normal;"></span></div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-outline btn-icon" title="Import CSV" onclick="openQuizCsvModal()"><i class="fas fa-file-csv"></i></button>
+                <button class="btn btn-outline btn-icon" title="Add question" onclick="openAddQuestionModal()"><i class="fas fa-plus"></i></button>
+              </div>
+            </div>
+            <div id="quizQuestionsList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;">
+              <div style="color:var(--text-muted);font-size:13px;">No questions yet.</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="quizDeleteBtn" style="display:none;" onclick="deleteQuizFromModal()"><i class="fas fa-trash"></i> Delete quiz</button>
+          <button class="btn btn-outline" onclick="closeModal('editQuizModal')">Close</button>
+          <button class="btn btn-gold" onclick="saveQuizMeta()"><i class="fas fa-save"></i> Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADD/EDIT QUESTION MODAL ── -->
+    <div class="modal-overlay" id="addQuestionModal">
+      <div class="modal" style="max-width:520px;">
+        <div class="modal-header">
+          <div class="modal-title" id="addQuestionModalTitle">Add question</div>
+          <button class="modal-close" onclick="closeModal('addQuestionModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editQuestionId" />
+          <div class="form-group">
+            <label class="form-label">Question text <span>*</span></label>
+            <textarea id="qBuilderText" class="form-textarea" placeholder="e.g. What does this road sign mean?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Image <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></label>
+            <div id="qBuilderImgUploadArea" style="padding:10px 14px; background:var(--navy); border:1.5px dashed var(--border); border-radius:var(--radius); cursor:pointer; text-align:center;" onclick="document.getElementById('qBuilderImgFile').click()">
+              <i class="fas fa-image" style="color:var(--gold);margin-right:6px;"></i>
+              <span id="qBuilderImgText" style="font-size:12px;color:var(--text-muted);">Tap to upload an image</span>
+            </div>
+            <input type="file" id="qBuilderImgFile" accept="image/*" style="display:none" onchange="previewQuestionImage(this)" />
+            <img id="qBuilderImgPreview" src="" style="display:none; max-width:100%; max-height:140px; border-radius:8px; margin-top:8px; border:1px solid var(--border);" />
+          </div>
+          <div class="form-group"><label class="form-label">Option A <span>*</span></label><input type="text" id="qBuilderOptA" class="form-input" /></div>
+          <div class="form-group"><label class="form-label">Option B <span>*</span></label><input type="text" id="qBuilderOptB" class="form-input" /></div>
+          <div class="form-group"><label class="form-label">Option C</label><input type="text" id="qBuilderOptC" class="form-input" /></div>
+          <div class="form-group"><label class="form-label">Option D</label><input type="text" id="qBuilderOptD" class="form-input" /></div>
+          <div class="form-group">
+            <label class="form-label">Correct answer <span>*</span></label>
+            <select id="qBuilderCorrect" class="form-select">
+              <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('addQuestionModal')">Cancel</button>
+          <button class="btn btn-gold" id="qBuilderSaveBtn" onclick="saveQuestion()"><i class="fas fa-save"></i> Save question</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CSV IMPORT MODAL ── -->
+    <div class="modal-overlay" id="quizCsvModal">
+      <div class="modal" style="max-width:520px;">
+        <div class="modal-header">
+          <div class="modal-title">Import questions from CSV</div>
+          <button class="modal-close" onclick="closeModal('quizCsvModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;">
+            CSV columns, in order: <strong style="color:var(--gold);">question, imageUrl, optionA, optionB, optionC, optionD, correct</strong><br/>
+            <code style="color:var(--text-light);">imageUrl</code> is optional — leave blank if no image. <code style="color:var(--text-light);">correct</code> must be A, B, C, or D.<br/>
+            First row is treated as a header and skipped.
+          </div>
+          <div class="form-group">
+            <input type="file" id="quizCsvFile" accept=".csv" class="form-input" />
+          </div>
+          <div id="quizCsvPreview" style="font-size:12px;color:var(--text-muted);"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal('quizCsvModal')">Cancel</button>
+          <button class="btn btn-gold" onclick="importQuizCsv()"><i class="fas fa-file-import"></i> Import</button>
         </div>
       </div>
     </div>
@@ -3190,25 +3331,525 @@
     if (selectedValue) sel.value = selectedValue;
   }
 
+  // ══════════════════════════════════════
+  // QUIZZES (categories → quizzes → questions)
+  // ══════════════════════════════════════
+  let allQuizCategories = [];
+  let allQuizzesFlat = [];
+  let currentQuizCategoryPath = null;
+  let currentQuizQuestions = [];
+  const QUIZ_IMAGE_PRESET = "quiz_images_upload";
+
   async function loadQuizzes() {
     try {
-      const snaps = await getDocs(collection(db, "quizzes"));
-      const quizzes = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
-      const tbody = document.getElementById("adminQuizTable");
-      if (!quizzes.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No quizzes added yet.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = quizzes.map(q => `<tr>
-        <td><div style="font-weight:600">${q.title}</div></td>
-        <td style="color:var(--text-muted)">${q.questionCount || q.questions?.length || '—'}</td>
-        <td><span class="stage-pill">60%</span></td>
-        <td style="color:var(--gold)">${q.avgScore || '—'}%</td>
-        <td style="color:var(--text-muted)">${q.completionPct || '—'}%</td>
-        <td><button class="btn btn-icon btn-danger" onclick="deleteQuiz('${q.id}')"><i class="fas fa-trash"></i></button></td>
-      </tr>`).join('');
+      const [catSnaps, quizSnaps] = await Promise.all([
+        getDocs(collection(db, "quizCategories")),
+        getDocs(collection(db, "quizzes"))
+      ]);
+      allQuizCategories = catSnaps.docs.map(d => {
+        const data = d.data();
+        const parentPath = data.parentPath || null;
+        const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
+        return { id: d.id, name: data.name, description: data.description || '', parentPath, path };
+      }).sort((a,b) => a.name.localeCompare(b.name));
+      allQuizzesFlat = quizSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      window._allQuizzes = allQuizzesFlat;
+      renderQuizFolderView();
     } catch(e) { console.error(e); }
   }
+
+  function renderQuizBreadcrumb(path) {
+    const segments = path.split('/');
+    let acc = '';
+    const parts = segments.map((seg, idx) => {
+      acc = acc ? `${acc}/${seg}` : seg;
+      const isLast = idx === segments.length - 1;
+      return isLast
+        ? `<span style="color:var(--gold);font-weight:600;">${escapeHtml(seg)}</span>`
+        : `<span style="cursor:pointer;text-decoration:underline;" onclick="openQuizFolder('${acc.replace(/'/g, "\\'")}')">${escapeHtml(seg)}</span>`;
+    });
+    const rootLink = `<span style="cursor:pointer;text-decoration:underline;" onclick="backToQuizFolders()">All categories</span>`;
+    return [rootLink, ...parts].join(' <i class="fas fa-chevron-right" style="font-size:9px;margin:0 4px;"></i> ');
+  }
+
+  function renderQuizFolderView() {
+    const path = currentQuizCategoryPath;
+    const titleEl = document.getElementById("quizPageTitle");
+    const subEl = document.getElementById("quizPageSub");
+    const backBtn = document.getElementById("quizBackBtn");
+    const addQuizBtn = document.getElementById("quizAddQuizBtn");
+    const breadcrumbEl = document.getElementById("quizBreadcrumb");
+    const tableCard = document.getElementById("quizTableCard");
+    const isLeaf = path && path.split('/').length >= 2; // course/category = leaf, show quizzes
+
+    if (!path) {
+      titleEl.textContent = "Quizzes";
+      subEl.textContent = "Select a course folder to manage its quiz categories.";
+      backBtn.style.display = "none";
+      breadcrumbEl.style.display = "none";
+      addQuizBtn.style.display = "none";
+      tableCard.style.display = "none";
+    } else {
+      const segments = path.split('/');
+      titleEl.textContent = segments[segments.length - 1];
+      subEl.textContent = isLeaf ? `Quizzes inside "${path}".` : `Categories inside "${path}".`;
+      backBtn.style.display = "inline-flex";
+      breadcrumbEl.style.display = "block";
+      breadcrumbEl.innerHTML = renderQuizBreadcrumb(path);
+      addQuizBtn.style.display = isLeaf ? "inline-flex" : "none";
+      tableCard.style.display = isLeaf ? "block" : "none";
+      if (isLeaf) renderQuizzesTableForCategory(path);
+    }
+
+    const subfolders = allQuizCategories.filter(f => (f.parentPath || null) === path);
+    const grid = document.getElementById("quizFoldersGrid");
+    if (!subfolders.length) {
+      grid.innerHTML = path
+        ? `<div style="grid-column:1/-1;color:var(--text-muted);font-size:13px;padding:8px 0;">No subfolders here.</div>`
+        : `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No course folders yet. Create one to get started.</div>`;
+      if (isLeaf) grid.style.display = "none"; else grid.style.display = "grid";
+      return;
+    }
+    grid.style.display = "grid";
+    grid.innerHTML = subfolders.map(f => {
+      const quizCount = allQuizzesFlat.filter(q => (q.categoryPath || '') === f.path).length;
+      const subfolderCount = allQuizCategories.filter(sf => (sf.parentPath || null) === f.path).length;
+      const count = quizCount + subfolderCount;
+      const deleteBtn = `<button class="btn btn-icon btn-danger" title="Delete" style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();deleteQuizCategory('${f.id}','${f.path.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>`;
+      const editBtn = f.parentPath ? `<button class="btn btn-icon btn-outline" title="Edit" style="position:absolute;top:10px;right:44px;" onclick="event.stopPropagation();openEditQuizCategoryModal('${f.id}')"><i class="fas fa-eye"></i></button>` : '';
+      return `
+        <div class="stat-card" style="cursor:pointer;position:relative;" onclick="openQuizFolder('${f.path.replace(/'/g, "\\'")}')">
+          ${editBtn}${deleteBtn}
+          <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-folder" style="color:var(--gold)"></i></div>
+          <div class="stat-card-value" style="font-size:18px;">${escapeHtml(f.name)}</div>
+          <div class="stat-card-label">${count} item${count === 1 ? '' : 's'}</div>
+          ${f.description ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${escapeHtml(f.description)}</div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  window.openQuizFolder = function(path) { currentQuizCategoryPath = path; renderQuizFolderView(); };
+  window.backToQuizFolders = function() { currentQuizCategoryPath = null; renderQuizFolderView(); };
+  window.quizFolderGoUp = function() {
+    if (!currentQuizCategoryPath) return;
+    const idx = currentQuizCategoryPath.lastIndexOf('/');
+    currentQuizCategoryPath = idx === -1 ? null : currentQuizCategoryPath.substring(0, idx);
+    renderQuizFolderView();
+  };
+
+  window.deleteQuizCategory = async function(id, path) {
+    const hasQuizzes = allQuizzesFlat.some(q => (q.categoryPath || '') === path);
+    const hasSubfolders = allQuizCategories.some(f => (f.parentPath || null) === path);
+    const warning = (hasQuizzes || hasSubfolders)
+      ? "This folder contains quizzes or subfolders. Deleting it won't delete those, but they'll be orphaned. Delete anyway?"
+      : "Delete this folder?";
+    if (!(await showConfirm("Delete folder", warning))) return;
+    try {
+      await deleteDoc(doc(db, "quizCategories", id));
+      showToast("Folder deleted.", "success");
+      await loadQuizzes();
+    } catch(e) { showToast("Could not delete folder.", "error"); }
+  };
+
+  // ── CATEGORY MODAL ──
+  window.openAddQuizCategoryModal = async function() {
+    document.getElementById("editQuizCategoryId").value = '';
+    const isTopLevel = !currentQuizCategoryPath;
+    document.getElementById("newQuizCategoryCourseGroup").style.display = isTopLevel ? "block" : "none";
+    document.getElementById("newQuizCategoryTitleGroup").style.display = isTopLevel ? "none" : "block";
+    document.getElementById("newQuizCategoryDescGroup").style.display = isTopLevel ? "none" : "block";
+    document.getElementById("addQuizCategoryModalTitle").textContent = isTopLevel ? "New course folder" : "New category";
+    document.getElementById("newQuizCategoryTitle").value = '';
+    document.getElementById("newQuizCategoryDescription").value = '';
+    document.getElementById("quizCategorySaveBtn").innerHTML = '<i class="fas fa-folder-plus"></i> Create';
+    const hint = document.getElementById("newQuizCategoryParentHint");
+    if (hint) hint.textContent = isTopLevel ? "This folder will be created at the top level." : `This category will be created inside "${currentQuizCategoryPath}".`;
+    if (isTopLevel) {
+      const sel = document.getElementById("newQuizCategoryCourseSelect");
+      sel.innerHTML = '<option value="">Select course…</option>';
+      try {
+        const coursesSnap = await getDocs(collection(db, "courses"));
+        coursesSnap.docs.forEach(d => {
+          const name = d.data().name || d.data().title;
+          if (name) sel.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+        });
+      } catch(e) { console.error(e); }
+    }
+    openModal("addQuizCategoryModal");
+  };
+
+  window.openEditQuizCategoryModal = function(id) {
+    const cat = allQuizCategories.find(f => f.id === id);
+    if (!cat) return showToast("Category not found.", "error");
+    document.getElementById("editQuizCategoryId").value = id;
+    document.getElementById("newQuizCategoryCourseGroup").style.display = "none";
+    document.getElementById("newQuizCategoryTitleGroup").style.display = "block";
+    document.getElementById("newQuizCategoryDescGroup").style.display = "block";
+    document.getElementById("addQuizCategoryModalTitle").textContent = "Edit category";
+    document.getElementById("newQuizCategoryTitle").value = cat.name || '';
+    document.getElementById("newQuizCategoryDescription").value = cat.description || '';
+    document.getElementById("quizCategorySaveBtn").innerHTML = '<i class="fas fa-save"></i> Save';
+    openModal("addQuizCategoryModal");
+  };
+
+  window.saveQuizCategory = async function() {
+    const editId = document.getElementById("editQuizCategoryId").value;
+    if (editId) {
+      const cat = allQuizCategories.find(f => f.id === editId);
+      const newName = document.getElementById("newQuizCategoryTitle").value.trim();
+      const newDesc = document.getElementById("newQuizCategoryDescription").value.trim();
+      if (!newName) { showToast("Name is required.", "error"); return; }
+      const newPath = cat.parentPath ? `${cat.parentPath}/${newName}` : newName;
+      try {
+        await updateDoc(doc(db, "quizCategories", editId), { name: newName, description: newDesc, path: newPath });
+        closeModal("addQuizCategoryModal");
+        showToast("Category updated ✓", "success");
+        await loadQuizzes();
+      } catch(e) { showToast("Update failed.", "error"); }
+      return;
+    }
+    const isTopLevel = !currentQuizCategoryPath;
+    const parentPath = currentQuizCategoryPath || null;
+    let name, description = '';
+    if (isTopLevel) {
+      name = document.getElementById("newQuizCategoryCourseSelect").value.trim();
+      if (!name) { showToast("Select a course.", "error"); return; }
+    } else {
+      name = document.getElementById("newQuizCategoryTitle").value.trim();
+      description = document.getElementById("newQuizCategoryDescription").value.trim();
+      if (!name) { showToast("Enter a category name.", "error"); return; }
+    }
+    const path = parentPath ? `${parentPath}/${name}` : name;
+    if (allQuizCategories.some(f => f.path.toLowerCase() === path.toLowerCase())) {
+      showToast("A folder with that name already exists here.", "error");
+      return;
+    }
+    try {
+      await addDoc(collection(db, "quizCategories"), { name, description, parentPath, path, createdAt: serverTimestamp() });
+      closeModal("addQuizCategoryModal");
+      showToast("Folder created ✓", "success");
+      await loadQuizzes();
+    } catch(e) { showToast("Could not create folder.", "error"); }
+  };
+
+  // ── QUIZ TABLE ──
+  function renderQuizzesTableForCategory(path) {
+    const tbody = document.getElementById("adminQuizTable");
+    const quizzes = allQuizzesFlat.filter(q => (q.categoryPath || '') === path);
+    if (!quizzes.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No quizzes in this category yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = quizzes.map(q => `<tr>
+      <td><div style="font-weight:600">${escapeHtml(q.title)}</div></td>
+      <td style="color:var(--text-muted)">${q.questionCount || 0}</td>
+      <td><span class="stage-pill">${q.passMark || 60}%</span></td>
+      <td style="color:var(--gold)">${q.avgScore != null ? q.avgScore + '%' : '—'}</td>
+      <td style="color:var(--text-muted)">${q.completionPct != null ? q.completionPct + '%' : '—'}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-icon btn-outline" title="Manage" onclick="openEditQuizModal('${q.id}')"><i class="fas fa-eye"></i></button>
+        <button class="btn btn-icon btn-danger" onclick="deleteQuiz('${q.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+  }
+
+  // ── QUIZ CREATE/EDIT MODAL ──
+  window.openAddQuizModal = function() {
+    if (!currentQuizCategoryPath || currentQuizCategoryPath.split('/').length < 2) {
+      showToast("Open a category first (inside a course folder).", "error");
+      return;
+    }
+    document.getElementById("editQuizId").value = '';
+    document.getElementById("editQuizTitle").value = '';
+    document.getElementById("editQuizPassMark").value = 60;
+    document.getElementById("editQuizModalTitle").textContent = "New quiz";
+    document.getElementById("quizQuestionsSection").style.display = "none";
+    document.getElementById("quizDeleteBtn").style.display = "none";
+    openModal("editQuizModal");
+  };
+
+  window.openEditQuizModal = async function(quizId) {
+    const q = allQuizzesFlat.find(x => x.id === quizId);
+    if (!q) return showToast("Quiz not found.", "error");
+    document.getElementById("editQuizId").value = q.id;
+    document.getElementById("editQuizTitle").value = q.title || '';
+    document.getElementById("editQuizPassMark").value = q.passMark || 60;
+    document.getElementById("editQuizModalTitle").textContent = "Edit quiz";
+    document.getElementById("quizQuestionsSection").style.display = "block";
+    document.getElementById("quizDeleteBtn").style.display = "inline-flex";
+    await loadQuizQuestions(quizId);
+    openModal("editQuizModal");
+  };
+
+  window.saveQuizMeta = async function() {
+    const id = document.getElementById("editQuizId").value;
+    const title = document.getElementById("editQuizTitle").value.trim();
+    const passMark = parseInt(document.getElementById("editQuizPassMark").value) || 60;
+    if (!title) { showToast("Quiz title is required.", "error"); return; }
+
+    if (id) {
+      try {
+        await updateDoc(doc(db, "quizzes", id), { title, passMark });
+        showToast("Quiz updated ✓", "success");
+        await loadQuizzes();
+      } catch(e) { showToast("Update failed.", "error"); }
+      return;
+    }
+
+    const segments = currentQuizCategoryPath.split('/');
+    try {
+      const ref = await addDoc(collection(db, "quizzes"), {
+        title, passMark,
+        courseName: segments[0],
+        categoryName: segments[segments.length - 1],
+        categoryPath: currentQuizCategoryPath,
+        questionCount: 0, avgScore: null, completionPct: null,
+        createdAt: serverTimestamp()
+      });
+      showToast("Quiz created ✓ Now add some questions.", "success");
+      await loadQuizzes();
+      openEditQuizModal(ref.id);
+    } catch(e) { showToast("Could not create quiz.", "error"); }
+  };
+
+  window.deleteQuiz = async function(id) {
+    if (!(await showConfirm("Delete quiz", "Delete this quiz and all its questions?"))) return;
+    try {
+      const qSnap = await getDocs(query(collection(db, "quizQuestions"), where("quizId", "==", id)));
+      await Promise.all(qSnap.docs.map(d => deleteDoc(doc(db, "quizQuestions", d.id))));
+      await deleteDoc(doc(db, "quizzes", id));
+      closeModal("editQuizModal");
+      await loadQuizzes();
+      showToast("Quiz removed.", "success");
+    } catch(e) { showToast("Delete failed.", "error"); }
+  };
+  window.deleteQuizFromModal = function() { deleteQuiz(document.getElementById("editQuizId").value); };
+
+  // ── QUESTIONS ──
+  async function loadQuizQuestions(quizId) {
+    try {
+      const snaps = await getDocs(query(collection(db, "quizQuestions"), where("quizId", "==", quizId)));
+      currentQuizQuestions = snaps.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.order||0)-(b.order||0));
+      renderQuizQuestionsList();
+    } catch(e) { console.error(e); }
+  }
+
+  function renderQuizQuestionsList() {
+    document.getElementById("quizQuestionCount").textContent = `(${currentQuizQuestions.length})`;
+    const list = document.getElementById("quizQuestionsList");
+    if (!currentQuizQuestions.length) {
+      list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No questions yet. Add one or import a CSV.</div>';
+      return;
+    }
+    list.innerHTML = currentQuizQuestions.map((q, i) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--navy);border:1px solid var(--border);border-radius:8px;">
+        ${q.imageUrl ? `<img src="${q.imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;" />` : `<div style="width:40px;height:40px;border-radius:6px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0;"><i class="fas fa-question" style="font-size:12px;"></i></div>`}
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i+1}. ${escapeHtml(q.text || '')}</div>
+          <div style="font-size:11px;color:var(--text-muted);">Correct: ${escapeHtml(q.correctLabel || '—')}</div>
+        </div>
+        <button class="btn btn-icon btn-outline" onclick="openEditQuestionModal('${q.id}')"><i class="fas fa-pen"></i></button>
+        <button class="btn btn-icon btn-danger" onclick="deleteQuestion('${q.id}')"><i class="fas fa-trash"></i></button>
+      </div>`).join('');
+  }
+
+  window.openAddQuestionModal = function() {
+    document.getElementById("editQuestionId").value = '';
+    document.getElementById("addQuestionModalTitle").textContent = "Add question";
+    document.getElementById("qBuilderText").value = '';
+    document.getElementById("qBuilderOptA").value = '';
+    document.getElementById("qBuilderOptB").value = '';
+    document.getElementById("qBuilderOptC").value = '';
+    document.getElementById("qBuilderOptD").value = '';
+    document.getElementById("qBuilderCorrect").value = 'A';
+    document.getElementById("qBuilderImgFile").value = '';
+    document.getElementById("qBuilderImgPreview").style.display = 'none';
+    document.getElementById("qBuilderImgText").textContent = 'Tap to upload an image';
+    document.getElementById("qBuilderSaveBtn")._imageUrl = null;
+    openModal("addQuestionModal");
+  };
+
+  window.openEditQuestionModal = function(questionId) {
+    const q = currentQuizQuestions.find(x => x.id === questionId);
+    if (!q) return;
+    document.getElementById("editQuestionId").value = q.id;
+    document.getElementById("addQuestionModalTitle").textContent = "Edit question";
+    document.getElementById("qBuilderText").value = q.text || '';
+    document.getElementById("qBuilderOptA").value = q.options?.find(o=>o.label==='A')?.text || '';
+    document.getElementById("qBuilderOptB").value = q.options?.find(o=>o.label==='B')?.text || '';
+    document.getElementById("qBuilderOptC").value = q.options?.find(o=>o.label==='C')?.text || '';
+    document.getElementById("qBuilderOptD").value = q.options?.find(o=>o.label==='D')?.text || '';
+    document.getElementById("qBuilderCorrect").value = q.correctLabel || 'A';
+    const preview = document.getElementById("qBuilderImgPreview");
+    if (q.imageUrl) { preview.src = q.imageUrl; preview.style.display = 'block'; document.getElementById("qBuilderImgText").textContent = 'Change image'; }
+    else { preview.style.display = 'none'; document.getElementById("qBuilderImgText").textContent = 'Tap to upload an image'; }
+    document.getElementById("qBuilderSaveBtn")._imageUrl = q.imageUrl || null;
+    openModal("addQuestionModal");
+  };
+
+  window.previewQuestionImage = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById("qBuilderImgPreview").src = e.target.result;
+      document.getElementById("qBuilderImgPreview").style.display = 'block';
+      document.getElementById("qBuilderImgText").textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  async function uploadQuizImage(file, quizId) {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", QUIZ_IMAGE_PRESET);
+    fd.append("folder", `quiz_questions/${quizId}`);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
+    if (!res.ok) throw new Error("Image upload failed");
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  window.saveQuestion = async function() {
+    const quizId = document.getElementById("editQuizId").value;
+    const editId = document.getElementById("editQuestionId").value;
+    const text = document.getElementById("qBuilderText").value.trim();
+    const optA = document.getElementById("qBuilderOptA").value.trim();
+    const optB = document.getElementById("qBuilderOptB").value.trim();
+    const optC = document.getElementById("qBuilderOptC").value.trim();
+    const optD = document.getElementById("qBuilderOptD").value.trim();
+    const correctLabel = document.getElementById("qBuilderCorrect").value;
+    const imgFile = document.getElementById("qBuilderImgFile").files[0];
+
+    if (!text || !optA || !optB) { showToast("Question text and at least options A & B are required.", "error"); return; }
+
+    const btn = document.getElementById("qBuilderSaveBtn");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+    try {
+      let imageUrl = btn._imageUrl || null;
+      if (imgFile) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading image…';
+        imageUrl = await uploadQuizImage(imgFile, quizId);
+      }
+      const options = [
+        { label: 'A', text: optA }, { label: 'B', text: optB },
+        ...(optC ? [{ label: 'C', text: optC }] : []),
+        ...(optD ? [{ label: 'D', text: optD }] : [])
+      ];
+
+      if (editId) {
+        await updateDoc(doc(db, "quizQuestions", editId), { text, imageUrl, options, correctLabel });
+      } else {
+        await addDoc(collection(db, "quizQuestions"), {
+          quizId, text, imageUrl, options, correctLabel,
+          order: currentQuizQuestions.length, createdAt: serverTimestamp()
+        });
+      }
+      await updateDoc(doc(db, "quizzes", quizId), { questionCount: editId ? currentQuizQuestions.length : currentQuizQuestions.length + 1 });
+
+      closeModal("addQuestionModal");
+      showToast("Question saved ✓", "success");
+      await loadQuizQuestions(quizId);
+      await loadQuizzes();
+    } catch(e) {
+      console.error(e);
+      showToast("Could not save question. Try again.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  };
+
+  window.deleteQuestion = async function(id) {
+    if (!(await showConfirm("Delete question", "Delete this question?"))) return;
+    const quizId = document.getElementById("editQuizId").value;
+    try {
+      await deleteDoc(doc(db, "quizQuestions", id));
+      await updateDoc(doc(db, "quizzes", quizId), { questionCount: Math.max(0, currentQuizQuestions.length - 1) });
+      showToast("Question removed.", "success");
+      await loadQuizQuestions(quizId);
+      await loadQuizzes();
+    } catch(e) { showToast("Delete failed.", "error"); }
+  };
+
+  // ── CSV IMPORT ──
+  let _pendingCsvRows = [];
+
+  function parseQuizCsv(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) { // skip header
+      const cells = [];
+      let cur = '', inQuotes = false;
+      const line = lines[i];
+      for (let c = 0; c < line.length; c++) {
+        const ch = line[c];
+        if (ch === '"') { inQuotes = !inQuotes; }
+        else if (ch === ',' && !inQuotes) { cells.push(cur); cur = ''; }
+        else { cur += ch; }
+      }
+      cells.push(cur);
+      if (cells.length >= 7) {
+        rows.push({
+          text: cells[0].trim(), imageUrl: cells[1].trim() || null,
+          optA: cells[2].trim(), optB: cells[3].trim(), optC: cells[4].trim(), optD: cells[5].trim(),
+          correctLabel: cells[6].trim().toUpperCase()
+        });
+      }
+    }
+    return rows;
+  }
+
+  window.openQuizCsvModal = function() {
+    document.getElementById("quizCsvFile").value = '';
+    document.getElementById("quizCsvPreview").textContent = '';
+    _pendingCsvRows = [];
+    openModal("quizCsvModal");
+  };
+
+  document.addEventListener("change", (e) => {
+    if (e.target.id === "quizCsvFile") {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        _pendingCsvRows = parseQuizCsv(ev.target.result);
+        document.getElementById("quizCsvPreview").textContent = `${_pendingCsvRows.length} question(s) found and ready to import.`;
+      };
+      reader.readAsText(file);
+    }
+  });
+
+  window.importQuizCsv = async function() {
+    const quizId = document.getElementById("editQuizId").value;
+    if (!_pendingCsvRows.length) { showToast("Choose a CSV file first.", "error"); return; }
+    try {
+      let order = currentQuizQuestions.length;
+      for (const row of _pendingCsvRows) {
+        if (!row.text || !row.optA || !row.optB || !row.correctLabel) continue;
+        const options = [
+          { label: 'A', text: row.optA }, { label: 'B', text: row.optB },
+          ...(row.optC ? [{ label: 'C', text: row.optC }] : []),
+          ...(row.optD ? [{ label: 'D', text: row.optD }] : [])
+        ];
+        await addDoc(collection(db, "quizQuestions"), {
+          quizId, text: row.text, imageUrl: row.imageUrl, options, correctLabel: row.correctLabel,
+          order: order++, createdAt: serverTimestamp()
+        });
+      }
+      await updateDoc(doc(db, "quizzes", quizId), { questionCount: order });
+      closeModal("quizCsvModal");
+      showToast(`${_pendingCsvRows.length} question(s) imported ✓`, "success");
+      await loadQuizQuestions(quizId);
+      await loadQuizzes();
+    } catch(e) {
+      console.error(e);
+      showToast("Import failed. Check the CSV format.", "error");
+    }
+  };
 
   async function loadNotifications() {
     try {
@@ -4613,18 +5254,11 @@ window.approveStudent = async function(uid) {
     }
   };
 
-  window.deleteLesson = async function(id) {
+ window.deleteLesson = async function(id) {
     if (!(await showConfirm("Delete lesson", "Delete this lesson?"))) return;
     await deleteDoc(doc(db, "lessons", id));
     await loadLessons();
     showToast("Lesson removed.", "success");
-  };
-
-  window.deleteQuiz = async function(id) {
-    if (!(await showConfirm("Delete quiz", "Delete this quiz?"))) return;
-    await deleteDoc(doc(db, "quizzes", id));
-    await loadQuizzes();
-    showToast("Quiz removed.", "success");
   };
 
   // ── NOTIFICATIONS ──
@@ -5733,8 +6367,7 @@ window.approveStudent = async function(uid) {
     openModal("addLessonModal");
   };
   window.openAddCourseModal = () => openModal("addCourseModal");
-  window.openAddQuizModal   = () => showToast("Quiz builder coming soon — add via Firestore for now.", "success");
-
+  
 
     // ── RESET STUDENT PASSWORD ──
   window.resetStudentPassword = async function(uid, email) {
