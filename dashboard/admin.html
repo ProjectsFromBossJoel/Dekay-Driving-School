@@ -3416,7 +3416,7 @@
       const subfolderCount = allQuizCategories.filter(sf => (sf.parentPath || null) === f.path).length;
       const count = quizCount + subfolderCount;
       const deleteBtn = `<button class="btn btn-icon btn-danger" title="Delete" style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();deleteQuizCategory('${f.id}','${f.path.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>`;
-      const editBtn = f.parentPath ? `<button class="btn btn-icon btn-outline" title="Edit" style="position:absolute;top:10px;right:44px;" onclick="event.stopPropagation();openEditQuizCategoryModal('${f.id}')"><i class="fas fa-eye"></i></button>` : '';
+      const editBtn = `<button class="btn btn-icon btn-outline" title="Edit" style="position:absolute;top:10px;right:44px;" onclick="event.stopPropagation();openEditQuizCategoryModal('${f.id}')"><i class="fas fa-eye"></i></button>`;
       return `
         <div class="stat-card" style="cursor:pointer;position:relative;" onclick="openQuizFolder('${f.path.replace(/'/g, "\\'")}')">
           ${editBtn}${deleteBtn}
@@ -3478,17 +3478,32 @@
     openModal("addQuizCategoryModal");
   };
 
-  window.openEditQuizCategoryModal = function(id) {
+  window.openEditQuizCategoryModal = async function(id) {
     const cat = allQuizCategories.find(f => f.id === id);
     if (!cat) return showToast("Category not found.", "error");
     document.getElementById("editQuizCategoryId").value = id;
-    document.getElementById("newQuizCategoryCourseGroup").style.display = "none";
-    document.getElementById("newQuizCategoryTitleGroup").style.display = "block";
-    document.getElementById("newQuizCategoryDescGroup").style.display = "block";
-    document.getElementById("addQuizCategoryModalTitle").textContent = "Edit category";
+    const isTopLevel = !cat.parentPath;
+    document.getElementById("newQuizCategoryCourseGroup").style.display = isTopLevel ? "block" : "none";
+    document.getElementById("newQuizCategoryTitleGroup").style.display = isTopLevel ? "none" : "block";
+    document.getElementById("newQuizCategoryDescGroup").style.display = isTopLevel ? "none" : "block";
+    document.getElementById("addQuizCategoryModalTitle").textContent = isTopLevel ? "Edit course folder" : "Edit category";
     document.getElementById("newQuizCategoryTitle").value = cat.name || '';
     document.getElementById("newQuizCategoryDescription").value = cat.description || '';
     document.getElementById("quizCategorySaveBtn").innerHTML = '<i class="fas fa-save"></i> Save';
+    if (isTopLevel) {
+      const sel = document.getElementById("newQuizCategoryCourseSelect");
+      sel.innerHTML = '<option value="">Select course…</option>';
+      try {
+        const coursesSnap = await getDocs(collection(db, "courses"));
+        coursesSnap.docs.forEach(d => {
+          const name = d.data().name || d.data().title;
+          if (name) sel.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+        });
+      } catch(e) { console.error(e); }
+      sel.value = cat.name || '';
+      const hint = document.getElementById("newQuizCategoryParentHint");
+      if (hint) hint.textContent = "Changing the course will move this folder and everything inside it to the new course.";
+    }
     openModal("addQuizCategoryModal");
   };
 
@@ -3496,6 +3511,58 @@
     const editId = document.getElementById("editQuizCategoryId").value;
     if (editId) {
       const cat = allQuizCategories.find(f => f.id === editId);
+      const isTopLevel = !cat.parentPath;
+
+      if (isTopLevel) {
+        const newCourseName = document.getElementById("newQuizCategoryCourseSelect").value.trim();
+        if (!newCourseName) { showToast("Select a course.", "error"); return; }
+        const oldPath = cat.path;
+        const newPath = newCourseName;
+
+        if (newPath !== oldPath && allQuizCategories.some(f => f.id !== editId && f.path.toLowerCase() === newPath.toLowerCase())) {
+          showToast("A folder for that course already exists.", "error");
+          return;
+        }
+
+        const btn = document.getElementById("quizCategorySaveBtn");
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+        try {
+          await updateDoc(doc(db, "quizCategories", editId), { name: newCourseName, path: newPath });
+
+          if (newPath !== oldPath) {
+            const affectedSubcats = allQuizCategories.filter(f => f.id !== editId && f.path.startsWith(oldPath + '/'));
+            for (const sf of affectedSubcats) {
+              const updatedPath = newPath + sf.path.slice(oldPath.length);
+              const updatedParentPath = sf.parentPath === oldPath ? newPath : (newPath + sf.parentPath.slice(oldPath.length));
+              await updateDoc(doc(db, "quizCategories", sf.id), { path: updatedPath, parentPath: updatedParentPath });
+            }
+            const affectedQuizzes = allQuizzesFlat.filter(q => q.categoryPath === oldPath || (q.categoryPath || '').startsWith(oldPath + '/'));
+            for (const quiz of affectedQuizzes) {
+              const updatedCategoryPath = newPath + quiz.categoryPath.slice(oldPath.length);
+              await updateDoc(doc(db, "quizzes", quiz.id), { categoryPath: updatedCategoryPath, courseName: newCourseName });
+            }
+            if (currentQuizCategoryPath === oldPath) currentQuizCategoryPath = newPath;
+            else if (currentQuizCategoryPath && currentQuizCategoryPath.startsWith(oldPath + '/')) {
+              currentQuizCategoryPath = newPath + currentQuizCategoryPath.slice(oldPath.length);
+            }
+          }
+
+          closeModal("addQuizCategoryModal");
+          showToast("Course folder updated ✓", "success");
+          await loadQuizzes();
+        } catch(e) {
+          console.error(e);
+          showToast("Update failed.", "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+        }
+        return;
+      }
+
       const newName = document.getElementById("newQuizCategoryTitle").value.trim();
       const newDesc = document.getElementById("newQuizCategoryDescription").value.trim();
       if (!newName) { showToast("Name is required.", "error"); return; }

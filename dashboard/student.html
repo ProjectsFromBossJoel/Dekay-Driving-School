@@ -1256,8 +1256,11 @@
       const progressSnap = await getDoc(doc(db, "lessonProgress", currentUser.uid));
       window._lessonProgress = progressSnap.exists() ? progressSnap.data() : {};
 
-      const watched = allLessonsFlat.filter(l => (window._lessonProgress[l.id] || 0) >= 80).length;
-      const total   = allLessonsFlat.length || 0;
+      const courseLessons = studentCourse
+        ? allLessonsFlat.filter(l => (l.folder || '').split('/')[0].trim().toLowerCase() === studentCourse)
+        : allLessonsFlat;
+      const watched = courseLessons.filter(l => (window._lessonProgress[l.id] || 0) >= 80).length;
+      const total   = courseLessons.length || 0;
       document.getElementById("dashLessons").textContent = `${watched}/${total}`;
 
       renderLessonFolderView();
