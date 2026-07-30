@@ -2208,7 +2208,7 @@
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Course folder <span>*</span></label>
-          <select id="lessonFolder" class="form-select"></select>
+          <select id="lessonFolder" class="form-select" onchange="refreshLessonQuizOptions('lessonFolder','lessonAssignedQuiz')"></select>
         </div>
         <div class="form-group"><label class="form-label">Lesson title <span>*</span></label><input type="text" id="lessonTitle" class="form-input" placeholder="e.g. Road signs — warning signs" /></div>
         <div class="form-row">
@@ -2250,6 +2250,13 @@
           <input type="file" id="lessonThumbFile" accept="image/*" style="display:none" onchange="previewLessonThumb(this)" />
           <img id="lessonThumbPreview" src="" style="display:none; max-width:160px; margin-top:8px; border-radius:8px; border:1px solid var(--border);" />
         </div>
+        <div class="form-group">
+          <label class="form-label">Assign to quiz <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></label>
+          <select id="lessonAssignedQuiz" class="form-select">
+            <option value="">No quiz — don't auto-launch</option>
+          </select>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">When set, this quiz will automatically pop up for the student right after they finish watching the video.</div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('addLessonModal')">Cancel</button>
@@ -2269,7 +2276,7 @@
         <input type="hidden" id="editLessonId" />
         <div class="form-group">
           <label class="form-label">Course folder <span>*</span></label>
-          <select id="editLessonFolder" class="form-select"></select>
+          <select id="editLessonFolder" class="form-select" onchange="refreshLessonQuizOptions('editLessonFolder','editLessonAssignedQuiz')"></select>
         </div>
         <div class="form-group"><label class="form-label">Lesson title <span>*</span></label><input type="text" id="editLessonTitle" class="form-input" /></div>
         <div class="form-row">
@@ -2311,6 +2318,13 @@
           </div>
           <input type="file" id="editLessonThumbFile" accept="image/*" style="display:none" onchange="previewEditLessonThumb(this)" />
           <img id="editLessonThumbPreview" src="" style="display:none; max-width:160px; margin-top:8px; border-radius:8px; border:1px solid var(--border);" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Assign to quiz <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></label>
+          <select id="editLessonAssignedQuiz" class="form-select">
+            <option value="">No quiz — don't auto-launch</option>
+          </select>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">When set, this quiz will automatically pop up for the student right after they finish watching the video.</div>
         </div>
 
         <!-- Watch Progress -->
@@ -3366,6 +3380,32 @@
       renderQuizFolderView();
     } catch(e) { console.error(e); }
   }
+
+  // ── POPULATE "ASSIGN TO QUIZ" DROPDOWN (scoped to a course) ──
+  function populateQuizAssignSelect(selectId, selectedValue, courseName) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const quizzes = window._allQuizzes || allQuizzesFlat || [];
+    const scoped = courseName
+      ? quizzes.filter(q => (q.courseName || (q.categoryPath || '').split('/')[0] || '').trim().toLowerCase() === courseName.trim().toLowerCase())
+      : quizzes;
+    sel.innerHTML = '<option value="">No quiz — don\'t auto-launch</option>' +
+      (scoped.length
+        ? scoped.map(q => `<option value="${q.id}">${escapeHtml(q.title || 'Untitled quiz')} (${escapeHtml(q.categoryPath || '')})</option>`).join('')
+        : `<option value="" disabled>No quizzes found for this course</option>`);
+    sel.value = selectedValue || '';
+  }
+
+  // Extract the course name from a lesson folder path (its first segment)
+  function courseFromFolderPath(path) {
+    return (path || '').split('/')[0] || '';
+  }
+
+  // Re-filter the quiz dropdown whenever the course folder selection changes
+  window.refreshLessonQuizOptions = function(folderSelectId, quizSelectId) {
+    const folderVal = document.getElementById(folderSelectId)?.value || '';
+    populateQuizAssignSelect(quizSelectId, '', courseFromFolderPath(folderVal));
+  };
 
   function renderQuizBreadcrumb(path) {
     const segments = path.split('/');
@@ -5155,6 +5195,7 @@ window.approveStudent = async function(uid) {
     document.getElementById("editLessonVideoText").textContent = 'Tap to replace video';
     document.getElementById("editLessonThumbText").textContent = 'Tap to replace thumbnail';
     populateLessonFolderSelect("editLessonFolder", lesson.folder || currentLessonFolderPath || (allLessonFolders[0] && allLessonFolders[0].path));
+    populateQuizAssignSelect("editLessonAssignedQuiz", lesson.assignedQuizId || "", courseFromFolderPath(document.getElementById("editLessonFolder").value));
 
     const videoPreview = document.getElementById("editLessonVideoPreview");
     videoPreview.src = lesson.videoUrl || '';
@@ -5198,6 +5239,7 @@ window.approveStudent = async function(uid) {
     const duration = document.getElementById("editLessonDuration").value.trim();
     const videoFile = document.getElementById("editLessonVideoFile").files[0];
     const thumbFile = document.getElementById("editLessonThumbFile").files[0];
+    const assignedQuizId = document.getElementById("editLessonAssignedQuiz").value || null;
 
     if (!title) { showToast("Title is required.", "error"); return; }
     if (!folder) { showToast("Select a course folder.", "error"); return; }
@@ -5213,7 +5255,7 @@ window.approveStudent = async function(uid) {
     const progLabel = document.getElementById("editLessonUploadProgressLabel");
 
     try {
-      const updates = { title, category, duration, folder };
+      const updates = { title, category, duration, folder, assignedQuizId };
       const cloudinaryFolder = `lessons/${folder}`;
 
       if (videoFile) {
@@ -5282,6 +5324,7 @@ window.approveStudent = async function(uid) {
     const duration = document.getElementById("lessonDuration").value.trim();
     const videoFile = document.getElementById("lessonVideoFile").files[0];
     const thumbFile = document.getElementById("lessonThumbFile").files[0];
+    const assignedQuizId = document.getElementById("lessonAssignedQuiz").value || null;
 
     if (!title || !videoFile) { showToast("Title and video file are required.", "error"); return; }
     if (!folder) { showToast("Select a course folder.", "error"); return; }
@@ -5342,6 +5385,7 @@ window.approveStudent = async function(uid) {
         title, videoUrl, category, duration, folder,
         videoDurationSec,
         thumbnailUrl: thumbUrl,
+        assignedQuizId,
         createdAt: serverTimestamp()
       });
 
@@ -6469,6 +6513,7 @@ window.approveStudent = async function(uid) {
     document.getElementById("lessonVideoText").textContent = 'Tap to upload lesson video (MP4)';
     document.getElementById("lessonThumbText").textContent = 'Tap to upload thumbnail (leave blank for auto)';
     populateLessonFolderSelect("lessonFolder", currentLessonFolderPath || (allLessonFolders[0] && allLessonFolders[0].path));
+    populateQuizAssignSelect("lessonAssignedQuiz", "", courseFromFolderPath(document.getElementById("lessonFolder").value));
     openModal("addLessonModal");
   };
   window.openAddCourseModal = () => openModal("addCourseModal");

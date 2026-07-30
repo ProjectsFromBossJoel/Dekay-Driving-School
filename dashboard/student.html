@@ -2005,6 +2005,17 @@
     document.getElementById("lessonVideoPct").textContent = "100%";
     document.getElementById("lessonVideoProgBar").style.width = "100%";
     saveLessonProgress();
+
+    // Auto-launch the assigned quiz, if this lesson has one
+    const finishedLesson = allLessonsFlat.find(l => l.id === _currentLessonId);
+    if (finishedLesson && finishedLesson.assignedQuizId) {
+      const quizIdToOpen = finishedLesson.assignedQuizId;
+      setTimeout(() => {
+        closeLessonVideoModal();
+        showToast("Nice work! Here's your quiz for this lesson.", "success");
+        setTimeout(() => openQuiz(quizIdToOpen), 500);
+      }, 800);
+    }
   });
 
   // ══════════════════════════════════════
