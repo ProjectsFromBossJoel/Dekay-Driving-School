@@ -2039,7 +2039,74 @@
       await setDoc(doc(db, "lessonProgress", currentUser.uid), { [_currentLessonId]: _currentLessonBestPct }, { merge: true });
       if (!window._lessonProgress) window._lessonProgress = {};
       window._lessonProgress[_currentLessonId] = _currentLessonBestPct;
+      checkAndAdvanceToTheoryTest();
     } catch(e) { console.error("Could not save lesson progress:", e); }
+  }
+
+  // Auto-advance the student from Stage 2 (Theory lessons) to Stage 3 (Theory test)
+  // the moment every lesson in their course has been watched to at least 80% —
+  // no page refresh required, updates the pipeline UI in place.
+  async function checkAndAdvanceToTheoryTest() {
+    if ((studentData.trainingStage || 1) !== 2) return; // only relevant while sitting on Stage 2
+
+    let studentCourse = (studentData.courseType || '').trim().toLowerCase();
+    if (!studentCourse && Array.isArray(studentData.courseTypes) && studentData.courseTypes.length > 0) {
+      studentCourse = (studentData.courseTypes[0] || '').trim().toLowerCase();
+    }
+    if (!studentCourse) return;
+
+    const courseLessons = allLessonsFlat.filter(l => (l.folder || '').split('/')[0].trim().toLowerCase() === studentCourse);
+    if (!courseLessons.length) return; // no lessons published yet — nothing to complete
+
+    const progress = window._lessonProgress || {};
+    const allWatched = courseLessons.every(l => (progress[l.id] || 0) >= 80);
+    if (!allWatched) return;
+
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), { trainingStage: 3 });
+
+      const progressRef = doc(db, "stageProgress", currentUser.uid);
+      const studentName = `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim();
+      const nowIso = new Date().toISOString();
+      try {
+        await updateDoc(progressRef, {
+          currentStage: 3,
+          updatedAt: nowIso,
+          [`stages.2.completed`]: true,
+          [`stages.2.completedAt`]: nowIso,
+          [`stages.2.approvedBy`]: currentUser.uid,
+          [`stages.2.approverRole`]: "student",
+          [`stages.2.approverName`]: studentName
+        });
+      } catch(e) {
+        await setDoc(progressRef, {
+          studentId: currentUser.uid,
+          currentStage: 3,
+          dvlaReady: false,
+          dvlaReadyAt: null,
+          updatedAt: nowIso,
+          stages: {
+            2: {
+              completed: true,
+              completedAt: nowIso,
+              approvedBy: currentUser.uid,
+              approverRole: "student",
+              approverName: studentName
+            }
+          }
+        }, { merge: true });
+      }
+
+      // Update local state and refresh the visible UI immediately — no reload needed
+      studentData.trainingStage = 3;
+      const dashStageEl = document.getElementById("dashStage");
+      if (dashStageEl) dashStageEl.textContent = 3;
+      buildPipelines(3, studentData);
+      checkAndShowUnlockButton();
+      showToast("🎉 All theory lessons complete! Stage 3: Theory test unlocked.", "success");
+    } catch(e) {
+      console.error("Could not auto-advance to Theory test stage:", e);
+    }
   }
 
   window.closeLessonVideoModal = function() {
@@ -2088,7 +2155,7 @@
 
     if (!questionDocs.length) { showToast("Quiz not available yet.", "error"); return; }
 
-    
+
     const labelToIndex = { A:0, B:1, C:2, D:3 };
     const questions = questionDocs.map(qd => {
       const rawOptions = qd.options || [];
@@ -2982,7 +3049,14 @@
   // Close modals on overlay click
   document.querySelectorAll(".modal-overlay").forEach(overlay => {
     overlay.addEventListener("click", e => {
-      if (e.target === overlay) overlay.classList.remove("open");
+      if (e.target !== overlay) return;
+      if (overlay.id === "lessonVideoModal") {
+        // Route through the proper close handler so the video is paused
+        // (and progress saved) instead of just hiding the modal visually.
+        closeLessonVideoModal();
+      } else {
+        overlay.classList.remove("open");
+      }
     });
   });
 

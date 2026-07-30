@@ -6763,7 +6763,14 @@ window.approveStudent = async function(uid) {
   // Close modals on overlay click
   document.querySelectorAll(".modal-overlay").forEach(overlay => {
     overlay.addEventListener("click", e => {
-      if (e.target === overlay) overlay.classList.remove("open");
+      if (e.target !== overlay) return;
+      if (overlay.id === "lessonVideoModal") {
+        // Route through the proper close handler so the video is paused
+        // (and progress saved) instead of just hiding the modal visually.
+        closeLessonVideoModal();
+      } else {
+        overlay.classList.remove("open");
+      }
     });
   });
 

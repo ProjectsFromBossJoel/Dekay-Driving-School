@@ -269,6 +269,7 @@
       <div class="nav-section-label">Main</div>
       <button class="nav-item active" onclick="showPage('dashboard', this)"><i class="fas fa-th-large"></i> Dashboard</button>
       <button class="nav-item" onclick="showPage('students', this)"><i class="fas fa-users"></i> My Students</button>
+      <button class="nav-item" onclick="showPage('lessons', this)"><i class="fas fa-play-circle"></i> Lessons</button>
       <button class="nav-item" onclick="showPage('attendance', this)"><i class="fas fa-calendar-check"></i>Student Attendance</button>
       <button class="nav-item" onclick="showPage('myAttendance', this)"><i class="fas fa-user-check"></i> My Attendance</button>
       <button class="nav-item" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes</button>
@@ -365,6 +366,34 @@
           <table class="data-table">
             <thead><tr><th>Student</th><th>Course</th><th>Stage</th><th>Attendance</th><th>Quiz avg</th><th>Actions</th></tr></thead>
             <tbody id="studentsTableBody"><tr><td colspan="5" style="text-align:center;padding:32px;">Loading students…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LESSONS (Instructor — read only) ═══ -->
+    <div class="page" id="page-lessons">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="page-title" id="instrLessonsPageTitle">Video Lessons</div>
+          <div class="page-sub" id="instrLessonsPageSub">Browse lessons for your assigned courses and track your students' progress.</div>
+        </div>
+        <button class="btn btn-outline" id="instrLessonBackBtn" onclick="instrLessonFolderGoUp()" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
+      </div>
+
+      <div id="instrLessonBreadcrumb" style="font-size:12px;color:var(--text-muted);margin-bottom:16px;display:none;"></div>
+
+      <div class="stat-grid" id="instrLessonFoldersGrid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading folders…</div>
+      </div>
+
+      <div class="card" id="instrLessonTableCard" style="display:none;">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Duration</th><th>Avg. completion</th><th>Actions</th></tr></thead>
+            <tbody id="instrLessonsTable">
+              <tr><td colspan="5" style="text-align:center;padding:32px;">Loading lessons…</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -590,6 +619,23 @@
     <img id="lightboxImage" src="" style="max-width:90vw; max-height:90vh; border-radius:var(--radius-lg); border:2px solid var(--gold); cursor:default;" onclick="event.stopPropagation()" />
   </div>
 
+  <!-- LESSON WATCH PROGRESS MODAL (Instructor — view only) -->
+  <div id="instrLessonProgressModal" class="modal-overlay">
+    <div class="modal" style="max-width:550px;">
+      <div class="modal-header">
+        <div class="modal-title" id="instrLessonProgressTitle">Watch Progress</div>
+        <button class="modal-close" onclick="closeModal('instrLessonProgressModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="instrLessonProgressAvg" style="font-size:12px;color:var(--text-muted);margin-bottom:14px;"></div>
+        <div id="instrLessonProgressList" style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('instrLessonProgressModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- STUDENT BIO MODAL -->
   <div id="studentBioModal" class="modal-overlay">
     <div class="modal" style="max-width: 650px;">
@@ -789,6 +835,7 @@
           await loadNotifications();
           await loadAssignedCourses();
           await loadMyAttendance();
+          await loadInstructorLessons();   // needs myStudents loaded first, for progress scoping
           // loadInstructorClasses already called above — skip duplicate
           updateDashboardStats();
           checkInstructorClassSession();   // show check-in card if eligible
@@ -1022,6 +1069,203 @@
       if (!str) return '';
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
+
+    // ══════════════════════════════════════════
+    // LESSONS (Instructor — read only, scoped to assigned courses + own students)
+    // ══════════════════════════════════════════
+    let allInstrLessonFolders = [];
+    let allInstrLessonsFlat = [];
+    let currentInstrLessonFolderPath = null;
+    let instrLessonProgressMap = {}; // studentId -> { lessonId: pctWatched }
+
+    function getInstrAssignedCourseNames() {
+      let assignedCourses = instructorData?.assignedCourses || [];
+      if (assignedCourses && typeof assignedCourses === 'object' && !Array.isArray(assignedCourses)) {
+        assignedCourses = Object.values(assignedCourses);
+      }
+      if (!Array.isArray(assignedCourses)) assignedCourses = [];
+      return assignedCourses.map(c => (c || '').trim().toLowerCase()).filter(Boolean);
+    }
+
+    async function loadInstructorLessons() {
+      try {
+        const assignedCourses = getInstrAssignedCourseNames();
+
+        const [lessonSnaps, folderSnaps, progressSnaps] = await Promise.all([
+          getDocs(collection(db, "lessons")),
+          getDocs(collection(db, "lessonFolders")),
+          getDocs(collection(db, "lessonProgress"))
+        ]);
+
+        // Only pull progress for this instructor's own students — not the whole school
+        const studentIds = new Set(myStudents.map(s => s.id));
+        instrLessonProgressMap = {};
+        progressSnaps.docs.forEach(d => {
+          if (studentIds.has(d.id)) instrLessonProgressMap[d.id] = d.data();
+        });
+
+        const allLessons = lessonSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
+        allInstrLessonsFlat = assignedCourses.length
+          ? allLessons.filter(l => assignedCourses.includes((l.folder || '').split('/')[0].trim().toLowerCase()))
+          : allLessons;
+
+        const allFolders = folderSnaps.docs.map(d => {
+          const data = d.data();
+          const parentPath = data.parentPath || null;
+          const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
+          return { id: d.id, name: data.name, description: data.description || '', parentPath, path };
+        });
+        allInstrLessonFolders = assignedCourses.length
+          ? allFolders.filter(f => assignedCourses.includes(f.path.split('/')[0].trim().toLowerCase()))
+          : allFolders;
+
+        renderInstrLessonFolderView();
+      } catch(e) {
+        console.error("Error loading instructor lessons:", e);
+        const grid = document.getElementById("instrLessonFoldersGrid");
+        if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load lessons.</div>';
+      }
+    }
+
+    function renderInstrLessonBreadcrumb(path) {
+      const segments = path.split('/');
+      let acc = '';
+      const parts = segments.map((seg, idx) => {
+        acc = acc ? `${acc}/${seg}` : seg;
+        const isLast = idx === segments.length - 1;
+        return isLast
+          ? `<span style="color:var(--gold);font-weight:600;">${escapeHtml(seg)}</span>`
+          : `<span style="cursor:pointer;text-decoration:underline;" onclick="openInstrLessonFolder('${acc.replace(/'/g, "\\'")}')">${escapeHtml(seg)}</span>`;
+      });
+      const rootLink = `<span style="cursor:pointer;text-decoration:underline;" onclick="backToInstrLessonFolders()">All folders</span>`;
+      return [rootLink, ...parts].join(' <i class="fas fa-chevron-right" style="font-size:9px;margin:0 4px;"></i> ');
+    }
+
+    function renderInstrLessonFolderView() {
+      const path = currentInstrLessonFolderPath;
+      const titleEl = document.getElementById("instrLessonsPageTitle");
+      const subEl = document.getElementById("instrLessonsPageSub");
+      const backBtn = document.getElementById("instrLessonBackBtn");
+      const breadcrumbEl = document.getElementById("instrLessonBreadcrumb");
+      const foldersGrid = document.getElementById("instrLessonFoldersGrid");
+      const tableCard = document.getElementById("instrLessonTableCard");
+      if (!titleEl || !foldersGrid) return;
+
+      if (!path) {
+        titleEl.textContent = "Video Lessons";
+        subEl.textContent = "Browse lessons for your assigned courses and track your students' progress.";
+        backBtn.style.display = "none";
+        breadcrumbEl.style.display = "none";
+        tableCard.style.display = "none";
+      } else {
+        const segments = path.split('/');
+        titleEl.textContent = segments[segments.length - 1];
+        subEl.textContent = `Lessons inside "${path}".`;
+        backBtn.style.display = "inline-flex";
+        breadcrumbEl.style.display = "block";
+        breadcrumbEl.innerHTML = renderInstrLessonBreadcrumb(path);
+        tableCard.style.display = "block";
+        renderInstrLessonsTableForFolder(path);
+      }
+
+      const subfolders = allInstrLessonFolders.filter(f => (f.parentPath || null) === path);
+      if (!subfolders.length) {
+        if (!path) {
+          const noCourses = getInstrAssignedCourseNames().length === 0;
+          foldersGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">
+            ${noCourses
+              ? 'No courses assigned to you yet — ask the admin to assign a course so lessons appear here.'
+              : 'No lesson folders published for your assigned courses yet.'}
+          </div>`;
+          foldersGrid.style.display = "grid";
+        } else {
+          foldersGrid.style.display = "none";
+        }
+        return;
+      }
+      foldersGrid.style.display = "grid";
+      foldersGrid.innerHTML = subfolders.map(f => {
+        const videoCount = allInstrLessonsFlat.filter(l => (l.folder || '') === f.path).length;
+        const subfolderCount = allInstrLessonFolders.filter(sf => (sf.parentPath || null) === f.path).length;
+        const count = videoCount + subfolderCount;
+        return `
+          <div class="stat-card" style="cursor:pointer;" onclick="openInstrLessonFolder('${f.path.replace(/'/g, "\\'")}')">
+            <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-folder" style="color:var(--gold)"></i></div>
+            <div class="stat-card-value" style="font-size:18px;">${escapeHtml(f.name)}</div>
+            <div class="stat-card-label">${count} item${count === 1 ? '' : 's'}</div>
+          </div>`;
+      }).join('');
+    }
+
+    window.openInstrLessonFolder = function(path) { currentInstrLessonFolderPath = path; renderInstrLessonFolderView(); };
+    window.backToInstrLessonFolders = function() { currentInstrLessonFolderPath = null; renderInstrLessonFolderView(); };
+    window.instrLessonFolderGoUp = function() {
+      if (!currentInstrLessonFolderPath) return;
+      const idx = currentInstrLessonFolderPath.lastIndexOf('/');
+      currentInstrLessonFolderPath = idx === -1 ? null : currentInstrLessonFolderPath.substring(0, idx);
+      renderInstrLessonFolderView();
+    };
+
+    function renderInstrLessonsTableForFolder(path) {
+      const tbody = document.getElementById("instrLessonsTable");
+      if (!tbody) return;
+      const lessons = allInstrLessonsFlat.filter(l => (l.folder || '') === path);
+      if (!lessons.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">No lessons in this folder yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = lessons.map(l => {
+        const watchers = myStudents.filter(s => instrLessonProgressMap[s.id]?.[l.id] !== undefined);
+        const avg = watchers.length
+          ? Math.round(watchers.reduce((sum, s) => sum + (instrLessonProgressMap[s.id][l.id] || 0), 0) / watchers.length)
+          : 0;
+        return `<tr>
+          <td><div style="font-weight:600">${escapeHtml(l.title || '')}</div></td>
+          <td><span class="stage-pill">${escapeHtml(l.category || 'Theory')}</span></td>
+          <td style="color:var(--text-muted)">${l.duration || '—'}</td>
+          <td style="color:var(--gold)">${watchers.length ? avg + '%' : '—'}</td>
+          <td>
+            <button class="btn btn-outline" style="font-size:11px;padding:5px 10px;" onclick="openInstrLessonProgressModal('${l.id}')"><i class="fas fa-chart-line"></i> Progress</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    window.openInstrLessonProgressModal = function(lessonId) {
+      const lesson = allInstrLessonsFlat.find(l => l.id === lessonId);
+      if (!lesson) return;
+      document.getElementById("instrLessonProgressTitle").textContent = `Watch Progress — ${lesson.title || 'Lesson'}`;
+
+      const watchers = myStudents
+        .map(s => ({ student: s, pct: instrLessonProgressMap[s.id]?.[lessonId] }))
+        .filter(w => w.pct !== undefined)
+        .sort((a, b) => b.pct - a.pct);
+
+      const avgEl = document.getElementById("instrLessonProgressAvg");
+      if (!watchers.length) {
+        avgEl.textContent = "None of your students have started this lesson yet.";
+      } else {
+        const avg = Math.round(watchers.reduce((sum, w) => sum + w.pct, 0) / watchers.length);
+        avgEl.textContent = `Average ${avg}% across ${watchers.length} student${watchers.length > 1 ? 's' : ''}`;
+      }
+
+      const listEl = document.getElementById("instrLessonProgressList");
+      if (!watchers.length) {
+        listEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No progress recorded yet.</div>';
+      } else {
+        listEl.innerHTML = watchers.map(w => {
+          const name = `${w.student.firstName || ''} ${w.student.lastName || ''}`.trim() || w.student.email;
+          const pct = Math.round(w.pct);
+          const color = pct >= 80 ? 'var(--success)' : pct >= 40 ? 'var(--gold)' : 'var(--error)';
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:8px;">
+            <span style="font-size:13px;">${escapeHtml(name)}</span>
+            <span style="font-size:12px;font-weight:700;color:${color};">${pct}%</span>
+          </div>`;
+        }).join('');
+      }
+
+      openModal("instrLessonProgressModal");
+    };
 
     async function loadNotifications() {
       try {
@@ -1809,12 +2053,16 @@
       document.getElementById(`page-${name}`).classList.add("active");
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
       if (btn) btn.classList.add("active");
-      const titles = { dashboard: "Dashboard", students: "My Students", attendance: "Attendance", myAttendance: "My Attendance", quizzes: "Quizzes", settings: "Settings" };
+      const titles = { dashboard: "Dashboard", students: "My Students", lessons: "Lessons", attendance: "Attendance", myAttendance: "My Attendance", quizzes: "Quizzes", settings: "Settings" };
       document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
       
       // Auto-refresh data when switching pages
       if (name === "students") {
         loadMyStudents().then(() => updateDashboardStats());
+      }
+      if (name === "lessons") {
+        currentInstrLessonFolderPath = null;
+        loadInstructorLessons();
       }
       if (name === "attendance") {
         loadAttendanceRecords();
