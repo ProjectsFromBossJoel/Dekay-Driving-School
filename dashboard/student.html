@@ -1138,8 +1138,8 @@
 
     await loadMyClasses();              // Load classes FIRST so class titles are available
     const attendanceRecords = await loadAttendance(stage);   // now attendance can show class titles
-    loadLessons();                // these can still run in parallel
-    loadQuizzes();
+    await loadQuizzes();                // Load quizzes BEFORE lessons so sequential lesson locks are accurate on first render
+    loadLessons();
     loadNotifications();
     buildPipelines(stage, d);
     renderUpcomingClasses();          // show upcoming classes on dashboard
@@ -1349,9 +1349,38 @@
     renderLessonFolderView();
   };
 
+  // A lesson is unlocked if it's the first in its folder, or if the previous lesson has been
+  // watched to at least 70% AND (when it has an assigned quiz) that quiz has been passed.
+  function isLessonUnlocked(index, sortedLessons) {
+    if (index <= 0) return true;
+    const prev = sortedLessons[index - 1];
+    const progress = window._lessonProgress || {};
+    const prevPct = progress[prev.id] || 0;
+    if (prevPct < 70) return false;
+    if (prev.assignedQuizId) {
+      const results = window._quizResults || {};
+      const score = results[prev.assignedQuizId];
+      if (score === undefined) return false;
+      const quizMeta = (window._quizzesData || []).find(q => q.id === prev.assignedQuizId);
+      const passMark = quizMeta ? (quizMeta.passMark || 60) : 60;
+      if (score < passMark) return false;
+    }
+    return true;
+  }
+
+  window.showLessonLockedMessage = function(prevTitle) {
+    showToast(`Complete at least 70% of "${prevTitle}" and pass its quiz before you can proceed to the next lesson.`, "error");
+  };
+
   function renderVideosForFolder(path) {
     const progress = window._lessonProgress || {};
-    const lessons = allLessonsFlat.filter(l => (l.folder || '') === path);
+    const lessons = allLessonsFlat
+      .filter(l => (l.folder || '') === path)
+      .sort((a, b) => {
+        const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+        const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+        return ta - tb;
+      });
     const grid = document.getElementById("videoGrid");
 
     const watched = lessons.filter(l => (progress[l.id] || 0) >= 80).length;
@@ -1365,9 +1394,35 @@
       return;
     }
 
-    grid.innerHTML = lessons.map(l => {
+    grid.innerHTML = lessons.map((l, idx) => {
       const pctWatched = progress[l.id] || 0;
       const done = pctWatched >= 80;
+      const unlocked = isLessonUnlocked(idx, lessons);
+
+      if (!unlocked) {
+        const prevTitle = (lessons[idx - 1]?.title || 'the previous lesson').replace(/'/g, "\\'");
+        return `
+          <div class="video-item" style="opacity:0.55;cursor:not-allowed;" onclick="showLessonLockedMessage('${prevTitle}')">
+            <div class="video-thumb">
+              <img src="${l.thumbnailUrl || ''}" alt="${l.title}" onerror="this.style.display='none'" style="filter:grayscale(70%);" />
+              <div class="video-play-overlay" style="opacity:1;background:rgba(10,22,40,0.65);">
+                <div class="play-circle" style="background:rgba(239,83,80,0.15);border:2px solid var(--error);color:var(--error);">
+                  <i class="fas fa-lock"></i>
+                </div>
+              </div>
+            </div>
+            <div class="video-progress-strip"><div class="fill" style="width:0%;background:var(--error);"></div></div>
+            <div class="video-info">
+              <span class="video-tag">${l.category || 'Theory'}</span>
+              <div class="video-name">${l.title}</div>
+              <div class="video-meta-row">
+                <span><i class="fas fa-clock"></i> ${l.duration || '—'}</span>
+                <span style="color:var(--error)"><i class="fas fa-lock"></i> Locked</span>
+              </div>
+            </div>
+          </div>`;
+      }
+
       return `
         <div class="video-item" onclick="playLesson('${l.id}','${l.videoUrl}','${(l.title||'').replace(/'/g, "\\'")}')">
           <div class="video-thumb">
@@ -2034,12 +2089,24 @@
     if (!questionDocs.length) { showToast("Quiz not available yet.", "error"); return; }
 
     const labelToIndex = { A:0, B:1, C:2, D:3 };
-    const questions = questionDocs.map(qd => ({
-      question: qd.text || '',
-      imageUrl: qd.imageUrl || null,
-      options: (qd.options || []).map(o => o.text),
-      correctIndex: labelToIndex[qd.correctLabel] ?? 0
-    }));
+    const questions = questionDocs.map(qd => {
+      const rawOptions = qd.options || [];
+      const correctIdxOriginal = labelToIndex[qd.correctLabel] ?? 0;
+      const correctText = rawOptions[correctIdxOriginal]?.text;
+
+      // Shuffle the display order of options for this attempt so the correct
+      // answer's position varies per student and per retake — prevents students
+      // from sharing "the answer is always option A/C/etc."
+      const shuffledOptions = shuffleArray(rawOptions.map(o => o.text));
+      const correctIndex = shuffledOptions.indexOf(correctText);
+
+      return {
+        question: qd.text || '',
+        imageUrl: qd.imageUrl || null,
+        options: shuffledOptions,
+        correctIndex: correctIndex === -1 ? 0 : correctIndex
+      };
+    });
 
     const quiz = { ...quizMeta, questions, passMark: quizMeta.passMark || 60 };
     window._activeQuiz = { quiz, currentQ: 0, answers: [], startTime: Date.now() };
@@ -2464,6 +2531,16 @@
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Fisher-Yates shuffle — returns a new shuffled copy, doesn't mutate the original
+  function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
   }
 
   // Convert 24h time (HH:MM) to 12h AM/PM format
