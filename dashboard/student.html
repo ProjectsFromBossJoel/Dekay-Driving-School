@@ -2088,6 +2088,7 @@
 
     if (!questionDocs.length) { showToast("Quiz not available yet.", "error"); return; }
 
+    
     const labelToIndex = { A:0, B:1, C:2, D:3 };
     const questions = questionDocs.map(qd => {
       const rawOptions = qd.options || [];
