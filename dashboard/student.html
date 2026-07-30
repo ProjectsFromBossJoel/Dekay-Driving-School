@@ -2211,7 +2211,7 @@
       </div>
       <div class="quiz-footer">
         <div class="quiz-progress-text">${total - currentQ - 1} questions remaining</div>
-        <button class="btn-sm btn-sm-gold" id="nextQBtn" onclick="nextQuestion()" disabled>
+        <button class="btn-sm btn-sm-gold" id="nextQBtn" onclick="nextQuestion()">
           ${currentQ === total - 1 ? 'Finish quiz' : 'Next'} <i class="fas fa-arrow-right"></i>
         </button>
       </div>`;
@@ -2226,6 +2226,10 @@
 
   window.nextQuestion = async function() {
     const aq = window._activeQuiz;
+    if (aq.selectedOption === undefined) {
+      showToast("Please select an answer before continuing.", "error");
+      return;
+    }
     const q  = aq.quiz.questions[aq.currentQ];
     aq.answers.push(aq.selectedOption);
     aq.selectedOption = undefined;

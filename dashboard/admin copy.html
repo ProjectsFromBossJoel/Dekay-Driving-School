@@ -968,7 +968,7 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-outline" id="lessonBackBtn" onclick="lessonFolderGoUp()" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
           <button class="btn btn-outline" onclick="openAddFolderModal()"><i class="fas fa-folder-plus"></i> New folder</button>
-          <button class="btn btn-gold" id="lessonAddLessonBtn" onclick="openAddLessonModal()" style="display:none;"><i class="fas fa-plus"></i> Add lesson</button>
+          <button class="btn btn-gold" id="lessonAddLessonBtn" onclick="openLessonQuizPrompt()" style="display:none;"><i class="fas fa-plus"></i> Add lesson</button>
         </div>
       </div>
 
@@ -2111,6 +2111,25 @@
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('addLessonModal')">Cancel</button>
         <button class="btn btn-gold" onclick="addLesson()"><i class="fas fa-plus"></i> Publish lesson</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LESSON QUIZ ASSIGNMENT PROMPT MODAL ── -->
+  <div class="modal-overlay" id="lessonQuizPromptModal">
+    <div class="modal" style="max-width:440px;">
+      <div class="modal-header">
+        <div class="modal-title">Assign a quiz?</div>
+        <button class="modal-close" onclick="closeModal('lessonQuizPromptModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:14px; color:var(--text-light); line-height:1.6;">
+          Will you assign this video lesson to a quiz? If yes, make sure to upload or create a quiz first so you can find it in the dropdown to assign to the video lesson.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="handleLessonQuizPromptNo()">No, just add lesson</button>
+        <button class="btn btn-gold" onclick="handleLessonQuizPromptYes()"><i class="fas fa-tasks"></i> Yes, create/upload quiz</button>
       </div>
     </div>
   </div>
@@ -5737,6 +5756,20 @@ window.approveStudent = async function(uid) {
     }
   };
 
+
+  window.openLessonQuizPrompt = function() {
+    openModal("lessonQuizPromptModal");
+  };
+
+  window.handleLessonQuizPromptYes = function() {
+    closeModal("lessonQuizPromptModal");
+    showPage('quizzes', document.querySelector('[onclick*="showPage(\'quizzes\'"]'));
+  };
+
+  window.handleLessonQuizPromptNo = function() {
+    closeModal("lessonQuizPromptModal");
+    openAddLessonModal();
+  };
 
   window.openAddLessonModal = () => {
     document.getElementById("lessonTitle").value = '';
