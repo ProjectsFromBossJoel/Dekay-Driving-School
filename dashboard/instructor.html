@@ -274,6 +274,7 @@
       <button class="nav-item" onclick="showPage('myAttendance', this)"><i class="fas fa-user-check"></i> My Attendance</button>
       <button class="nav-item" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes</button>
       <div class="nav-section-label">Account</div>
+      <button class="nav-item" onclick="showPage('notifications', this)"><i class="fas fa-bell"></i> Notifications</button>
       <button class="nav-item" onclick="showPage('settings', this)"><i class="fas fa-user-cog"></i> Settings</button>
     </nav>
 
@@ -303,16 +304,8 @@
         <div class="page-sub" id="dashDateLine">Manage your students and track progress</div>
       </div>
 
-      <!-- Check-in card for instructor's own class attendance -->
-      <div id="instructorCheckinCard" style="display:none; background: linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%); border: 1px solid var(--gold); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
-        <div>
-          <h3 style="font-size:17px; font-weight:700; margin-bottom:4px;" id="instructorCheckinTitle"><i class="fas fa-map-pin" style="color:var(--gold);margin-right:6px"></i> Session in progress</h3>
-          <p style="font-size:13px; color:var(--text-muted);" id="instructorCheckinDesc">Your class is active — tap to mark your attendance.</p>
-        </div>
-        <button id="instructorCheckinBtn" onclick="markInstructorAttendance()" style="padding:12px 24px; background:var(--gold); color:var(--navy); border:none; border-radius:var(--radius); font-size:14px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:8px; transition:all var(--transition); white-space:nowrap;">
-          <i class="fas fa-check-circle"></i> Mark attendance
-        </button>
-      </div>
+      <!-- Check-in container for instructor's own class attendance (current + past sessions) -->
+      <div id="instructorCheckinContainer" style="display:none; margin-bottom:24px;"></div>
 
       <div class="stat-grid">
         <div class="stat-card">
@@ -487,27 +480,19 @@
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Date <span style="color:var(--gold)">*</span></label>
-            <input type="date" id="myAttDate" class="form-input" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Session type <span style="color:var(--gold)">*</span></label>
-            <select id="myAttSessionType" class="form-input" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
-              <option value="In-person Practical">In-person Practical</option>
-              <option value="In-person Theory">In-person Theory</option>
-              <option value="Online Class">Online Class</option>
-              <option value="Mock Test">Mock Test</option>
-              <option value="Other">Other</option>
-            </select>
+            <input type="date" id="myAttDate" class="form-input" onchange="handleMyAttDateChange()" />
           </div>
           <div class="form-group">
             <label class="form-label">Course</label>
-            <select id="myAttCourse" class="form-input" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
-              <option value="">Select course…</option>
+            <select id="myAttCourse" class="form-input" onchange="handleMyAttCourseChange()" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
+              <option value="">Select date first…</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Notes (optional)</label>
-            <textarea id="myAttNotes" class="form-input" rows="2" placeholder="Any additional notes…" style="resize:vertical;"></textarea>
+            <label class="form-label">Class <span style="color:var(--gold)">*</span></label>
+            <select id="myAttClass" class="form-input" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
+              <option value="">Select date first…</option>
+            </select>
           </div>
         </div>
         <div class="modal-footer">
@@ -518,6 +503,19 @@
     </div>
 
     
+        <!-- ═══ NOTIFICATIONS PAGE ═══ -->
+    <div class="page" id="page-notifications">
+      <div class="page-header">
+        <div class="page-title">Notifications</div>
+        <div class="page-sub">Messages and updates from the school.</div>
+      </div>
+      <div class="card">
+        <div class="notif-list" id="fullNotifList">
+          <div style="padding:32px; text-align:center; color:var(--text-muted); font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
         <!-- ═══ SETTINGS (read‑only except profile picture) ═══ -->
     <div class="page" id="page-settings">
       <div class="page-header">
@@ -612,6 +610,16 @@
 
   <!-- TOAST -->
   <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+  <!-- LOCATION CHECK MODAL -->
+  <div class="modal-overlay" id="locationCheckModal">
+    <div class="modal" style="max-width:360px;">
+      <div class="modal-body" style="padding:36px 24px;text-align:center;">
+        <div id="locationCheckSpinner" style="font-size:34px;color:var(--gold);margin-bottom:16px;"><i class="fas fa-spinner fa-spin"></i></div>
+        <div id="locationCheckText" style="font-size:14px;color:var(--text-light);line-height:1.6;">Requesting your location…</div>
+      </div>
+    </div>
+  </div>
 
   <!-- LIGHTBOX -->
   <div id="imageLightbox" style="position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; cursor:pointer;" onclick="closeLightbox()">
@@ -1273,12 +1281,8 @@
         const snaps = await getDocs(q);
         let notifs = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
         notifs.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
-        const container = document.getElementById("dashNotifList");
-        if (!notifs.length) {
-          container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">No notifications yet.</div>`;
-          return;
-        }
-        container.innerHTML = notifs.map(n => {
+
+        const renderNotif = (n) => {
           const date = n.createdAt?.toDate();
           let timeStr = '';
           if (date) {
@@ -1291,11 +1295,25 @@
             timeStr = `${formattedDate} at ${formattedTime}`;
           }
           return `<div class="notif-item"><div class="notif-dot-outer"><i class="fas ${n.icon || 'fa-bell'}"></i></div><div><div class="notif-text">${n.message}</div><div class="notif-time">${timeStr}</div></div></div>`;
-        }).join('');
+        };
+
+        const dashContainer = document.getElementById("dashNotifList");
+        const fullContainer = document.getElementById("fullNotifList");
+        if (!notifs.length) {
+          const emptyMsg = `<div style="padding:20px; text-align:center; color:var(--text-muted);">No notifications yet.</div>`;
+          if (dashContainer) dashContainer.innerHTML = emptyMsg;
+          if (fullContainer) fullContainer.innerHTML = emptyMsg;
+          return;
+        }
+        if (dashContainer) dashContainer.innerHTML = notifs.slice(0, 5).map(renderNotif).join('');
+        if (fullContainer) fullContainer.innerHTML = notifs.map(renderNotif).join('');
       } catch(e) {
         console.error("Error loading notifications:", e);
-        const container = document.getElementById("dashNotifList");
-        if (container) container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Could not load notifications.</div>`;
+        const errMsg = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Could not load notifications.</div>`;
+        const dashContainer = document.getElementById("dashNotifList");
+        const fullContainer = document.getElementById("fullNotifList");
+        if (dashContainer) dashContainer.innerHTML = errMsg;
+        if (fullContainer) fullContainer.innerHTML = errMsg;
       }
     }
 
@@ -1416,32 +1434,60 @@
     window.openMyAttendanceModal = function() {
       // Set today's date
       document.getElementById("myAttDate").value = new Date().toISOString().split('T')[0];
-      // Populate course dropdown from assigned courses
-      const courseSelect = document.getElementById("myAttCourse");
-      courseSelect.innerHTML = '<option value="">Select course…</option>';
-      const assignedCourses = instructorData.assignedCourses || [];
-      let courses = assignedCourses;
-      if (courses && typeof courses === 'object' && !Array.isArray(courses)) {
-        courses = Object.values(courses);
-      }
-      if (Array.isArray(courses)) {
-        courses.filter(c => c).forEach(c => {
-          courseSelect.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
-        });
-      }
+      handleMyAttDateChange();
       openModal("myAttendanceModal");
     };
 
+    // ── DATE CHANGE: populate Course + Class dropdowns from classes scheduled on that date ──
+    window.handleMyAttDateChange = function() {
+      const dateVal = document.getElementById("myAttDate").value;
+      const courseSelect = document.getElementById("myAttCourse");
+
+      const classesOnDate = (allInstructorClasses || []).filter(c => c.date === dateVal);
+
+      if (!dateVal || !classesOnDate.length) {
+        courseSelect.innerHTML = '<option value="">No classes on this date</option>';
+        renderMyAttClassOptions([]);
+        return;
+      }
+
+      const uniqueCourses = [...new Set(classesOnDate.map(c => c.courseName).filter(Boolean))];
+      courseSelect.innerHTML = '<option value="">All courses</option>' +
+        uniqueCourses.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+      renderMyAttClassOptions(classesOnDate);
+    };
+
+    // ── COURSE CHANGE: filter Class dropdown to classes on the selected date + course ──
+    window.handleMyAttCourseChange = function() {
+      const dateVal = document.getElementById("myAttDate").value;
+      const courseVal = document.getElementById("myAttCourse").value;
+      const classesOnDate = (allInstructorClasses || []).filter(c => c.date === dateVal && (!courseVal || c.courseName === courseVal));
+      renderMyAttClassOptions(classesOnDate);
+    };
+
+    function renderMyAttClassOptions(classes) {
+      const classSelect = document.getElementById("myAttClass");
+      if (!classes.length) {
+        classSelect.innerHTML = '<option value="">No classes found</option>';
+        return;
+      }
+      classSelect.innerHTML = classes.map(c => `<option value="${c.id}">${escapeHtml(c.title || 'Untitled')} (${formatTime(c.time)})</option>`).join('');
+    }
+
     window.submitMyAttendance = async function() {
   const date = document.getElementById("myAttDate").value;
-  const sessionType = document.getElementById("myAttSessionType").value;
   const course = document.getElementById("myAttCourse").value;
-  const notes = document.getElementById("myAttNotes").value.trim();
+  const classId = document.getElementById("myAttClass").value;
 
-  if (!date || !sessionType) {
-    showToast("Date and session type are required.", "error");
+  if (!date || !classId) {
+    showToast("Date and class are required.", "error");
     return;
   }
+
+  const selectedClass = (allInstructorClasses || []).find(c => c.id === classId);
+  const sessionType = selectedClass ? (selectedClass.mode === 'online' ? 'Online Class' : 'In-person Class') : 'Class';
+  const notes = selectedClass ? `Class: ${selectedClass.title || 'Untitled'}` : null;
 
   try {
     const instructorName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
@@ -1456,8 +1502,9 @@
       date: fullDateTime,
       timestamp: serverTimestamp(),
       sessionType: sessionType,
-      course: course || null,
-      notes: notes || null,
+      course: course || (selectedClass ? selectedClass.courseName : null) || null,
+      classId: classId || null,
+      notes: notes,
       status: "present",
       createdAt: serverTimestamp()
     });
@@ -1565,114 +1612,148 @@
     }
 
     function checkInstructorClassSession() {
-      const card = document.getElementById("instructorCheckinCard");
-      const btn = document.getElementById("instructorCheckinBtn");
-      if (!card || !btn) return;
+      const container = document.getElementById("instructorCheckinContainer");
+      if (!container) return;
 
       const now = new Date();
-      const todayStr = now.getFullYear() + '-' +
-        String(now.getMonth() + 1).padStart(2, '0') + '-' +
-        String(now.getDate()).padStart(2, '0');
       const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
-      // Find eligible class (started and within 48h of end)
-      const sortedClasses = [...allInstructorClasses].sort((a, b) => {
-        const da = new Date(`${a.date}T${a.time}`);
-        const db = new Date(`${b.date}T${b.time}`);
-        return db - da;
-      });
-
-      const eligibleClass = sortedClasses.find(cls => {
-        const start = new Date(`${cls.date}T${cls.time}`);
-        const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-        const timeSinceEnd = now - end;
-        return now >= start && (now <= end || timeSinceEnd < FORTY_EIGHT_HOURS);
-      });
-
-      // Check if already marked attendance today
-      const alreadyMarked = myAttendanceRecords.some(r => {
-        let rDate = r.date;
-        if (r.date?.toDate) rDate = r.date.toDate().toISOString().split('T')[0];
-        else if (typeof r.date === 'string') rDate = r.date;
-        return rDate === todayStr && r.status === 'present';
-      });
-
-      if (eligibleClass && !alreadyMarked) {
-        card.style.display = "flex";
-        card.style.opacity = "1";
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
-        btn.style.background = 'var(--gold)';
-        btn.style.color = 'var(--navy)';
-        btn.style.border = 'none';
-        btn.style.cursor = 'pointer';
-
-        const classStatus = computeClassStatus(eligibleClass);
-        const titleEl = document.getElementById("instructorCheckinTitle");
-        const descEl = document.getElementById("instructorCheckinDesc");
-
-        const timeStr = formatTime(eligibleClass.time);
-        if (classStatus === 'ongoing') {
-          if (titleEl) titleEl.innerHTML = '<i class="fas fa-map-pin" style="color:var(--gold);margin-right:6px"></i> Session in progress';
-          if (descEl) descEl.innerHTML = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> at ${timeStr} is in progress — tap to mark your attendance.`;
-        } else {
-          if (titleEl) titleEl.innerHTML = '<i class="fas fa-clock" style="color:var(--gold);margin-right:6px"></i> Mark attendance';
-          if (descEl) descEl.innerHTML = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> at ${timeStr} has ended — you can still mark attendance (within 48 hours).`;
-        }
-      } else if (eligibleClass && alreadyMarked) {
-        card.style.display = "flex";
-        card.style.opacity = "0.6";
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i> Attendance marked';
-        btn.style.background = 'rgba(76,175,80,0.15)';
-        btn.style.color = 'var(--success)';
-        btn.style.border = '1px solid var(--success)';
-        btn.style.cursor = 'default';
-
-        const titleEl = document.getElementById("instructorCheckinTitle");
-        const descEl = document.getElementById("instructorCheckinDesc");
-        if (titleEl) titleEl.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success);margin-right:6px"></i> Attendance marked';
-        if (descEl) descEl.innerHTML = `<strong style="color:var(--success)">${escapeHtml(eligibleClass.title || 'Class')}</strong> — you've already checked in today.`;
-      } else {
-        card.style.display = "none";
-        card.style.opacity = "1";
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
-        btn.style.background = 'var(--gold)';
-        btn.style.color = 'var(--navy)';
-        btn.style.border = 'none';
-        btn.style.cursor = 'pointer';
+      function isClassMarked(classId) {
+        return myAttendanceRecords.some(r => r.classId === classId && r.status === 'present');
       }
-    }
 
-    // ── INSTRUCTOR CHECK-IN BUTTON ──
-    window.markInstructorAttendance = async function() {
-      const btn = document.getElementById("instructorCheckinBtn");
-      if (!btn) return;
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Marking…';
-
-      try {
-        const now = new Date();
-        const dateStr = now.getFullYear() + '-' +
-          String(now.getMonth() + 1).padStart(2, '0') + '-' +
-          String(now.getDate()).padStart(2, '0');
-
-        const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
-
-        // Find eligible class
-        const sortedClasses = [...allInstructorClasses].sort((a, b) => {
-          const da = new Date(`${a.date}T${a.time}`);
-          const db = new Date(`${b.date}T${b.time}`);
-          return db - da;
-        });
-
-        const eligibleClass = sortedClasses.find(cls => {
+      // Any class that's ongoing OR ended within the last 48 hours is checkin-eligible
+      const eligible = allInstructorClasses
+        .map(cls => {
           const start = new Date(`${cls.date}T${cls.time}`);
           const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-          const timeSinceEnd = now - end;
-          return now >= start && (now <= end || timeSinceEnd < FORTY_EIGHT_HOURS);
-        });
+          return { cls, start, end };
+        })
+        .filter(({ start, end }) => now >= start && (now <= end || (now - end) < FORTY_EIGHT_HOURS))
+        .sort((a, b) => b.start - a.start); // newest first
+
+      if (!eligible.length) {
+        container.style.display = "none";
+        container.innerHTML = "";
+        return;
+      }
+
+      container.style.display = "flex";
+      container.style.flexDirection = "column";
+      container.style.gap = "10px";
+
+      const [currentItem, ...pastItems] = eligible;
+
+      function renderCard({ cls, start, end }, isCurrent) {
+        const marked = isClassMarked(cls.id);
+        const timeStr = formatTime(cls.time);
+        const ongoing = now <= end;
+        const titleIcon = marked ? 'fa-check-circle' : (ongoing ? 'fa-map-pin' : 'fa-clock');
+        const titleColor = marked ? 'var(--success)' : 'var(--gold)';
+        const statusText = marked
+          ? "you've already checked in for this class."
+          : (ongoing ? "Your class is active — tap to mark your attendance." : "Class ended — you can still mark attendance (within 48 hours).");
+
+        const btnHtml = marked
+          ? `<button disabled style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:rgba(76,175,80,0.15); color:var(--success); border:1px solid var(--success); border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:default; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; opacity:0.75; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Attendance marked</button>`
+          : `<button onclick="markInstructorAttendance('${cls.id}')" style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:var(--gold); color:var(--navy); border:none; border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; transition:all var(--transition); white-space:nowrap; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Mark attendance</button>`;
+
+        if (isCurrent) {
+          return `
+            <div style="background: linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%); border: 1px solid var(--gold); border-radius: var(--radius-lg); padding: 24px; display:flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; opacity:${marked ? '0.6' : '1'};">
+              <div>
+                <h3 style="font-size:17px; font-weight:700; margin-bottom:4px;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px"></i> ${escapeHtml(cls.title || 'Class')}</h3>
+                <p style="font-size:13px; color:var(--text-muted);">${timeStr} — ${statusText}</p>
+              </div>
+              ${btnHtml}
+            </div>`;
+        }
+        return `
+          <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; opacity:${marked ? '0.55' : '0.9'}; width:220px;">
+            <div style="min-width:0;">
+              <div style="font-size:12px; font-weight:600; line-height:1.4;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px;font-size:10px;"></i> ${escapeHtml(cls.title || 'Class')}</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${timeStr}</div>
+            </div>
+            ${btnHtml}
+          </div>`;
+      }
+
+      const pastHtml = pastItems.length
+        ? `<div style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-top:4px;">Past Classes</div>
+           <div style="display:flex; flex-wrap:wrap; gap:10px;">
+             ${pastItems.map(item => renderCard(item, false)).join('')}
+           </div>`
+        : '';
+
+      container.innerHTML = renderCard(currentItem, true) + pastHtml;
+    }
+
+    // ── SCHOOL GEOFENCE (30m radius) ──
+    const SCHOOL_LAT = 5.6120526;
+    const SCHOOL_LNG = -0.2969936;
+    const MAX_CHECKIN_DISTANCE_METERS = 30;
+
+    function getDistanceMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371000; // Earth radius in meters
+      const toRad = (deg) => deg * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    function showLocationCheckModal(text) {
+      const textEl = document.getElementById("locationCheckText");
+      if (textEl) textEl.textContent = text || "Requesting your location…";
+      openModal("locationCheckModal");
+    }
+
+    function hideLocationCheckModal() {
+      closeModal("locationCheckModal");
+    }
+
+    // ── INSTRUCTOR CHECK-IN BUTTON (with 30m school geofence) ──
+    window.markInstructorAttendance = async function(classId) {
+      showLocationCheckModal("Requesting your location…");
+
+      if (!navigator.geolocation) {
+        hideLocationCheckModal();
+        showToast("Your browser doesn't support location services.", "error");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          showLocationCheckModal("Checking your distance from the school…");
+          const { latitude, longitude } = position.coords;
+          const distance = getDistanceMeters(latitude, longitude, SCHOOL_LAT, SCHOOL_LNG);
+
+          setTimeout(() => {
+            hideLocationCheckModal();
+            if (distance > MAX_CHECKIN_DISTANCE_METERS) {
+              showToast(`You're about ${Math.round(distance)}m from the school. Get within ${MAX_CHECKIN_DISTANCE_METERS}m to mark attendance.`, "error");
+              return;
+            }
+            doMarkInstructorAttendance(classId);
+          }, 900);
+        },
+        (error) => {
+          hideLocationCheckModal();
+          let msg = "Could not get your location. Please enable location services and try again.";
+          if (error.code === error.PERMISSION_DENIED) msg = "Location access denied. Please allow location access to mark attendance.";
+          showToast(msg, "error");
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    };
+
+    async function doMarkInstructorAttendance(classId) {
+      try {
+        const now = new Date();
+        const eligibleClass = allInstructorClasses.find(c => c.id === classId);
 
         let sessionType = "Class";
         let course = null;
@@ -1689,40 +1770,20 @@
           timestamp: serverTimestamp(),
           sessionType: sessionType,
           course: course,
+          classId: classId || null,
           notes: eligibleClass ? `Class: ${eligibleClass.title || 'Untitled'}` : null,
           status: "present",
           createdAt: serverTimestamp()
         });
 
-        // Update card to completed state
-        const card = document.getElementById("instructorCheckinCard");
-        if (card) card.style.opacity = "0.6";
-        btn.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i> Attendance marked';
-        btn.style.background = 'rgba(76,175,80,0.15)';
-        btn.style.color = 'var(--success)';
-        btn.style.border = '1px solid var(--success)';
-        btn.style.cursor = 'default';
-
-        const titleEl = document.getElementById("instructorCheckinTitle");
-        const descEl = document.getElementById("instructorCheckinDesc");
-        if (titleEl) titleEl.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success);margin-right:6px"></i> Attendance marked';
-        if (descEl && eligibleClass) {
-          const timeStr = formatTime(eligibleClass.time);
-          descEl.innerHTML = `<strong style="color:var(--success)">${escapeHtml(eligibleClass.title || 'Class')}</strong> at ${timeStr} — you've already checked in today.`;
-        }
-
         showToast("Attendance marked ✓", "success");
         await loadMyAttendance();
+        checkInstructorClassSession();
       } catch(e) {
         console.error(e);
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
-        btn.style.background = 'var(--gold)';
-        btn.style.color = 'var(--navy)';
-        btn.style.border = 'none';
         showToast("Could not mark attendance. Try again.", "error");
       }
-    };
+    }
 
     function updateDashboardStats() {
       document.getElementById("statStudents").textContent = myStudents.length;
@@ -2053,7 +2114,7 @@
       document.getElementById(`page-${name}`).classList.add("active");
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
       if (btn) btn.classList.add("active");
-      const titles = { dashboard: "Dashboard", students: "My Students", lessons: "Lessons", attendance: "Attendance", myAttendance: "My Attendance", quizzes: "Quizzes", settings: "Settings" };
+      const titles = { dashboard: "Dashboard", students: "My Students", lessons: "Lessons", attendance: "Attendance", myAttendance: "My Attendance", quizzes: "Quizzes", notifications: "Notifications", settings: "Settings" };
       document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
       
       // Auto-refresh data when switching pages
@@ -2069,6 +2130,9 @@
       }
       if (name === "myAttendance") {
         loadMyAttendance();
+      }
+      if (name === "notifications") {
+        loadNotifications();
       }
       if (name === "dashboard") {
         loadMyStudents().then(() => {

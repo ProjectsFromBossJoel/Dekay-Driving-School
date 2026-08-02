@@ -1004,6 +1004,23 @@
   const CLOUDINARY_CLOUD = "drs2xpwho";
   const CLOUDINARY_PRESET = "student_avatars";
 
+  // ── SCHOOL GEOFENCE (200m radius for students) ──
+  const SCHOOL_LAT = 5.6120526;
+  const SCHOOL_LNG = -0.2969936;
+  const MAX_CHECKIN_DISTANCE_METERS = 200;
+
+  function getDistanceMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371000; // Earth radius in meters
+    const toRad = (deg) => deg * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
   let currentUser = null;
   let studentData = {};
   let allLessonFolders = [];
@@ -1896,9 +1913,43 @@
   // ══════════════════════════════════════
   // ATTENDANCE CHECK‑IN
   // ══════════════════════════════════════
-  window.markAttendance = async function() {
+  window.markAttendance = function() {
     const btn = document.getElementById("checkinBtn");
     btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking location…';
+
+    if (!navigator.geolocation) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
+      showToast("Your browser doesn't support location services.", "error");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const distance = getDistanceMeters(latitude, longitude, SCHOOL_LAT, SCHOOL_LNG);
+        if (distance > MAX_CHECKIN_DISTANCE_METERS) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
+          showToast(`You're about ${Math.round(distance)}m from the school. Get within ${MAX_CHECKIN_DISTANCE_METERS}m to mark attendance.`, "error");
+          return;
+        }
+        doMarkAttendance();
+      },
+      (error) => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
+        let msg = "Could not get your location. Please enable location services and try again.";
+        if (error.code === error.PERMISSION_DENIED) msg = "Location access denied. Please allow location access to mark attendance.";
+        showToast(msg, "error");
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  };
+
+  async function doMarkAttendance() {
+    const btn = document.getElementById("checkinBtn");
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Marking…';
     try {
       const now = new Date();
@@ -1996,7 +2047,7 @@
       btn.style.border = 'none';
       showToast("Could not mark attendance. Try again.", "error");
     }
-  };
+  }
 
   // ══════════════════════════════════════
   // PLAY LESSON
@@ -2750,15 +2801,16 @@
             iconColor = '#8D6E63';
             bgColor = 'rgba(141,110,99,0.1)';
           }
+          const safeDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
           return `
-            <a href="${doc.url}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);">
+            <div onclick="forceDownloadDocument('${doc.url}', '${safeDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
               <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
               <div style="flex:1;">
                 <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
-                <div style="font-size:11px;color:var(--text-muted);">Click to view / download</div>
+                <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
               </div>
-              <i class="fas fa-external-link-alt" style="color:var(--text-muted);font-size:12px;"></i>
-            </a>
+              <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+            </div>
           `;
         }).join('')}
       </div>
@@ -3136,15 +3188,16 @@
                 iconColor = '#42A5F5';
                 bgColor = 'rgba(66,165,245,0.1)';
               }
+              const safeClassDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
               return `
-                <a href="${doc.url}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);">
+                <div onclick="forceDownloadDocument('${doc.url}', '${safeClassDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
                   <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
                   <div style="flex:1;">
                     <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
-                    <div style="font-size:11px;color:var(--text-muted);">Click to view / download</div>
+                    <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
                   </div>
                   <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
-                </a>
+                </div>
               `;
             }).join('')}
           </div>
@@ -3440,6 +3493,34 @@
       link.target = '_blank';
       link.click();
       showToast("Certificate downloaded ✓", "success");
+    }
+  };
+
+  // ── FORCE DOWNLOAD ANY CLASS/RESOURCE DOCUMENT (bypasses Cloudinary inline preview) ──
+  window.forceDownloadDocument = async function(fileUrl, fileName) {
+    if (!fileUrl) {
+      showToast("File not available.", "error");
+      return;
+    }
+    showToast("Downloading…", "success");
+    try {
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error("Failed to fetch file");
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName || 'document';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      showToast("Download started ✓", "success");
+    } catch(e) {
+      console.error("Force download failed:", e);
+      // Fallback: open in new tab if fetch fails (e.g. CORS)
+      window.open(fileUrl, '_blank');
+      showToast("Opened in new tab — use browser's save option.", "error");
     }
   };
 

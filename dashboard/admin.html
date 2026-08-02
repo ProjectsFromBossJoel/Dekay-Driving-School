@@ -1644,6 +1644,9 @@
           <!-- Attach Documents -->
           <div class="bio-section"><div class="bio-section-title">Attach Documents <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></div></div>
           <div class="form-group">
+            <div id="editClassExistingDocsWrap" style="margin-bottom:10px;">
+              <div id="editClassExistingDocs" style="display:flex;flex-direction:column;gap:4px;"></div>
+            </div>
             <div id="editClassDocUploadArea" style="padding:12px 16px; background:var(--navy); border:1.5px dashed var(--border); border-radius:var(--radius); cursor:pointer; text-align:center;" onclick="document.getElementById('editClassDocs').click()">
               <i class="fas fa-paperclip" style="color:var(--gold);margin-right:6px;"></i>
               <span id="editClassDocText" style="font-size:12px;color:var(--text-muted);">Tap to attach documents (PDF, DOC, images)</span>
@@ -5124,6 +5127,33 @@ window.approveStudent = async function(uid) {
     showToast("Record deleted.", "success");
   };
 
+  // ── FORCE DOWNLOAD ANY CLASS/RESOURCE DOCUMENT (bypasses Cloudinary inline preview) ──
+  window.forceDownloadDocument = async function(fileUrl, fileName) {
+    if (!fileUrl) {
+      showToast("File not available.", "error");
+      return;
+    }
+    showToast("Downloading…", "success");
+    try {
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error("Failed to fetch file");
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName || 'document';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      showToast("Download started ✓", "success");
+    } catch(e) {
+      console.error("Force download failed:", e);
+      window.open(fileUrl, '_blank');
+      showToast("Could not download directly — opened in a new tab instead.", "error");
+    }
+  };
+
   // ── XHR UPLOAD HELPER (supports progress, fetch() cannot track upload %) ──
   function uploadToCloudinaryWithProgress(url, formData, onProgress) {
     return new Promise((resolve, reject) => {
@@ -6827,6 +6857,54 @@ window.approveStudent = async function(uid) {
     window.previewEditClassDocs({ files: dt.files });
   };
 
+  // ── RENDER EXISTING CLASS DOCUMENTS (with delete buttons) ──
+  function renderExistingClassDocs(classId, documents) {
+    const container = document.getElementById("editClassExistingDocs");
+    if (!container) return;
+    if (!documents || !documents.length) {
+      container.innerHTML = '';
+      return;
+    }
+    container.innerHTML = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Currently attached:</div>` +
+      documents.map((docItem, i) => {
+        const ext = (docItem.name || '').split('.').pop()?.toLowerCase() || '';
+        const iconMap = {
+          pdf: { icon: 'fa-file-pdf', color: '#EF5350' },
+          doc: { icon: 'fa-file-word', color: '#42A5F5' }, docx: { icon: 'fa-file-word', color: '#42A5F5' },
+          xls: { icon: 'fa-file-excel', color: '#66BB6A' }, xlsx: { icon: 'fa-file-excel', color: '#66BB6A' },
+          ppt: { icon: 'fa-file-powerpoint', color: '#FFA726' }, pptx: { icon: 'fa-file-powerpoint', color: '#FFA726' },
+          png: { icon: 'fa-file-image', color: '#42A5F5' }, jpg: { icon: 'fa-file-image', color: '#42A5F5' }, jpeg: { icon: 'fa-file-image', color: '#42A5F5' }
+        };
+        const { icon, color } = iconMap[ext] || { icon: 'fa-file', color: '#8B9AB0' };
+        return `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:8px;">
+            <a href="${docItem.url}" target="_blank" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;text-decoration:none;color:var(--text-light);">
+              <i class="fas ${icon}" style="color:${color};font-size:16px;flex-shrink:0;"></i>
+              <span style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(docItem.name || `Document ${i + 1}`)}</span>
+            </a>
+            <button class="btn btn-icon btn-danger" style="width:26px;height:26px;flex-shrink:0;" title="Delete document" onclick="deleteExistingClassDoc('${classId}', ${i})"><i class="fas fa-trash" style="font-size:11px;"></i></button>
+          </div>`;
+      }).join('');
+  }
+
+  // ── DELETE AN EXISTING CLASS DOCUMENT ──
+  window.deleteExistingClassDoc = async function(classId, docIndex) {
+    if (!(await showConfirm("Delete document", "Remove this attached document from the class?"))) return;
+    try {
+      const cls = allClasses.find(c => c.id === classId);
+      if (!cls) return showToast("Class not found.", "error");
+      const updatedDocuments = [...(cls.documents || [])];
+      updatedDocuments.splice(docIndex, 1);
+      await updateDoc(doc(db, "classes", classId), { documents: updatedDocuments });
+      cls.documents = updatedDocuments;
+      renderExistingClassDocs(classId, updatedDocuments);
+      showToast("Document removed ✓", "success");
+    } catch(e) {
+      console.error(e);
+      showToast("Could not delete document. Try again.", "error");
+    }
+  };
+
   // Upload documents to Cloudinary and return array of URLs
   async function uploadClassDocuments(files, courseName, classTitle) {
     if (!files || files.length === 0) return [];
@@ -7007,6 +7085,9 @@ window.approveStudent = async function(uid) {
     document.getElementById("editClassDocList").innerHTML = '';
     document.getElementById("editClassDocText").textContent = 'Tap to attach documents (PDF, DOC, images)';
     document.getElementById("editClassDocs").value = '';
+
+    // Render existing attached documents with delete buttons
+    renderExistingClassDocs(cls.id, cls.documents || []);
 
     const status = computeClassStatus(cls);
     document.getElementById("editClassModalTitle").textContent =
@@ -7305,15 +7386,16 @@ window.approveStudent = async function(uid) {
         ${cls.documents.map((doc, i) => {
           const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
           const { icon, color, bg } = getFileIcon(ext);
+          const safeAdminDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
           return `
-            <a href="${doc.url}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bg};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);">
+            <div onclick="forceDownloadDocument('${doc.url}', '${safeAdminDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bg};border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);">
               <i class="fas ${icon}" style="font-size:22px;color:${color};"></i>
               <div style="flex:1;">
                 <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
-                <div style="font-size:11px;color:var(--text-muted);">Click to view / download</div>
+                <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
               </div>
-              <i class="fas fa-external-link-alt" style="color:var(--text-muted);font-size:12px;"></i>
-            </a>
+              <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+            </div>
           `;
         }).join('')}
       </div>
