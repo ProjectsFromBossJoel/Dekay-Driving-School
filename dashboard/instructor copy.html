@@ -1719,8 +1719,14 @@
       closeModal("locationCheckModal");
     }
 
-    // ── INSTRUCTOR CHECK-IN BUTTON (with 30m school geofence) ──
+    // ── INSTRUCTOR CHECK-IN BUTTON (with 30m school geofence, in-person classes only) ──
     window.markInstructorAttendance = async function(classId) {
+      const eligibleClassForCheck = allInstructorClasses.find(c => c.id === classId);
+      if (eligibleClassForCheck && eligibleClassForCheck.mode === 'online') {
+        doMarkInstructorAttendance(classId);
+        return;
+      }
+
       showLocationCheckModal("Requesting your location…");
 
       if (!navigator.geolocation) {
