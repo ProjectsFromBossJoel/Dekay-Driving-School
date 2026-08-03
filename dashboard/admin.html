@@ -576,6 +576,7 @@
       <button class="nav-item" onclick="showPage('courses', this)"><i class="fas fa-book"></i> Courses</button>
 
       <button class="nav-item" onclick="showPage('classes', this)"><i class="fas fa-chalkboard"></i> Classes</button>
+      <button class="nav-item" onclick="showPage('vehicles', this)"><i class="fas fa-car-side"></i> Vehicles</button>
       <button class="nav-item" onclick="showPage('resources', this)"><i class="fas fa-folder-open"></i> Resources</button>
             <button class="nav-item" onclick="showPage('certificates', this)"><i class="fas fa-certificate"></i> Certificates</button>
 
@@ -1381,6 +1382,42 @@
               <option value="fa-truck">🚛 Truck / HGV</option>
             </select>
           </div>
+
+          <!-- Assigned Students -->
+          <div class="bio-section"><div class="bio-section-title">Assigned Students</div></div>
+          <div class="form-group">
+            <label class="form-label">Select students enrolled in this course</label>
+            <div style="position:relative;">
+              <button type="button" id="courseStudentDropdownBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleCourseStudentDropdown()">
+                <span id="courseStudentBtnText">Select students…</span>
+                <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+              </button>
+              <div id="courseStudentDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:250;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:none;max-height:220px;overflow-y:auto;box-shadow:var(--shadow);">
+                <div class="search-input-wrap" style="margin-bottom:8px;">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" id="courseStudentSearch" class="search-input" style="padding:8px 14px 8px 36px;font-size:13px;" placeholder="Search students…" oninput="filterCourseStudentCheckboxes()" />
+                </div>
+                <div id="courseStudentCheckboxList"></div>
+              </div>
+            </div>
+            <div id="courseStudentBadges" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+          </div>
+
+          <!-- Assigned Instructors -->
+          <div class="bio-section"><div class="bio-section-title">Assigned Instructors</div></div>
+          <div class="form-group">
+            <label class="form-label">Select instructors who teach this course</label>
+            <div style="position:relative;">
+              <button type="button" id="courseInstructorDropdownBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleCourseInstructorDropdown()">
+                <span id="courseInstructorBtnText">Select instructors…</span>
+                <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+              </button>
+              <div id="courseInstructorDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:250;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:none;max-height:220px;overflow-y:auto;box-shadow:var(--shadow);">
+                <div id="courseInstructorCheckboxList"></div>
+              </div>
+            </div>
+            <div id="courseInstructorBadges" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="closeModal('editCourseModal')">Cancel</button>
@@ -1470,20 +1507,20 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Date <span>*</span></label>
-              <input type="date" id="newClassDate" class="form-input" />
+              <label class="form-label">Start date <span>*</span></label>
+              <input type="date" id="newClassDate" class="form-input" onchange="refreshNewClassAvailability()" />
             </div>
             <div class="form-group">
               <label class="form-label">Start time <span>*</span></label>
               <div style="display:flex; gap:8px;">
-                <select id="newClassTimeHour" class="form-select" style="flex:1;">
+                <select id="newClassTimeHour" class="form-select" style="flex:1;" onchange="refreshNewClassAvailability()">
                   <option value="1">1</option><option value="2">2</option><option value="3">3</option>
                   <option value="4">4</option><option value="5">5</option><option value="6">6</option>
                   <option value="7">7</option><option value="8">8</option><option value="9" selected>9</option>
                   <option value="10">10</option><option value="11">11</option><option value="12">12</option>
                 </select>
-                <input type="number" id="newClassTimeMin" class="form-input" value="00" min="0" max="59" placeholder="00" style="flex:1;text-align:center;" />
-                <select id="newClassTimeAmpm" class="form-select" style="width:80px;">
+                <input type="number" id="newClassTimeMin" class="form-input" value="00" min="0" max="59" placeholder="00" style="flex:1;text-align:center;" onchange="refreshNewClassAvailability()" />
+                <select id="newClassTimeAmpm" class="form-select" style="width:80px;" onchange="refreshNewClassAvailability()">
                   <option value="AM" selected>AM</option>
                   <option value="PM">PM</option>
                 </select>
@@ -1492,21 +1529,54 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Duration <span>*</span></label>
+              <label class="form-label">End date <span>*</span></label>
+              <input type="date" id="newClassEndDate" class="form-input" onchange="refreshNewClassAvailability()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">End time <span>*</span></label>
               <div style="display:flex; gap:8px;">
-                <input type="number" id="newClassDurationVal" class="form-input" placeholder="60" min="1" value="60" style="flex:1;" />
-                <select id="newClassDurationUnit" class="form-select" style="width:120px;">
-                  <option value="minutes">Minutes</option>
-                  <option value="hours" selected>Hours</option>
+                <select id="newClassEndTimeHour" class="form-select" style="flex:1;" onchange="refreshNewClassAvailability()">
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                  <option value="10" selected>10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <input type="number" id="newClassEndTimeMin" class="form-input" value="00" min="0" max="59" placeholder="00" style="flex:1;text-align:center;" onchange="refreshNewClassAvailability()" />
+                <select id="newClassEndTimeAmpm" class="form-select" style="width:80px;" onchange="refreshNewClassAvailability()">
+                  <option value="AM" selected>AM</option>
+                  <option value="PM">PM</option>
                 </select>
               </div>
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label class="form-label">Mode <span>*</span></label>
               <select id="newClassMode" class="form-select" onchange="toggleOnlineFields('new')">
                 <option value="in-person">In-person</option>
                 <option value="online">Online</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Vehicle</label>
+              <select id="newClassVehicle" class="form-select">
+                <option value="">Select vehicle…</option>
+              </select>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Only vehicles free during this time slot are shown.</div>
+            </div>
+          </div>
+
+          <!-- Assign students -->
+          <div class="bio-section"><div class="bio-section-title">Assign Students <span style="font-weight:normal;color:var(--text-muted);">(greyed = already booked for this time)</span></div></div>
+          <div class="form-group">
+            <div style="position:relative;">
+              <button type="button" id="newClassStudentBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleNewClassStudentDropdown()">
+                <span id="newClassStudentBtnText">Select students…</span>
+                <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+              </button>
+              <div id="newClassStudentDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:250;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:none;max-height:220px;overflow-y:auto;box-shadow:var(--shadow);">
+                <div id="newClassStudentCheckboxList"></div>
+              </div>
             </div>
           </div>
 
@@ -1581,20 +1651,20 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Date <span>*</span></label>
-              <input type="date" id="editClassDate" class="form-input" />
+              <label class="form-label">Start date <span>*</span></label>
+              <input type="date" id="editClassDate" class="form-input" onchange="refreshEditClassAvailability()" />
             </div>
             <div class="form-group">
               <label class="form-label">Start time <span>*</span></label>
               <div style="display:flex; gap:8px;">
-                <select id="editClassTimeHour" class="form-select" style="flex:1;">
+                <select id="editClassTimeHour" class="form-select" style="flex:1;" onchange="refreshEditClassAvailability()">
                   <option value="1">1</option><option value="2">2</option><option value="3">3</option>
                   <option value="4">4</option><option value="5">5</option><option value="6">6</option>
                   <option value="7">7</option><option value="8">8</option><option value="9">9</option>
                   <option value="10">10</option><option value="11">11</option><option value="12">12</option>
                 </select>
-                <input type="number" id="editClassTimeMin" class="form-input" value="00" min="0" max="59" placeholder="00" style="flex:1;text-align:center;" />
-                <select id="editClassTimeAmpm" class="form-select" style="width:80px;">
+                <input type="number" id="editClassTimeMin" class="form-input" value="00" min="0" max="59" placeholder="00" style="flex:1;text-align:center;" onchange="refreshEditClassAvailability()" />
+                <select id="editClassTimeAmpm" class="form-select" style="width:80px;" onchange="refreshEditClassAvailability()">
                   <option value="AM">AM</option>
                   <option value="PM">PM</option>
                 </select>
@@ -1603,21 +1673,54 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Duration <span>*</span></label>
+              <label class="form-label">End date <span>*</span></label>
+              <input type="date" id="editClassEndDate" class="form-input" onchange="refreshEditClassAvailability()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">End time <span>*</span></label>
               <div style="display:flex; gap:8px;">
-                <input type="number" id="editClassDurationVal" class="form-input" placeholder="60" min="1" style="flex:1;" />
-                <select id="editClassDurationUnit" class="form-select" style="width:120px;">
-                  <option value="minutes">Minutes</option>
-                  <option value="hours">Hours</option>
+                <select id="editClassEndTimeHour" class="form-select" style="flex:1;" onchange="refreshEditClassAvailability()">
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                  <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <input type="number" id="editClassEndTimeMin" class="form-input" value="00" min="0" max="59" placeholder="00" style="flex:1;text-align:center;" onchange="refreshEditClassAvailability()" />
+                <select id="editClassEndTimeAmpm" class="form-select" style="width:80px;" onchange="refreshEditClassAvailability()">
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
                 </select>
               </div>
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label class="form-label">Mode <span>*</span></label>
               <select id="editClassMode" class="form-select" onchange="toggleOnlineFields('edit')">
                 <option value="in-person">In-person</option>
                 <option value="online">Online</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Vehicle</label>
+              <select id="editClassVehicle" class="form-select">
+                <option value="">Select vehicle…</option>
+              </select>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Only vehicles free during this time slot are shown.</div>
+            </div>
+          </div>
+
+          <!-- Assign students -->
+          <div class="bio-section"><div class="bio-section-title">Assign Students <span style="font-weight:normal;color:var(--text-muted);">(greyed = already booked for this time)</span></div></div>
+          <div class="form-group">
+            <div style="position:relative;">
+              <button type="button" id="editClassStudentBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleEditClassStudentDropdown()">
+                <span id="editClassStudentBtnText">Select students…</span>
+                <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+              </button>
+              <div id="editClassStudentDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:250;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:none;max-height:220px;overflow-y:auto;box-shadow:var(--shadow);">
+                <div id="editClassStudentCheckboxList"></div>
+              </div>
             </div>
           </div>
 
@@ -1731,6 +1834,74 @@
           <div id="sentNotifList" style="max-height:400px;overflow-y:auto;">
             <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VEHICLES (Admin) ═══ -->
+    <div class="page" id="page-vehicles">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="page-title">Vehicles</div>
+          <div class="page-sub">Manage the school's fleet of training vehicles.</div>
+        </div>
+        <button class="btn btn-gold" onclick="openAddVehicleModal()"><i class="fas fa-plus"></i> Add vehicle</button>
+      </div>
+
+      <div class="stat-grid" id="vehiclesGrid" style="grid-template-columns:repeat(4,1fr);">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading vehicles…</div>
+      </div>
+    </div>
+
+    <!-- ── ADD/EDIT VEHICLE MODAL ── -->
+    <div class="modal-overlay" id="vehicleModal">
+      <div class="modal" style="max-width:520px;">
+        <div class="modal-header">
+          <div class="modal-title" id="vehicleModalTitle">Add vehicle</div>
+          <button class="modal-close" onclick="closeModal('vehicleModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editVehicleId" />
+          <div class="form-group">
+            <label class="form-label">Vehicle photo</label>
+            <div id="vehicleImgUploadArea" style="padding:12px 16px; background:var(--navy); border:1.5px dashed var(--border); border-radius:var(--radius); cursor:pointer; text-align:center;" onclick="document.getElementById('vehicleImgFile').click()">
+              <i class="fas fa-camera" style="color:var(--gold);margin-right:6px;"></i>
+              <span id="vehicleImgText" style="font-size:12px;color:var(--text-muted);">Tap to upload a photo</span>
+            </div>
+            <input type="file" id="vehicleImgFile" accept="image/*" style="display:none" onchange="previewVehicleImage(this)" />
+            <img id="vehicleImgPreview" src="" style="display:none; max-width:100%; max-height:160px; border-radius:8px; margin-top:8px; border:1px solid var(--border);" />
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Year <span>*</span></label><input type="number" id="vehicleYear" class="form-input" placeholder="2022" min="1980" max="2100" /></div>
+            <div class="form-group"><label class="form-label">Make <span>*</span></label><input type="text" id="vehicleMake" class="form-input" placeholder="e.g. Toyota" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Model <span>*</span></label><input type="text" id="vehicleModel" class="form-input" placeholder="e.g. Corolla" /></div>
+            <div class="form-group"><label class="form-label">Trim level</label><input type="text" id="vehicleTrim" class="form-input" placeholder="e.g. LE" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Engine type</label>
+              <select id="vehicleEngine" class="form-select">
+                <option value="Petrol">Petrol</option>
+                <option value="Diesel">Diesel</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Electric">Electric</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Transmission type</label>
+              <select id="vehicleTransmission" class="form-select">
+                <option value="Manual">Manual</option>
+                <option value="Automatic">Automatic</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="vehicleDeleteBtn" style="display:none;" onclick="deleteVehicleFromModal()"><i class="fas fa-trash"></i> Delete</button>
+          <button class="btn btn-outline" onclick="closeModal('vehicleModal')">Cancel</button>
+          <button class="btn btn-gold" onclick="saveVehicle()"><i class="fas fa-save"></i> Save vehicle</button>
         </div>
       </div>
     </div>
@@ -2669,7 +2840,7 @@
   };
 
   // ── OPEN EDIT COURSE MODAL ──
-  window.openEditCourseModal = function(courseId) {
+  window.openEditCourseModal = async function(courseId) {
     const course = window._allCourses?.find(c => c.id === courseId);
     if (!course) return showToast("Course not found.", "error");
 
@@ -2692,8 +2863,102 @@
     document.getElementById("editCourseDesc").value    = course.description || '';
     document.getElementById("editCourseIcon").value    = course.icon || 'fa-car';
 
+    // ── Populate assigned students checkboxes ──
+    const assignedStudentIds = course.assignedStudents || [];
+    const studentListEl = document.getElementById("courseStudentCheckboxList");
+    if (studentListEl) {
+      studentListEl.innerHTML = allStudents.length
+        ? allStudents.map(s => {
+            const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email;
+            const checked = assignedStudentIds.includes(s.id) ? 'checked' : '';
+            return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border-subtle);">
+              <input type="checkbox" value="${s.id}" data-name="${escapeHtml(name)}" class="course-student-checkbox" ${checked} onchange="updateCourseStudentUI()" style="accent-color:var(--gold);width:16px;height:16px;" />
+              <span style="font-size:13px;">${escapeHtml(name)}</span>
+            </label>`;
+          }).join('')
+        : '<div style="color:var(--text-muted);font-size:12px;">No students found.</div>';
+    }
+
+    // ── Populate assigned instructors checkboxes ──
+    const assignedInstructorIds = course.assignedInstructors || [];
+    const instrListEl = document.getElementById("courseInstructorCheckboxList");
+    if (instrListEl) {
+      try {
+        const instrSnap = await getDocs(collection(db, "instructors"));
+        const activeInstructors = instrSnap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(i => i.status === 'active');
+        instrListEl.innerHTML = activeInstructors.length
+          ? activeInstructors.map(inst => {
+              const name = `${inst.firstName || ''} ${inst.lastName || ''}`.trim();
+              const checked = assignedInstructorIds.includes(inst.id) ? 'checked' : '';
+              return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border-subtle);">
+                <input type="checkbox" value="${inst.id}" data-name="${escapeHtml(name)}" class="course-instructor-checkbox" ${checked} onchange="updateCourseInstructorUI()" style="accent-color:var(--gold);width:16px;height:16px;" />
+                <span style="font-size:13px;">${escapeHtml(name)}</span>
+              </label>`;
+            }).join('')
+          : '<div style="color:var(--text-muted);font-size:12px;">No active instructors found.</div>';
+      } catch(e) {
+        console.error(e);
+        instrListEl.innerHTML = '<div style="color:var(--error);font-size:12px;">Error loading instructors.</div>';
+      }
+    }
+
+    setTimeout(() => {
+      updateCourseStudentUI();
+      updateCourseInstructorUI();
+    }, 50);
+
     openModal("editCourseModal");
   };
+
+  // ── COURSE STUDENT/INSTRUCTOR DROPDOWN HELPERS ──
+  window.toggleCourseStudentDropdown = function() {
+    const panel = document.getElementById("courseStudentDropdown");
+    if (!panel) return;
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+    const other = document.getElementById("courseInstructorDropdown");
+    if (other && panel.style.display === "block") other.style.display = "none";
+  };
+  window.toggleCourseInstructorDropdown = function() {
+    const panel = document.getElementById("courseInstructorDropdown");
+    if (!panel) return;
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+    const other = document.getElementById("courseStudentDropdown");
+    if (other && panel.style.display === "block") other.style.display = "none";
+  };
+  window.filterCourseStudentCheckboxes = function() {
+    const term = document.getElementById("courseStudentSearch").value.toLowerCase();
+    document.querySelectorAll('#courseStudentCheckboxList label').forEach(label => {
+      label.style.display = label.textContent.toLowerCase().includes(term) ? "flex" : "none";
+    });
+  };
+  window.updateCourseStudentUI = function() {
+    const checked = document.querySelectorAll('.course-student-checkbox:checked');
+    const btnText = document.getElementById("courseStudentBtnText");
+    const badges = document.getElementById("courseStudentBadges");
+    if (btnText) btnText.textContent = checked.length === 0 ? "Select students…" : `${checked.length} student${checked.length > 1 ? 's' : ''} selected`;
+    if (badges) badges.innerHTML = Array.from(checked).map(cb =>
+      `<span style="background:rgba(245,166,35,0.15);color:var(--gold);padding:4px 10px;border-radius:20px;font-size:12px;">${cb.dataset.name}</span>`
+    ).join('');
+  };
+  window.updateCourseInstructorUI = function() {
+    const checked = document.querySelectorAll('.course-instructor-checkbox:checked');
+    const btnText = document.getElementById("courseInstructorBtnText");
+    const badges = document.getElementById("courseInstructorBadges");
+    if (btnText) btnText.textContent = checked.length === 0 ? "Select instructors…" : `${checked.length} instructor${checked.length > 1 ? 's' : ''} selected`;
+    if (badges) badges.innerHTML = Array.from(checked).map(cb =>
+      `<span style="background:rgba(245,166,35,0.15);color:var(--gold);padding:4px 10px;border-radius:20px;font-size:12px;">${cb.dataset.name}</span>`
+    ).join('');
+  };
+  document.addEventListener("click", function(e) {
+    const sBtn = document.getElementById("courseStudentDropdownBtn");
+    const sPanel = document.getElementById("courseStudentDropdown");
+    if (sBtn && sPanel && !sBtn.contains(e.target) && !sPanel.contains(e.target)) sPanel.style.display = "none";
+    const iBtn = document.getElementById("courseInstructorDropdownBtn");
+    const iPanel = document.getElementById("courseInstructorDropdown");
+    if (iBtn && iPanel && !iBtn.contains(e.target) && !iPanel.contains(e.target)) iPanel.style.display = "none";
+  });
 
   // ── UPDATE COURSE ──
   window.updateCourse = async function() {
@@ -2714,6 +2979,16 @@
       return;
     }
 
+    const assignedStudents = Array.from(document.querySelectorAll('.course-student-checkbox:checked')).map(cb => cb.value);
+    const assignedStudentNames = Array.from(document.querySelectorAll('.course-student-checkbox:checked')).map(cb => cb.dataset.name);
+    const assignedInstructors = Array.from(document.querySelectorAll('.course-instructor-checkbox:checked')).map(cb => cb.value);
+    const assignedInstructorNames = Array.from(document.querySelectorAll('.course-instructor-checkbox:checked')).map(cb => cb.dataset.name);
+
+    const btn = document.querySelector("#editCourseModal .btn-gold");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
     try {
       await updateDoc(doc(db, "courses", id), {
         name,
@@ -2722,13 +2997,28 @@
         price: price ? Number(price) : null,
         description: desc,
         icon: icon || 'fa-car',
-        level
+        level,
+        assignedStudents,
+        assignedStudentNames,
+        assignedInstructors,
+        assignedInstructorNames
       });
+
+      // Keep each student's courseType in sync with this course assignment
+      await Promise.all(assignedStudents.map(sid =>
+        updateDoc(doc(db, "users", sid), { courseType: name }).catch(() => {})
+      ));
+
       closeModal("editCourseModal");
       showToast("Course updated ✓", "success");
+      await loadStudents();
       loadCourses();
     } catch(e) {
+      console.error(e);
       showToast("Update failed. Try again.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
     }
   };
 
@@ -2747,6 +3037,7 @@
     await loadNotifications();
     await loadCourses();
     await loadInstructors();
+    await loadVehicles();
     buildOverview();
   }
 
@@ -6598,6 +6889,157 @@ window.approveStudent = async function(uid) {
 
 
   // ══════════════════════════════════════
+  // VEHICLES
+  // ══════════════════════════════════════
+  let allVehicles = [];
+  const VEHICLE_IMAGE_PRESET = "vehicle_images_upload"; // create this unsigned Cloudinary preset
+
+  async function loadVehicles() {
+    const grid = document.getElementById("vehiclesGrid");
+    if (!grid) return;
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading vehicles…</div>';
+    try {
+      const snaps = await getDocs(collection(db, "vehicles"));
+      allVehicles = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      window._allVehicles = allVehicles;
+      if (!allVehicles.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No vehicles added yet.</div>';
+        return;
+      }
+      grid.innerHTML = allVehicles.map(v => `
+        <div class="stat-card" style="padding:0;overflow:hidden;">
+          <div style="width:100%;aspect-ratio:16/9;background:var(--navy);${v.imageUrl ? `background-image:url(${v.imageUrl});background-size:cover;background-position:center;` : 'display:flex;align-items:center;justify-content:center;'}">
+            ${v.imageUrl ? '' : '<i class="fas fa-car" style="font-size:32px;color:var(--border);"></i>'}
+          </div>
+          <div style="padding:16px;">
+            <div style="font-weight:700;font-size:15px;">${escapeHtml(String(v.year || ''))} ${escapeHtml(v.make || '')} ${escapeHtml(v.model || '')}</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${escapeHtml(v.trim || '—')}</div>
+            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+              <span class="stage-pill">${escapeHtml(v.engineType || '—')}</span>
+              <span class="stage-pill">${escapeHtml(v.transmissionType || '—')}</span>
+            </div>
+            <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:12px;" onclick="openEditVehicleModal('${v.id}')"><i class="fas fa-eye"></i> View / Edit</button>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) {
+      console.error(e);
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load vehicles.</div>';
+    }
+  }
+
+  window.previewVehicleImage = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById("vehicleImgPreview").src = e.target.result;
+      document.getElementById("vehicleImgPreview").style.display = 'block';
+      document.getElementById("vehicleImgText").textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.openAddVehicleModal = function() {
+    document.getElementById("editVehicleId").value = '';
+    document.getElementById("vehicleModalTitle").textContent = "Add vehicle";
+    document.getElementById("vehicleYear").value = '';
+    document.getElementById("vehicleMake").value = '';
+    document.getElementById("vehicleModel").value = '';
+    document.getElementById("vehicleTrim").value = '';
+    document.getElementById("vehicleEngine").value = 'Petrol';
+    document.getElementById("vehicleTransmission").value = 'Manual';
+    document.getElementById("vehicleImgFile").value = '';
+    document.getElementById("vehicleImgPreview").style.display = 'none';
+    document.getElementById("vehicleImgText").textContent = 'Tap to upload a photo';
+    document.getElementById("vehicleDeleteBtn").style.display = 'none';
+    document.getElementById("vehicleModal")._imageUrl = null;
+    openModal("vehicleModal");
+  };
+
+  window.openEditVehicleModal = function(id) {
+    const v = allVehicles.find(x => x.id === id);
+    if (!v) return showToast("Vehicle not found.", "error");
+    document.getElementById("editVehicleId").value = id;
+    document.getElementById("vehicleModalTitle").textContent = "Edit vehicle";
+    document.getElementById("vehicleYear").value = v.year || '';
+    document.getElementById("vehicleMake").value = v.make || '';
+    document.getElementById("vehicleModel").value = v.model || '';
+    document.getElementById("vehicleTrim").value = v.trim || '';
+    document.getElementById("vehicleEngine").value = v.engineType || 'Petrol';
+    document.getElementById("vehicleTransmission").value = v.transmissionType || 'Manual';
+    document.getElementById("vehicleImgFile").value = '';
+    const preview = document.getElementById("vehicleImgPreview");
+    if (v.imageUrl) { preview.src = v.imageUrl; preview.style.display = 'block'; document.getElementById("vehicleImgText").textContent = 'Change photo'; }
+    else { preview.style.display = 'none'; document.getElementById("vehicleImgText").textContent = 'Tap to upload a photo'; }
+    document.getElementById("vehicleDeleteBtn").style.display = 'inline-flex';
+    document.getElementById("vehicleModal")._imageUrl = v.imageUrl || null;
+    openModal("vehicleModal");
+  };
+
+  window.saveVehicle = async function() {
+    const id = document.getElementById("editVehicleId").value;
+    const year = document.getElementById("vehicleYear").value.trim();
+    const make = document.getElementById("vehicleMake").value.trim();
+    const model = document.getElementById("vehicleModel").value.trim();
+    const trim = document.getElementById("vehicleTrim").value.trim();
+    const engineType = document.getElementById("vehicleEngine").value;
+    const transmissionType = document.getElementById("vehicleTransmission").value;
+    const imgFile = document.getElementById("vehicleImgFile").files[0];
+
+    if (!year || !make || !model) { showToast("Year, make and model are required.", "error"); return; }
+
+    const btn = document.querySelector("#vehicleModal .btn-gold");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+    try {
+      let imageUrl = document.getElementById("vehicleModal")._imageUrl || null;
+      if (imgFile) {
+        const fd = new FormData();
+        fd.append("file", imgFile);
+        fd.append("upload_preset", VEHICLE_IMAGE_PRESET);
+        fd.append("folder", "vehicles");
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
+        if (!res.ok) throw new Error("Image upload failed");
+        const data = await res.json();
+        imageUrl = data.secure_url;
+      }
+
+      const payload = { year: Number(year), make, model, trim, engineType, transmissionType, imageUrl };
+
+      if (id) {
+        await updateDoc(doc(db, "vehicles", id), payload);
+      } else {
+        await addDoc(collection(db, "vehicles"), { ...payload, createdAt: serverTimestamp() });
+      }
+
+      closeModal("vehicleModal");
+      showToast("Vehicle saved ✓", "success");
+      await loadVehicles();
+    } catch(e) {
+      console.error(e);
+      showToast("Could not save vehicle. Try again.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  };
+
+  window.deleteVehicleFromModal = async function() {
+    const id = document.getElementById("editVehicleId").value;
+    if (!id) return;
+    if (!(await showConfirm("Delete vehicle", "Delete this vehicle from the fleet?"))) return;
+    try {
+      await deleteDoc(doc(db, "vehicles", id));
+      closeModal("vehicleModal");
+      showToast("Vehicle deleted.", "success");
+      await loadVehicles();
+    } catch(e) { showToast("Delete failed.", "error"); }
+  };
+
+  // ══════════════════════════════════════
   // CLASSES
   // ══════════════════════════════════════
   let allClasses = [];
@@ -6936,6 +7378,128 @@ window.approveStudent = async function(uid) {
     }
   };
 
+  // ── TIME HELPERS ──
+  function to24h(hourVal, minVal, ampmVal) {
+    let hour = parseInt(hourVal);
+    const min = String(minVal).padStart(2, '0');
+    if (ampmVal === 'PM' && hour !== 12) hour += 12;
+    if (ampmVal === 'AM' && hour === 12) hour = 0;
+    return `${String(hour).padStart(2, '0')}:${min}`;
+  }
+
+  function getClassDateTimeRange(cls) {
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const end = cls.endDate && cls.endTime
+      ? new Date(`${cls.endDate}T${cls.endTime}`)
+      : new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+    return { start, end };
+  }
+
+  function rangesOverlap(startA, endA, startB, endB) {
+    return startA < endB && startB < endA;
+  }
+
+  // ── STUDENT DROPDOWN TOGGLES ──
+  window.toggleNewClassStudentDropdown = function() {
+    const p = document.getElementById("newClassStudentDropdown");
+    if (p) p.style.display = p.style.display === "none" ? "block" : "none";
+  };
+  window.toggleEditClassStudentDropdown = function() {
+    const p = document.getElementById("editClassStudentDropdown");
+    if (p) p.style.display = p.style.display === "none" ? "block" : "none";
+  };
+  document.addEventListener("click", function(e) {
+    [['newClassStudentBtn','newClassStudentDropdown'], ['editClassStudentBtn','editClassStudentDropdown']].forEach(([btnId, panelId]) => {
+      const btn = document.getElementById(btnId), panel = document.getElementById(panelId);
+      if (btn && panel && !btn.contains(e.target) && !panel.contains(e.target)) panel.style.display = "none";
+    });
+  });
+
+  function updateClassStudentBtnText(prefix) {
+    const checked = document.querySelectorAll(`#${prefix}ClassStudentCheckboxList input:checked`);
+    const btnText = document.getElementById(`${prefix}ClassStudentBtnText`);
+    if (btnText) btnText.textContent = checked.length === 0 ? "Select students…" : `${checked.length} student${checked.length > 1 ? 's' : ''} selected`;
+  }
+  window.updateNewClassStudentBtnText = () => updateClassStudentBtnText('new');
+  window.updateEditClassStudentBtnText = () => updateClassStudentBtnText('edit');
+
+  // Render the student checkbox list, greying out students already booked in an overlapping class
+  function renderClassStudentCheckboxes(prefix, start, end, preSelectedIds, excludeClassId) {
+    const listEl = document.getElementById(`${prefix}ClassStudentCheckboxList`);
+    if (!listEl) return;
+    if (!start || !end || isNaN(start) || isNaN(end)) {
+      listEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Set start & end date/time first.</div>';
+      return;
+    }
+    // Build a set of studentIds already booked in an overlapping class (from classStudentIds on other class docs)
+    const busyStudentIds = new Set();
+    (allClasses || []).forEach(cls => {
+      if (excludeClassId && cls.id === excludeClassId) return;
+      const range = getClassDateTimeRange(cls);
+      if (rangesOverlap(start, end, range.start, range.end)) {
+        (cls.studentIds || []).forEach(sid => busyStudentIds.add(sid));
+      }
+    });
+
+    listEl.innerHTML = allStudents.length
+      ? allStudents.map(s => {
+          const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email;
+          const busy = busyStudentIds.has(s.id);
+          const checked = preSelectedIds.includes(s.id) ? 'checked' : '';
+          return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:${busy ? 'not-allowed' : 'pointer'};border-bottom:1px solid var(--border-subtle);opacity:${busy ? '0.45' : '1'};">
+            <input type="checkbox" value="${s.id}" data-name="${escapeHtml(name)}" class="${prefix}-class-student-checkbox" ${checked} ${busy ? 'disabled' : ''} onchange="update${prefix === 'new' ? 'New' : 'Edit'}ClassStudentBtnText()" style="accent-color:var(--gold);width:16px;height:16px;" />
+            <span style="font-size:13px;">${escapeHtml(name)} ${busy ? '<span style=\'color:var(--error);font-size:11px;\'>(already scheduled)</span>' : ''}</span>
+          </label>`;
+        }).join('')
+      : '<div style="color:var(--text-muted);font-size:12px;">No students found.</div>';
+  }
+
+  // ── VEHICLE DROPDOWN: only show vehicles free during the chosen time range ──
+  function renderVehicleSelect(selectId, start, end, preSelectedId, excludeClassId) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    if (!start || !end || isNaN(start) || isNaN(end)) {
+      sel.innerHTML = '<option value="">Set date/time first…</option>';
+      return;
+    }
+    const busyVehicleIds = new Set();
+    (allClasses || []).forEach(cls => {
+      if (excludeClassId && cls.id === excludeClassId) return;
+      if (!cls.vehicleId) return;
+      const range = getClassDateTimeRange(cls);
+      if (rangesOverlap(start, end, range.start, range.end)) busyVehicleIds.add(cls.vehicleId);
+    });
+    const available = (allVehicles || []).filter(v => !busyVehicleIds.has(v.id) || v.id === preSelectedId);
+    sel.innerHTML = '<option value="">Select vehicle…</option>' +
+      available.map(v => `<option value="${v.id}" ${v.id === preSelectedId ? 'selected' : ''}>${escapeHtml(String(v.year || ''))} ${escapeHtml(v.make || '')} ${escapeHtml(v.model || '')}</option>`).join('');
+  }
+
+  // Recompute both lists whenever the date/time fields change
+  window.refreshNewClassAvailability = function() {
+    const startDate = document.getElementById("newClassDate").value;
+    const startTime = to24h(document.getElementById("newClassTimeHour").value, document.getElementById("newClassTimeMin").value, document.getElementById("newClassTimeAmpm").value);
+    const endDate = document.getElementById("newClassEndDate").value;
+    const endTime = to24h(document.getElementById("newClassEndTimeHour").value, document.getElementById("newClassEndTimeMin").value, document.getElementById("newClassEndTimeAmpm").value);
+    const start = startDate ? new Date(`${startDate}T${startTime}`) : null;
+    const end = endDate ? new Date(`${endDate}T${endTime}`) : null;
+    renderClassStudentCheckboxes('new', start, end, [], null);
+    renderVehicleSelect('newClassVehicle', start, end, '', null);
+  };
+
+  window.refreshEditClassAvailability = function() {
+    const editId = document.getElementById("editClassId").value;
+    const startDate = document.getElementById("editClassDate").value;
+    const startTime = to24h(document.getElementById("editClassTimeHour").value, document.getElementById("editClassTimeMin").value, document.getElementById("editClassTimeAmpm").value);
+    const endDate = document.getElementById("editClassEndDate").value;
+    const endTime = to24h(document.getElementById("editClassEndTimeHour").value, document.getElementById("editClassEndTimeMin").value, document.getElementById("editClassEndTimeAmpm").value);
+    const start = startDate ? new Date(`${startDate}T${startTime}`) : null;
+    const end = endDate ? new Date(`${endDate}T${endTime}`) : null;
+    const cls = allClasses.find(c => c.id === editId);
+    const preSelected = cls?.studentIds || [];
+    renderClassStudentCheckboxes('edit', start, end, preSelected, editId);
+    renderVehicleSelect('editClassVehicle', start, end, cls?.vehicleId || '', editId);
+  };
+
   window.openAddClassModal = async function() {
     document.getElementById("newClassTitle").value = '';
     document.getElementById("newClassDesc").value  = '';
@@ -6945,10 +7509,15 @@ window.approveStudent = async function(uid) {
     document.getElementById("newClassTimeAmpm").value = 'AM';
     document.getElementById("newClassDurationVal").value = '1';
     document.getElementById("newClassDurationUnit").value = 'hours';
+    document.getElementById("newClassEndDate").value = new Date().toISOString().split('T')[0];
+    document.getElementById("newClassEndTimeHour").value = '10';
+    document.getElementById("newClassEndTimeMin").value = '00';
+    document.getElementById("newClassEndTimeAmpm").value = 'AM';
     document.getElementById("newClassMode").value  = 'in-person';
     document.getElementById("newClassPlatform").value = '';
     document.getElementById("newClassLink").value = '';
     document.getElementById("newOnlineFields").style.display = 'none';
+    refreshNewClassAvailability();
     // Clear document uploads
     newClassDocFiles = [];
     document.getElementById("classDocList").innerHTML = '';
@@ -6991,15 +7560,25 @@ window.approveStudent = async function(uid) {
     if (ampm === 'PM' && hour !== 12) hour += 12;
     if (ampm === 'AM' && hour === 12) hour = 0;
     const time = `${String(hour).padStart(2, '0')}:${min}`;
-    const durationVal  = parseInt(document.getElementById("newClassDurationVal").value) || 60;
-    const durationUnit = document.getElementById("newClassDurationUnit").value;
-    const durationMinutes = durationUnit === 'hours' ? durationVal * 60 : durationVal;
+    const endDate = document.getElementById("newClassEndDate").value;
+    const endTime = to24h(document.getElementById("newClassEndTimeHour").value, document.getElementById("newClassEndTimeMin").value, document.getElementById("newClassEndTimeAmpm").value);
+    const durationMinutes = Math.max(1, Math.round((new Date(`${endDate}T${endTime}`) - new Date(`${date}T${time}`)) / 60000));
     const mode        = document.getElementById("newClassMode").value;
     const platform    = mode === 'online' ? document.getElementById("newClassPlatform").value : null;
     const meetingLink = mode === 'online' ? document.getElementById("newClassLink").value.trim() : null;
+    const vehicleId   = document.getElementById("newClassVehicle").value || null;
+    const vehicleSel  = document.getElementById("newClassVehicle");
+    const vehicleName = vehicleSel.selectedOptions[0]?.textContent && vehicleSel.value ? vehicleSel.selectedOptions[0].textContent : null;
+    const studentCbs  = document.querySelectorAll('.new-class-student-checkbox:checked');
+    const studentIds  = Array.from(studentCbs).map(cb => cb.value);
+    const studentNames = Array.from(studentCbs).map(cb => cb.dataset.name);
 
-    if (!title || !courseName || !instructorId || !date || !time) {
+    if (!title || !courseName || !instructorId || !date || !time || !endDate || !endTime) {
       showToast("Please fill in all required fields.", "error");
+      return;
+    }
+    if (new Date(`${endDate}T${endTime}`) <= new Date(`${date}T${time}`)) {
+      showToast("End date/time must be after the start date/time.", "error");
       return;
     }
 
@@ -7026,9 +7605,11 @@ window.approveStudent = async function(uid) {
       await addDoc(collection(db, "classes"), {
         title, description: desc,
         courseName, instructorId, instructorName,
-        date, time, durationMinutes: durationMinutes, mode,
+        date, time, endDate, endTime, durationMinutes: durationMinutes, mode,
         platform: platform || null,
         meetingLink: meetingLink || null,
+        vehicleId, vehicleName,
+        studentIds, studentNames,
         documents: documents,
         createdAt: serverTimestamp()
       });
@@ -7074,6 +7655,24 @@ window.approveStudent = async function(uid) {
     // Set platform and link
     document.getElementById("editClassPlatform").value = cls.platform || '';
     document.getElementById("editClassLink").value = cls.meetingLink || '';
+
+    // End date/time
+    const savedEndDate = cls.endDate || cls.date;
+    const savedEndTimeRaw = cls.endTime || (() => {
+      const s = new Date(`${cls.date}T${cls.time}`);
+      const e = new Date(s.getTime() + (cls.durationMinutes || 60) * 60000);
+      return `${String(e.getHours()).padStart(2,'0')}:${String(e.getMinutes()).padStart(2,'0')}`;
+    })();
+    const [endH, endM] = savedEndTimeRaw.split(':');
+    let endHour12 = parseInt(endH) % 12;
+    if (endHour12 === 0) endHour12 = 12;
+    const endAmpm = parseInt(endH) >= 12 ? 'PM' : 'AM';
+    document.getElementById("editClassEndDate").value = savedEndDate;
+    document.getElementById("editClassEndTimeHour").value = String(endHour12);
+    document.getElementById("editClassEndTimeMin").value = String(endM || '00').padStart(2, '0');
+    document.getElementById("editClassEndTimeAmpm").value = endAmpm;
+
+    refreshEditClassAvailability();
     // Show/hide online fields
     const editOnlineFields = document.getElementById("editOnlineFields");
     if (editOnlineFields) {
@@ -7160,15 +7759,25 @@ window.approveStudent = async function(uid) {
     if (ampm === 'PM' && hour !== 12) hour += 12;
     if (ampm === 'AM' && hour === 12) hour = 0;
     const time = `${String(hour).padStart(2, '0')}:${min}`;
-    const durationVal  = parseInt(document.getElementById("editClassDurationVal").value) || 60;
-    const durationUnit = document.getElementById("editClassDurationUnit").value;
-    const durationMinutes = durationUnit === 'hours' ? durationVal * 60 : durationVal;
+    const endDate = document.getElementById("editClassEndDate").value;
+    const endTime = to24h(document.getElementById("editClassEndTimeHour").value, document.getElementById("editClassEndTimeMin").value, document.getElementById("editClassEndTimeAmpm").value);
+    const durationMinutes = Math.max(1, Math.round((new Date(`${endDate}T${endTime}`) - new Date(`${date}T${time}`)) / 60000));
     const mode        = document.getElementById("editClassMode").value;
     const platform    = mode === 'online' ? document.getElementById("editClassPlatform").value : null;
     const meetingLink = mode === 'online' ? document.getElementById("editClassLink").value.trim() : null;
+    const vehicleId   = document.getElementById("editClassVehicle").value || null;
+    const vehicleSel  = document.getElementById("editClassVehicle");
+    const vehicleName = vehicleSel.selectedOptions[0]?.textContent && vehicleSel.value ? vehicleSel.selectedOptions[0].textContent : null;
+    const studentCbs  = document.querySelectorAll('.edit-class-student-checkbox:checked');
+    const studentIds  = Array.from(studentCbs).map(cb => cb.value);
+    const studentNames = Array.from(studentCbs).map(cb => cb.dataset.name);
 
-    if (!title || !courseName || !instructorId || !date || !time) {
+    if (!title || !courseName || !instructorId || !date || !time || !endDate || !endTime) {
       showToast("Please fill in all required fields.", "error");
+      return;
+    }
+    if (new Date(`${endDate}T${endTime}`) <= new Date(`${date}T${time}`)) {
+      showToast("End date/time must be after the start date/time.", "error");
       return;
     }
 
@@ -7192,9 +7801,11 @@ window.approveStudent = async function(uid) {
       await updateDoc(doc(db, "classes", id), {
         title, description: desc,
         courseName, instructorId, instructorName,
-        date, time, durationMinutes: durationMinutes, mode,
+        date, time, endDate, endTime, durationMinutes: durationMinutes, mode,
         platform: platform || null,
         meetingLink: meetingLink || null,
+        vehicleId, vehicleName,
+        studentIds, studentNames,
         documents: documents
       });
       closeModal("editClassModal");
@@ -7585,6 +8196,9 @@ window.approveStudent = async function(uid) {
     }
     if (name === "resources") {
       loadAdminResources();
+    }
+    if (name === "vehicles") {
+      loadVehicles();
     }
     if (name === "permissions") {
       loadAllPermissions();

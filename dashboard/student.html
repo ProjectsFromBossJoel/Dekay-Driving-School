@@ -493,16 +493,8 @@
         <div style="font-size:14px; color:var(--text-muted)" id="dashDateLine">Loading your training status…</div>
       </div>
 
-      <!-- Check-in card (only shown when session active) -->
-      <div class="checkin-card" id="checkinCard" style="display:none;">
-        <div class="checkin-card-info">
-          <h3><i class="fas fa-map-pin" style="color:var(--gold);margin-right:6px"></i> Session in progress</h3>
-          <p>Today's practical lesson is active — tap to mark your attendance.</p>
-        </div>
-        <button class="checkin-btn" id="checkinBtn" onclick="markAttendance()">
-          <i class="fas fa-check-circle"></i> Mark attendance
-        </button>
-      </div>
+      <!-- Check-in card + Past Classes (dynamically rendered) -->
+      <div id="studentCheckinContainer" style="display:none; flex-direction:column; gap:10px; margin-bottom:24px;"></div>
 
       <div class="stat-grid">
         <div class="stat-card">
@@ -1711,247 +1703,135 @@
   }
 
     function checkTodaySession(records) {
-    const today = new Date();
-    const todayStr = today.getFullYear() + '-' +
-      String(today.getMonth() + 1).padStart(2, '0') + '-' +
-      String(today.getDate()).padStart(2, '0');
-
-    // Check if already marked attendance — but only for classes that have already started
-    // (ignore future-dated attendance records from pre-marking or admin entries)
     const now = new Date();
-    const alreadyMarked = records.some(r => {
-      if (r.status !== 'present') return false;
+    const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
-      // Resolve the attendance record date string
-      let rDate = r.date;
-      if (r.date?.toDate) {
-        rDate = r.date.toDate().toISOString().split('T')[0];
-      } else if (r.date?.seconds) {
-        rDate = new Date(r.date.seconds * 1000).toISOString().split('T')[0];
-      } else if (typeof r.date === 'string') {
-        rDate = r.date.substring(0, 10);
-      }
-
-      if (rDate !== todayStr) return false;
-
-      // If this record has a classId, verify it matches the SPECIFIC class we're checking in for
-      if (r.classId && allMyClasses && allMyClasses.length > 0) {
-        const matchedClass = allMyClasses.find(c => c.id === r.classId);
-        if (matchedClass) {
-          const classStart = new Date(`${matchedClass.date}T${matchedClass.time}`);
-          const classDateStr = matchedClass.date; // YYYY-MM-DD
-          // ✅ Must be TODAY's date AND class must have already started (date+time check)
-          return classDateStr === todayStr && classStart <= now;
-        }
-      }
-
-      // No classId — only mark as "done" if the attendance timestamp itself is in the past
-      // AND it was recorded after a class actually started (use timestamp, not just date)
-      if (r.timestamp?.toDate) {
-        return r.timestamp.toDate() <= now;
-      }
-      return true;
-    });
-
-    // Find the BEST class to check in for:
-    // Priority 1: Currently ongoing class (now between start and end)
-    // Priority 2: Upcoming class (starts in the future)
-    // Priority 3: Recently ended class (ended within 48 hours, but only if no ongoing/upcoming)
-    let eligibleClass = null;
-    let ongoingClass = null;
-    let upcomingClass = null;
-    let recentClass = null;
-    
-    if (allMyClasses && allMyClasses.length > 0) {
-      const now = new Date();
-      const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
-      
-      // Sort by start time ascending (earliest first) for proper priority
-      const sortedClasses = [...allMyClasses].sort((a, b) => {
-        const da = new Date(`${a.date}T${a.time}`);
-        const db = new Date(`${b.date}T${b.time}`);
-        return da - db;
+    function isClassMarked(cls) {
+      return records.some(r => {
+        if (r.status !== 'present') return false;
+        if (r.classId) return r.classId === cls.id;
+        let rDate = r.date;
+        if (r.date?.toDate) rDate = r.date.toDate().toISOString().split('T')[0];
+        else if (r.date?.seconds) rDate = new Date(r.date.seconds * 1000).toISOString().split('T')[0];
+        else if (typeof r.date === 'string') rDate = r.date.substring(0, 10);
+        const classStart = new Date(`${cls.date}T${cls.time}`);
+        return rDate === cls.date && classStart <= now;
       });
-      
-      // Find the best class based on priority:
-      // 1. Ongoing class (now between start and end)
-      // 2. Most recent completed class (ended within 48 hours, highest end time)
-      // 3. Upcoming class (earliest start time)
-      for (const cls of sortedClasses) {
-        const start = new Date(`${cls.date}T${cls.time}`);
-        const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-        const timeSinceEnd = now - end;
-        
-        if (now >= start && now <= end) {
-          // Class is currently ongoing - best choice
-          ongoingClass = cls;
-          break;
-        } else if (timeSinceEnd > 0 && timeSinceEnd < FORTY_EIGHT_HOURS) {
-          // Recently ended class - keep the one with the most recent end time
-          if (!recentClass || end > new Date(`${recentClass.date}T${recentClass.time}`).getTime() + (recentClass.durationMinutes || 60) * 60000) {
-            recentClass = cls;
-          }
-        }
-      }
-      
-      // For upcoming classes, find the earliest one (same day preferred)
-      if (!ongoingClass && !recentClass) {
-        for (const cls of sortedClasses) {
-          const start = new Date(`${cls.date}T${cls.time}`);
-          if (now < start) {
-            if (!upcomingClass || start < new Date(`${upcomingClass.date}T${upcomingClass.time}`)) {
-              upcomingClass = cls;
-            }
-          }
-        }
-      }
-      
-      // Select the best available class (priority: ongoing → most recent completed → upcoming)
-      eligibleClass = ongoingClass || recentClass || upcomingClass;
-      
-      // Prefer same-day upcoming over future-day upcoming
-      if (upcomingClass) {
-        const upcomingDate = upcomingClass.date; // YYYY-MM-DD
-        if (upcomingDate !== todayStr) {
-          // It's a future-day class — only use it if there's no same-day recent class
-          upcomingClass = recentClass ? null : upcomingClass;
-        }
-      }
-      // Select the best available class
-      eligibleClass = ongoingClass || upcomingClass || recentClass;
     }
 
-    const card = document.getElementById("checkinCard");
-    const checkinInfo = card?.querySelector('.checkin-card-info p');
-    const btn = document.getElementById("checkinBtn");
+    const container = document.getElementById("studentCheckinContainer");
+    if (!container) return;
 
-    // "Already marked" only applies if the attendance record is specifically for THIS eligible class
-    const eligibleClassIsToday = eligibleClass && eligibleClass.date === todayStr;
-    const markedForThisClass = eligibleClass && records.some(r => {
-      if (r.status !== 'present') return false;
-      if (r.classId) return r.classId === eligibleClass.id;
-      // Fallback: no classId, check date match + class must have started
-      let rDate = r.date;
-      if (r.date?.toDate) rDate = r.date.toDate().toISOString().split('T')[0];
-      else if (r.date?.seconds) rDate = new Date(r.date.seconds * 1000).toISOString().split('T')[0];
-      else if (typeof r.date === 'string') rDate = r.date.substring(0, 10);
-      const classStart = new Date(`${eligibleClass.date}T${eligibleClass.time}`);
-      return rDate === eligibleClass.date && classStart <= now;
-    });
-    if (markedForThisClass && eligibleClassIsToday) {
-      card.style.display = "flex";
-      card.style.opacity = "0.6";
-      card.style.background = "rgba(76,175,80,0.1)";
-      card.style.border = "1px solid var(--success)";
-
-      document.querySelector('.checkin-card-info h3').innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);margin-right:6px"></i> Attendance marked`;
-      if (checkinInfo && eligibleClass) {
-        const timeLabel = formatTime(eligibleClass.time);
-        checkinInfo.innerHTML = `<strong style="color:var(--success)">${escapeHtml(eligibleClass.title || 'Class')}</strong> (${timeLabel}) — you've already checked in today.`;
-      }
-
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> Attendance marked';
-        btn.style.background = 'rgba(76,175,80,0.15)';
-        btn.style.color = 'var(--success)';
-        btn.style.cursor = 'default';
-      }
+    if (!allMyClasses || allMyClasses.length === 0) {
+      container.style.display = "none";
+      container.innerHTML = "";
       return;
     }
 
-    // Only show the card if there's an eligible class AND not already marked for THIS specific class
-    if (eligibleClass && (!markedForThisClass || !eligibleClassIsToday)) {
-      card.style.display = "flex";
-      card.style.opacity = "1";
-      card.style.background = "linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%)";
-      card.style.border = "1px solid var(--gold)";
+    const withTimes = allMyClasses.map(cls => {
+      const start = new Date(`${cls.date}T${cls.time}`);
+      const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+      return { cls, start, end };
+    });
 
-      const classStatus = computeClassStatus(eligibleClass);
-      let headerText = 'Session in progress';
-      let detailText = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> — tap to mark your attendance.`;
+    const ongoing  = withTimes.filter(x => now >= x.start && now <= x.end).sort((a,b) => a.start - b.start);
+    const recent   = withTimes.filter(x => now > x.end && (now - x.end) < FORTY_EIGHT_HOURS).sort((a,b) => b.end - a.end);
+    const upcoming = withTimes.filter(x => now < x.start).sort((a,b) => a.start - b.start);
 
-      const timeLabel = formatTime(eligibleClass.time);
-      if (classStatus === 'ongoing') {
-        headerText = 'Session in progress';
-        detailText = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> (${timeLabel}) is in progress — tap to mark your attendance.`;
-      } else if (classStatus === 'upcoming') {
-        headerText = 'Upcoming Session';
-        detailText = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> starts at ${timeLabel} — you'll be able to mark attendance when it begins.`;
-        // For upcoming classes, disable the button until the class starts
-        if (btn) {
-          btn.disabled = true;
-          btn.innerHTML = '<i class="fas fa-clock"></i> Not yet started';
-          btn.style.background = 'rgba(139,154,176,0.15)';
-          btn.style.color = 'var(--text-muted)';
-          btn.style.border = '1px solid var(--border)';
-          btn.style.cursor = 'not-allowed';
-        }
-      } else if (classStatus === 'completed') {
-        headerText = 'Mark attendance';
-        detailText = `<strong style="color:var(--gold)">${escapeHtml(eligibleClass.title || 'Class')}</strong> (${timeLabel}) has ended — you can still mark your attendance (within 48 hours).`;
-      }
-
-      document.querySelector('.checkin-card-info h3').innerHTML = `<i class="fas fa-map-pin" style="color:var(--gold);margin-right:6px"></i> ${headerText}`;
-      if (checkinInfo) checkinInfo.innerHTML = detailText;
-
-      // Reset button to active state (only if not upcoming)
-      if (btn && classStatus !== 'upcoming') {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
-        btn.style.background = 'var(--gold)';
-        btn.style.color = 'var(--navy)';
-        btn.style.border = 'none';
-        btn.style.cursor = 'pointer';
-        btn.style.opacity = "1";
-      }
-    } else {
-      // No eligible class — hide the card
-      card.style.display = "none";
+    const currentItem = ongoing[0] || upcoming[0] || recent[0];
+    if (!currentItem) {
+      container.style.display = "none";
+      container.innerHTML = "";
+      return;
     }
+
+    const pastItems = recent.filter(x => x.cls.id !== currentItem.cls.id);
+    container.style.display = "flex";
+
+    function renderCard({ cls, start, end }, isCurrent) {
+      const marked = isClassMarked(cls);
+      const timeLabel = formatTime(cls.time);
+      const isOngoing = now >= start && now <= end;
+      const isUpcoming = now < start;
+
+      let headerText = 'Session in progress';
+      let icon = 'fa-map-pin';
+      let detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> (${timeLabel}) — tap to mark your attendance.`;
+      let btnDisabled = false;
+      let btnLabel = '<i class="fas fa-check-circle"></i> Mark attendance';
+
+      if (marked) {
+        headerText = 'Attendance marked';
+        icon = 'fa-check-circle';
+        detail = `<strong style="color:var(--success)">${escapeHtml(cls.title || 'Class')}</strong> (${timeLabel}) — you've already checked in.`;
+        btnDisabled = true;
+        btnLabel = '<i class="fas fa-check-circle"></i> Attendance marked';
+      } else if (isUpcoming) {
+        headerText = 'Upcoming Session';
+        detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> starts at ${timeLabel} — you'll be able to mark attendance when it begins.`;
+        btnDisabled = true;
+        btnLabel = '<i class="fas fa-clock"></i> Not yet started';
+      } else if (!isOngoing) {
+        headerText = 'Mark attendance';
+        detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> (${timeLabel}) has ended — you can still mark your attendance (within 48 hours).`;
+      }
+
+      const btnStyle = marked
+        ? "background:rgba(76,175,80,0.15);color:var(--success);border:1px solid var(--success);cursor:default;"
+        : btnDisabled
+          ? "background:rgba(139,154,176,0.15);color:var(--text-muted);border:1px solid var(--border);cursor:not-allowed;"
+          : "background:var(--gold);color:var(--navy);border:none;cursor:pointer;";
+
+      if (isCurrent) {
+        return `
+          <div class="checkin-card" style="display:flex; opacity:${marked ? '0.6' : '1'}; ${marked ? 'background:rgba(76,175,80,0.1);border-color:var(--success);' : ''}">
+            <div class="checkin-card-info">
+              <h3><i class="fas ${icon}" style="color:${marked ? 'var(--success)' : 'var(--gold)'};margin-right:6px"></i> ${headerText}</h3>
+              <p>${detail}</p>
+            </div>
+            <button class="checkin-btn" ${btnDisabled ? 'disabled' : ''} style="${btnStyle}" onclick="${btnDisabled ? '' : `markAttendance('${cls.id}')`}">
+              ${btnLabel}
+            </button>
+          </div>`;
+      }
+
+      return `
+        <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; opacity:${marked ? '0.55' : '0.9'}; width:220px;">
+          <div style="min-width:0;">
+            <div style="font-size:12px; font-weight:600; line-height:1.4;"><i class="fas ${icon}" style="color:${marked ? 'var(--success)' : 'var(--gold)'};margin-right:6px;font-size:10px;"></i>${escapeHtml(cls.title || 'Class')}</div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${timeLabel}</div>
+          </div>
+          <button class="btn-sm" style="${btnStyle} width:100%; justify-content:center;" ${btnDisabled ? 'disabled' : ''} onclick="${btnDisabled ? '' : `markAttendance('${cls.id}')`}">
+            ${marked ? '<i class="fas fa-check-circle"></i> Attendance marked' : (btnDisabled ? btnLabel : '<i class="fas fa-check-circle"></i> Mark attendance')}
+          </button>
+        </div>`;
+    }
+
+    const pastHtml = pastItems.length
+      ? `<div style="font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">Past Classes</div>
+         <div style="display:flex;flex-wrap:wrap;gap:10px;">
+           ${pastItems.map(item => renderCard(item, false)).join('')}
+         </div>`
+      : '';
+
+    container.innerHTML = renderCard(currentItem, true) + pastHtml;
   }
+
   // ══════════════════════════════════════
   // ATTENDANCE CHECK‑IN
   // ══════════════════════════════════════
-  window.markAttendance = function() {
-    const btn = document.getElementById("checkinBtn");
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking location…';
+  window.markAttendance = function(classId) {
+    const cls = (allMyClasses || []).find(c => c.id === classId);
+    if (!cls) { showToast("Class not found.", "error"); return; }
 
-    // Determine the eligible class for this check-in (same logic as checkTodaySession)
-    let eligibleClassForCheck = null;
-    if (allMyClasses && allMyClasses.length > 0) {
-      const now = new Date();
-      const todayForCheck = now.getFullYear() + '-' +
-        String(now.getMonth() + 1).padStart(2, '0') + '-' +
-        String(now.getDate()).padStart(2, '0');
-      const sortedClasses = [...allMyClasses].sort((a, b) => {
-        const da = new Date(`${a.date}T${a.time}`);
-        const db3 = new Date(`${b.date}T${b.time}`);
-        return da - db3;
-      });
-      let ongoingForCheck = null, recentForCheck = null;
-      for (const cls of sortedClasses) {
-        const start = new Date(`${cls.date}T${cls.time}`);
-        const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-        const timeSinceEnd = now - end;
-        if (now >= start && now <= end) { ongoingForCheck = cls; break; }
-        else if (timeSinceEnd > 0 && timeSinceEnd < 48 * 60 * 60 * 1000 && cls.date === todayForCheck) {
-          if (!recentForCheck) recentForCheck = cls;
-        }
-      }
-      eligibleClassForCheck = ongoingForCheck || recentForCheck;
-    }
-
-    // Skip the geofence check entirely for online classes
-    if (eligibleClassForCheck && eligibleClassForCheck.mode === 'online') {
-      doMarkAttendance();
+    if (cls.mode === 'online') {
+      doMarkAttendance(classId);
       return;
     }
 
+    showToast("Checking location…", "success");
+
     if (!navigator.geolocation) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
       showToast("Your browser doesn't support location services.", "error");
       return;
     }
@@ -1961,16 +1841,12 @@
         const { latitude, longitude } = position.coords;
         const distance = getDistanceMeters(latitude, longitude, SCHOOL_LAT, SCHOOL_LNG);
         if (distance > MAX_CHECKIN_DISTANCE_METERS) {
-          btn.disabled = false;
-          btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
           showToast(`You're about ${Math.round(distance)}m from the school. Get within ${MAX_CHECKIN_DISTANCE_METERS}m to mark attendance.`, "error");
           return;
         }
-        doMarkAttendance();
+        doMarkAttendance(classId);
       },
       (error) => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
         let msg = "Could not get your location. Please enable location services and try again.";
         if (error.code === error.PERMISSION_DENIED) msg = "Location access denied. Please allow location access to mark attendance.";
         showToast(msg, "error");
@@ -1979,56 +1855,17 @@
     );
   };
 
-  async function doMarkAttendance() {
-    const btn = document.getElementById("checkinBtn");
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Marking…';
+  async function doMarkAttendance(classId) {
+    showToast("Marking attendance…", "success");
     try {
       const now = new Date();
-      const today = now;
-      const dateStr = today.getFullYear() + '-' +
-        String(today.getMonth() + 1).padStart(2, '0') + '-' +
-        String(today.getDate()).padStart(2, '0');
+      const dateStr = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0');
 
-      // Find the eligible class to get its details (same logic as checkTodaySession)
-      let sessionType = "Class";
-      let instructor = studentData.instructor || "—";
-      let classId = null;
-      let className = '';
-
-      if (allMyClasses && allMyClasses.length > 0) {
-        const now = new Date();
-        const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
-
-        // Use same priority logic as checkTodaySession: ongoing → same-day upcoming → recent
-        const todayForMark = now.getFullYear() + '-' +
-          String(now.getMonth() + 1).padStart(2, '0') + '-' +
-          String(now.getDate()).padStart(2, '0');
-
-        const sortedClasses = [...allMyClasses].sort((a, b) => {
-          const da = new Date(`${a.date}T${a.time}`);
-          const db = new Date(`${b.date}T${b.time}`);
-          return da - db; // ascending — earliest first
-        });
-
-        let ongoingForMark = null, recentForMark = null;
-        for (const cls of sortedClasses) {
-          const start = new Date(`${cls.date}T${cls.time}`);
-          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-          const timeSinceEnd = now - end;
-          if (now >= start && now <= end) { ongoingForMark = cls; break; }
-          else if (timeSinceEnd > 0 && timeSinceEnd < 48 * 60 * 60 * 1000 && cls.date === todayForMark) {
-            if (!recentForMark) recentForMark = cls;
-          }
-        }
-        const eligibleClass = ongoingForMark || recentForMark;
-
-        if (eligibleClass) {
-          sessionType = eligibleClass.mode === 'online' ? 'Online Class' : 'In-person Class';
-          instructor = eligibleClass.instructorName || instructor;
-          classId = eligibleClass.id;
-          className = eligibleClass.title || 'Class';
-        }
-      }
+      const cls = (allMyClasses || []).find(c => c.id === classId);
+      const sessionType = cls ? (cls.mode === 'online' ? 'Online Class' : 'In-person Class') : 'Class';
+      const instructor = (cls && cls.instructorName) || studentData.instructor || "—";
 
       await addDoc(collection(db, "attendance"), {
         studentId:   currentUser.uid,
@@ -2041,41 +1878,11 @@
         classId:     classId || null
       });
 
-      // Update the card to show "marked" state (faded and disabled)
-      const card = document.getElementById("checkinCard");
-      const cardBtn = document.getElementById("checkinBtn");
-      const checkinInfo = document.querySelector('.checkin-card-info p');
-      
-      if (card) {
-        card.style.opacity = "0.6";
-        card.style.background = "rgba(76,175,80,0.1)";
-        card.style.border = "1px solid var(--success)";
-      }
-      
-      if (cardBtn) {
-        cardBtn.disabled = true;
-        cardBtn.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i> Attendance marked';
-        cardBtn.style.background = 'rgba(76,175,80,0.15)';
-        cardBtn.style.color = 'var(--success)';
-        cardBtn.style.border = '1px solid var(--success)';
-        cardBtn.style.cursor = 'default';
-      }
-      
-      document.querySelector('.checkin-card-info h3').innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);margin-right:6px"></i> Attendance marked`;
-      if (checkinInfo) {
-        const classObj = allMyClasses.find(c => c.id === classId);
-        const timeLabel3 = classObj ? formatTime(classObj.time) : '';
-        checkinInfo.innerHTML = `<strong style="color:var(--success)">${escapeHtml(className || 'Class')}</strong>${timeLabel3 ? ` (${timeLabel3})` : ''} — you've already checked in today.`;
-      }
-
       showToast("Attendance marked ✓", "success");
-      loadAttendance(studentData.trainingStage || 1);
+      const records = await loadAttendance(studentData.trainingStage || 1);
+      checkTodaySession(records);
     } catch(e) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark attendance';
-      btn.style.background = 'var(--gold)';
-      btn.style.color = 'var(--navy)';
-      btn.style.border = 'none';
+      console.error(e);
       showToast("Could not mark attendance. Try again.", "error");
     }
   }
