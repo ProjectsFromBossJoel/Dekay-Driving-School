@@ -4518,10 +4518,13 @@ function hideLoading() {
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Phone</label><input type="tel" id="editPhone" class="form-input" value="${escapeHtml(s.phone || '')}" /></div>
-        <div class="form-group"><label class="form-label">Date of birth</label><div class="form-input" style="background:var(--navy);">${s.dob || '—'}</div></div>
+        <div class="form-group"><label class="form-label">Date of birth</label><input type="date" id="editDob" class="form-input" value="${s.dob || ''}" onchange="updateAgeDisplay()" oninput="updateAgeDisplay()" /></div>
       </div>
       <div class="form-row">
+        <div class="form-group"><label class="form-label">Age</label><div id="ageDisplay" class="form-input" style="background:var(--navy); color:var(--text-muted); display:flex; align-items:center;">${window.calculateAgeDisplay(s.dob)}</div></div>
         <div class="form-group"><label class="form-label">GH Card Number</label><input type="text" id="editGhCardNumber" class="form-input" value="${escapeHtml(s.ghCardNumber || '')}" placeholder="e.g., GHA-123456789" /></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label class="form-label">Enrolment date</label><div class="form-input" style="background:var(--navy);">${s.enrolDate || s.createdAt?.toDate?.().toLocaleDateString('en-GB') || '—'}</div></div>
       </div>
       <div class="form-row">
@@ -6324,34 +6327,7 @@ window.approveStudent = async function(uid) {
         <div class="form-group"><label>Phone</label><input type="tel" id="editRef2Phone" class="form-input" value="${escapeHtml(i.references?.[1]?.phone || '')}" /></div>
       </div>
 
-      <!-- Assigned Courses -->
-      <div class="bio-section">
-        <div class="bio-section-title">Assigned Courses</div>
-        <div class="form-group">
-          <label class="form-label">Select courses for this instructor</label>
-          <div style="position:relative;">
-            <button type="button" id="instrCourseDropdownBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleInstrCourseDropdown()">
-              <span id="instrCourseBtnText">Select courses…</span>
-              <i class="fas fa-chevron-down" style="font-size:12px;"></i>
-            </button>
-            <div id="instrCourseDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:250;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:none;max-height:200px;overflow-y:auto;box-shadow:var(--shadow);">
-              ${(() => {
-                const courseNames = (window._allCourses || []).map(c => c.name || c.title || '');
-                const selected = i.assignedCourses || [];
-                return courseNames.map(cn => {
-                  const isChecked = selected.includes(cn) ? 'checked' : '';
-                  return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border-subtle);">
-                    <input type="checkbox" value="${escapeHtml(cn)}" class="instr-course-checkbox" ${isChecked} onchange="updateInstrCourseBtnText()" style="accent-color:var(--gold);width:16px;height:16px;" />
-                    <span style="font-size:13px;">${escapeHtml(cn)}</span>
-                  </label>`;
-                }).join('');
-              })()}
-            </div>
-          </div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Click the dropdown to select courses</div>
-        </div>
-        <div id="currentCoursesList" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;"></div>
-      </div>
+
     `;
 
     document.getElementById("instructorDetailName").textContent = `Edit Instructor: ${fullName}`;
@@ -6370,39 +6346,7 @@ window.approveStudent = async function(uid) {
   }
 };
 
-        // ── TOGGLE INSTRUCTOR COURSE DROPDOWN ──
-    window.toggleInstrCourseDropdown = function() {
-      const panel = document.getElementById("instrCourseDropdown");
-      if (!panel) return;
-      panel.style.display = panel.style.display === "none" ? "block" : "none";
-    };
-
-    // Update the button text and badge display when course checkboxes change
-    window.updateInstrCourseBtnText = function() {
-      const checkboxes = document.querySelectorAll('.instr-course-checkbox:checked');
-      const btnText = document.getElementById("instrCourseBtnText");
-      const badgeContainer = document.getElementById("currentCoursesList");
-      
-      const selectedCourses = Array.from(checkboxes).map(cb => cb.value);
-      
-      // Update button text
-      if (btnText) {
-        if (selectedCourses.length === 0) {
-          btnText.textContent = "Select courses…";
-        } else if (selectedCourses.length === 1) {
-          btnText.textContent = selectedCourses[0];
-        } else {
-          btnText.textContent = `${selectedCourses.length} courses selected`;
-        }
-      }
-      
-      // Update badges
-      if (badgeContainer) {
-        badgeContainer.innerHTML = selectedCourses.map(course => 
-          `<span style="background: rgba(245,166,35,0.15); color: var(--gold); padding: 4px 10px; border-radius: 20px; font-size: 12px;">${escapeHtml(course)}</span>`
-        ).join('');
-      }
-    }
+    
 
     // Close course dropdown when clicking outside
     document.addEventListener("click", function(e) {
@@ -6445,9 +6389,7 @@ window.approveStudent = async function(uid) {
         }
       ];
 
-      // Get assigned courses from checkboxes
-      const courseCheckboxes = document.querySelectorAll('.instr-course-checkbox:checked');
-      const assignedCourses = Array.from(courseCheckboxes).map(cb => cb.value);
+
 
       // --- Collect updated certification names ---
       const certNameInputs = document.querySelectorAll('.cert-name-input');
@@ -6609,7 +6551,17 @@ window.approveStudent = async function(uid) {
 
 
   // ── MODAL OPENERS ──
-  window.openAddStudentModal = () => openModal("addStudentModal");
+  window.openAddStudentModal = function() {
+  // Clear all form fields
+  document.getElementById("newFirst").value = '';
+  document.getElementById("newLast").value = '';
+  document.getElementById("newEmail").value = '';
+  document.getElementById("newPhone").value = '';
+  document.getElementById("newCourse").value = 'Manual'; // set default course
+  document.getElementById("newPassword").value = '';
+  // If there are any other fields (like file uploads), they are not present.
+  openModal("addStudentModal");
+};
     window.openMarkAttendanceModal = async function() {
   showLoading();
   try {

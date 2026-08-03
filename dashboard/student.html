@@ -520,41 +520,20 @@
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start;">
-        <!-- Recent notifications -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><i class="fas fa-bell"></i> Recent notifications</div>
-            <a href="#" class="card-action" onclick="showPage('notifications', null); return false;">All <i class="fas fa-arrow-right"></i></a>
-          </div>
-          <div id="dashNotifList" class="notif-list">
-            <div style="padding:20px; color:var(--text-muted); font-size:13px; text-align:center;">Loading…</div>
-          </div>
-        </div>
-
-        <!-- Upcoming classes + Training stages -->
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <!-- Upcoming classes -->
+        <!-- LEFT COLUMN -->
+        <div>
+          <!-- Recent notifications -->
           <div class="card">
             <div class="card-header">
-              <div class="card-title"><i class="fas fa-calendar-alt"></i> Ongoing & Upcoming classes</div>
-              <a href="#" class="card-action" onclick="showPage('classes', null); return false;">All <i class="fas fa-arrow-right"></i></a>
+              <div class="card-title"><i class="fas fa-bell"></i> Recent notifications</div>
+              <a href="#" class="card-action" onclick="showPage('notifications', null); return false;">All <i class="fas fa-arrow-right"></i></a>
             </div>
-            <div class="card-body" id="dashUpcomingClasses" style="max-height:200px;overflow-y:auto;">
-              <div style="text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
-            </div>
-                      <!-- Training stage quick view -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title"><i class="fas fa-route"></i> Training stages</div>
-            </div>
-            <div class="card-body">
-              <div class="pipeline-steps" id="miniPipeline">
-                <!-- Injected by JS -->
-              </div>
+            <div id="dashNotifList" class="notif-list">
+              <div style="padding:20px; color:var(--text-muted); font-size:13px; text-align:center;">Loading…</div>
             </div>
           </div>
 
-                    <!-- Stage Unlock Button -->
+          <!-- Stage Unlock Button (Placed directly beneath Notifications) -->
           <div id="stageUnlockContainer" style="display:none; margin-top:16px;">
             <div class="card" style="border: 2px solid var(--gold); background: linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.02) 100%);">
               <div class="card-body" style="text-align:center; padding:20px;">
@@ -567,7 +546,19 @@
               </div>
             </div>
           </div>
+        </div>
 
+        <!-- RIGHT COLUMN -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- Upcoming classes -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-calendar-alt"></i> Ongoing & Upcoming classes</div>
+              <a href="#" class="card-action" onclick="showPage('classes', null); return false;">All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="card-body" id="dashUpcomingClasses" style="max-height:200px;overflow-y:auto;">
+              <div style="text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
+            </div>
           </div>
 
           <!-- Training stage quick view -->
@@ -930,6 +921,8 @@
 
   <!-- TOAST -->
   <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+  
 
     <!-- LIGHTBOX / IMAGE VIEWER -->
   <div id="imageLightbox" style="position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; cursor:pointer;" onclick="closeLightbox()">
@@ -3118,7 +3111,13 @@
   // STAGE UNLOCK FUNCTION
   // ══════════════════════════════════════
   window.unlockNextStage = async function() {
-    const btn = event.target;
+    // Check if profile picture is set BEFORE proceeding
+    if (!studentData.avatarUrl) {
+      document.getElementById("profilePicRequiredModal").classList.add("open");
+      return;
+    }
+
+    const btn = event.target.closest('button'); // Safely grab the button
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Unlocking…';
@@ -3406,7 +3405,39 @@
     }
   }
 
+    // ── PROFILE PICTURE REQUIRED MODAL CONTROLS ──
+  window.closeProfilePicModal = function() {
+    document.getElementById("profilePicRequiredModal").classList.remove("open");
+  };
+
+  window.goToProfileAndClose = function() {
+    closeProfilePicModal();
+    // Find the profile nav item and trigger it
+    const profileBtn = document.querySelector('[onclick*="showPage(\'profile\'"]');
+    if (profileBtn) showPage('profile', profileBtn);
+  };
   
 </script>
+
+  <!-- ── PROFILE PICTURE REQUIRED MODAL ── -->
+  <div class="modal-overlay" id="profilePicRequiredModal">
+    <div class="modal" style="max-width: 450px;">
+      <div class="modal-header">
+        <div class="modal-title">Profile Picture Required</div>
+        <button class="modal-close" onclick="closeProfilePicModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="font-size: 48px; margin-bottom: 16px; color: var(--gold);">🖼️</div>
+        <p style="font-size: 15px; margin-bottom: 16px; line-height: 1.6; color: var(--text-light);">
+          You have not set your profile picture yet. <br/>
+          Please set your profile picture before you can move to the next stage.
+        </p>
+        <button class="btn btn-gold btn-animated" onclick="goToProfileAndClose()" style="padding: 12px 24px; font-size: 14px;">
+          <i class="fas fa-user-circle"></i> Go to Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
