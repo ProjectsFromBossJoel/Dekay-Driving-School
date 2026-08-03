@@ -1500,7 +1500,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Course <span>*</span></label>
-              <select id="newClassCourse" class="form-select">
+              <select id="newClassCourse" class="form-select" onchange="refreshNewClassAvailability()">
                 <option value="">Select course…</option>
               </select>
             </div>
@@ -1567,7 +1567,12 @@
           </div>
 
           <!-- Assign students -->
-          <div class="bio-section"><div class="bio-section-title">Assign Students <span style="font-weight:normal;color:var(--text-muted);">(greyed = already booked for this time)</span></div></div>
+          <div class="bio-section" style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="bio-section-title" style="margin-bottom:0;">Assign Students <span style="font-weight:normal;color:var(--text-muted);">(greyed = already booked for this time)</span></div>
+            <button class="btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="showAllClassesPopupWithRange('new')">
+          <i class="fas fa-calendar-alt"></i> View All Classes
+        </button>
+          </div>
           <div class="form-group">
             <div style="position:relative;">
               <button type="button" id="newClassStudentBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleNewClassStudentDropdown()">
@@ -1636,16 +1641,16 @@
             <textarea id="editClassDesc" class="form-textarea"></textarea>
           </div>
           <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Course <span>*</span></label>
-              <select id="editClassCourse" class="form-select">
-                <option value="">Select course…</option>
-              </select>
-            </div>
-            <div class="form-group">
+                        <div class="form-group">
               <label class="form-label">Instructor <span>*</span></label>
               <select id="editClassInstructor" class="form-select">
                 <option value="">Select instructor…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Course <span>*</span></label>
+              <select id="editClassCourse" class="form-select" onchange="refreshEditClassAvailability()">
+                <option value="">Select course…</option>
               </select>
             </div>
           </div>
@@ -1711,7 +1716,12 @@
           </div>
 
           <!-- Assign students -->
-          <div class="bio-section"><div class="bio-section-title">Assign Students <span style="font-weight:normal;color:var(--text-muted);">(greyed = already booked for this time)</span></div></div>
+          <div class="bio-section" style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="bio-section-title" style="margin-bottom:0;">Assign Students <span style="font-weight:normal;color:var(--text-muted);">(greyed = already booked for this time)</span></div>
+            <button class="btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="showAllClassesPopupWithRange('edit')">
+            <i class="fas fa-calendar-alt"></i> View All Classes
+          </button>
+          </div>
           <div class="form-group">
             <div style="position:relative;">
               <button type="button" id="editClassStudentBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleEditClassStudentDropdown()">
@@ -2183,27 +2193,20 @@
         </div>
         <div class="form-group"><label class="form-label">Email <span>*</span></label><input type="email" id="newEmail" class="form-input" placeholder="kwame@example.com" /></div>
         <div class="form-group"><label class="form-label">Phone <span>*</span></label><input type="tel" id="newPhone" class="form-input" placeholder="024 000 0000" /></div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Course type <span>*</span></label>
-            <select id="newCourse" class="form-select">
-              <option value="Manual">Manual Transmission</option>
-              <option value="Automatic">Automatic Transmission</option>
-              <option value="Motorcycle">Motorcycle</option>
-              <option value="Commercial Bus">Commercial Bus</option>
-              <option value="Truck / HGV">Truck / HGV</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Instructor</label>
-            <select id="newInstructor" class="form-select">
-              <option value="Mr. Kwaku Adom Obiri Antwi">Mr. Kwaku Adom Obiri Antwi</option>
-              <option value="Emmanuel Agyei">Emmanuel Agyei</option>
-              <option value="Abena Boateng">Abena Boateng</option>
-              <option value="Kwabena Mensah">Kwabena Mensah</option>
-            </select>
-          </div>
-        </div>
+       
+        <div class="form-group">
+  <label class="form-label">Course type <span>*</span></label>
+  <select id="newCourse" class="form-select">
+    <option value="Manual">Manual Transmission</option>
+    <option value="Automatic">Automatic Transmission</option>
+    <option value="Motorcycle">Motorcycle</option>
+    <option value="Commercial Bus">Commercial Bus</option>
+    <option value="Truck / HGV">Truck / HGV</option>
+  </select>
+  <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+    <i class="fas fa-info-circle"></i> Students will be assigned to instructors via the course edit page.
+  </div>
+</div>
         <div class="form-group">
           <label class="form-label">Temporary password <span>*</span></label>
           <input type="text" id="newPassword" class="form-input" placeholder="Set a temporary password" />
@@ -2620,6 +2623,24 @@
   function closeModal(id){ window.__closeModal && window.__closeModal(id); }
 </script>
 
+
+<script>
+window.showLoading = showLoading;
+window.hideLoading = hideLoading;
+
+  // ── GLOBAL LOADING OVERLAY ──
+function showLoading() {
+  const overlay = document.getElementById('globalLoadingOverlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+function hideLoading() {
+  const overlay = document.getElementById('globalLoadingOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+</script>
+
+
 <script type="module">
   // ── IMPORTS ──
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -2841,8 +2862,10 @@
 
   // ── OPEN EDIT COURSE MODAL ──
   window.openEditCourseModal = async function(courseId) {
+  showLoading();
+  try {
     const course = window._allCourses?.find(c => c.id === courseId);
-    if (!course) return showToast("Course not found.", "error");
+    if (!course) { hideLoading(); return showToast("Course not found.", "error"); }
 
     document.getElementById("editCourseId").value     = course.id;
     const knownCourses = ["Manual","Automatic","Motorcycle","Commercial Bus","Truck / HGV"];
@@ -2910,7 +2933,10 @@
     }, 50);
 
     openModal("editCourseModal");
-  };
+  } finally {
+    hideLoading();
+  }
+};
 
   // ── COURSE STUDENT/INSTRUCTOR DROPDOWN HELPERS ──
   window.toggleCourseStudentDropdown = function() {
@@ -2990,6 +3016,11 @@
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
 
     try {
+      // Fetch the course's PREVIOUS state so we know which instructors to remove the course from
+      const prevCourseSnap = await getDoc(doc(db, "courses", id));
+      const prevAssignedInstructors = prevCourseSnap.exists() ? (prevCourseSnap.data().assignedInstructors || []) : [];
+      const prevCourseName = prevCourseSnap.exists() ? (prevCourseSnap.data().name || '') : '';
+
       await updateDoc(doc(db, "courses", id), {
         name,
         category,
@@ -3008,6 +3039,38 @@
       await Promise.all(assignedStudents.map(sid =>
         updateDoc(doc(db, "users", sid), { courseType: name }).catch(() => {})
       ));
+
+      // ── RECIPROCAL SYNC: keep each instructor's assignedCourses in sync with this course ──
+      // 1. Add this course name to every newly/currently assigned instructor
+      await Promise.all(assignedInstructors.map(async (instrId) => {
+        try {
+          const instrRef = doc(db, "instructors", instrId);
+          const instrSnap = await getDoc(instrRef);
+          if (!instrSnap.exists()) return;
+          let courses = instrSnap.data().assignedCourses || [];
+          if (courses && typeof courses === 'object' && !Array.isArray(courses)) courses = Object.values(courses);
+          if (!Array.isArray(courses)) courses = [];
+          // Remove the old course name (in case it was renamed) and add the current name
+          courses = courses.filter(c => c !== prevCourseName);
+          if (!courses.includes(name)) courses.push(name);
+          await updateDoc(instrRef, { assignedCourses: courses });
+        } catch(e) { console.error("Could not sync instructor assignedCourses:", e); }
+      }));
+
+      // 2. Remove this course from any instructor who was assigned before but is no longer selected
+      const removedInstructorIds = prevAssignedInstructors.filter(pid => !assignedInstructors.includes(pid));
+      await Promise.all(removedInstructorIds.map(async (instrId) => {
+        try {
+          const instrRef = doc(db, "instructors", instrId);
+          const instrSnap = await getDoc(instrRef);
+          if (!instrSnap.exists()) return;
+          let courses = instrSnap.data().assignedCourses || [];
+          if (courses && typeof courses === 'object' && !Array.isArray(courses)) courses = Object.values(courses);
+          if (!Array.isArray(courses)) courses = [];
+          courses = courses.filter(c => c !== prevCourseName && c !== name);
+          await updateDoc(instrRef, { assignedCourses: courses });
+        } catch(e) { console.error("Could not remove course from instructor:", e); }
+      }));
 
       closeModal("editCourseModal");
       showToast("Course updated ✓", "success");
@@ -3815,6 +3878,8 @@
 
   // ── CATEGORY MODAL ──
   window.openAddQuizCategoryModal = async function() {
+  showLoading();
+  try {
     document.getElementById("editQuizCategoryId").value = '';
     const isTopLevel = !currentQuizCategoryPath;
     document.getElementById("newQuizCategoryCourseGroup").style.display = isTopLevel ? "block" : "none";
@@ -3838,11 +3903,16 @@
       } catch(e) { console.error(e); }
     }
     openModal("addQuizCategoryModal");
-  };
+  } finally {
+    hideLoading();
+  }
+};
 
   window.openEditQuizCategoryModal = async function(id) {
+  showLoading();
+  try {
     const cat = allQuizCategories.find(f => f.id === id);
-    if (!cat) return showToast("Category not found.", "error");
+    if (!cat) { hideLoading(); return showToast("Category not found.", "error"); }
     document.getElementById("editQuizCategoryId").value = id;
     const isTopLevel = !cat.parentPath;
     document.getElementById("newQuizCategoryCourseGroup").style.display = isTopLevel ? "block" : "none";
@@ -3867,7 +3937,10 @@
       if (hint) hint.textContent = "Changing the course will move this folder and everything inside it to the new course.";
     }
     openModal("addQuizCategoryModal");
-  };
+  } finally {
+    hideLoading();
+  }
+};
 
   window.saveQuizCategory = async function() {
     const editId = document.getElementById("editQuizCategoryId").value;
@@ -3998,8 +4071,10 @@
   };
 
   window.openEditQuizModal = async function(quizId) {
+  showLoading();
+  try {
     const q = allQuizzesFlat.find(x => x.id === quizId);
-    if (!q) return showToast("Quiz not found.", "error");
+    if (!q) { hideLoading(); return showToast("Quiz not found.", "error"); }
     document.getElementById("editQuizId").value = q.id;
     document.getElementById("editQuizTitle").value = q.title || '';
     document.getElementById("editQuizPassMark").value = q.passMark || 60;
@@ -4008,7 +4083,10 @@
     document.getElementById("quizDeleteBtn").style.display = "inline-flex";
     await loadQuizQuestions(quizId);
     openModal("editQuizModal");
-  };
+  } finally {
+    hideLoading();
+  }
+};
 
   window.saveQuizMeta = async function() {
     const id = document.getElementById("editQuizId").value;
@@ -4407,35 +4485,17 @@
 
    // ── STUDENT DETAIL  ──
   window.openStudentDetail = async function(uid) {
+  showLoading();
+  try {
     const s = allStudents.find(st => st.id === uid);
-    if (!s) return;
+    if (!s) { hideLoading(); return; }
     const name = `${s.firstName || ''} ${s.lastName || ''}`.trim();
     const initials = (s.firstName?.[0] || '') + (s.lastName?.[0] || '') || 'S';
     const avatarHtml = s.avatarUrl
       ? `<div style="width:80px; height:80px; border-radius:50%; background:rgba(245,166,35,0.15); border:2px solid var(--gold); background-size:cover; background-position:center; background-image:url(${s.avatarUrl}); margin:0 auto 12px; cursor:pointer;" onclick="openLightbox('${s.avatarUrl}')"></div>`
       : `<div style="width:80px; height:80px; border-radius:50%; background:rgba(245,166,35,0.15); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:var(--gold); margin:0 auto 12px;">${initials}</div>`;
 
-    // Fetch active instructors for checkboxes
-    let instructorsCheckboxes = '';
-    const currentInstructors = s.instructors || (s.instructor ? [s.instructor] : []);
-    try {
-      const instrSnap = await getDocs(collection(db, "instructors"));
-      const activeInstructors = instrSnap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .filter(i => i.status === 'active');
-      if (activeInstructors.length === 0) {
-        instructorsCheckboxes = '<div style="font-size:12px;color:var(--text-muted);padding:8px;">No active instructors available.</div>';
-      } else {
-        instructorsCheckboxes = activeInstructors.map(inst => {
-          const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim();
-          const isChecked = currentInstructors.includes(fullName) ? 'checked' : '';
-            return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border-subtle);">
-            <input type="checkbox" value="${escapeHtml(fullName)}" class="instructor-checkbox" ${isChecked} onchange="updateInstructorBtnText()" style="accent-color:var(--gold);width:16px;height:16px;" />
-            <span style="font-size:13px;">${escapeHtml(fullName)}</span>
-          </label>`;
-        }).join('');
-      }
-    } catch(e) { console.error("Error loading instructors:", e); instructorsCheckboxes = '<div style="color:var(--error);font-size:12px;">Error loading instructors.</div>'; }
+
 
     const html = `
       <div style="text-align:center; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border);">
@@ -4487,23 +4547,13 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Assign to instructor(s)</label>
-          <div style="position:relative;">
-            <button type="button" id="instructorDropdownBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleInstructorDropdown()">
-              <span id="instructorBtnText">Select instructors…</span>
-              <i class="fas fa-chevron-down" style="font-size:12px;"></i>
-            </button>
-            <div id="instructorDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:none;max-height:200px;overflow-y:auto;box-shadow:var(--shadow);">
-              ${instructorsCheckboxes}
-            </div>
-          </div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Click the dropdown to select instructors</div>
+          <label class="form-label">Status</label>
+          <select id="editStatus" class="form-select">
+            <option value="active" ${s.status === 'active' ? 'selected' : ''}>Active</option>
+            <option value="pending" ${s.status === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="inactive" ${s.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+          </select>
         </div>
-        <div class="form-group"><label class="form-label">Status</label><select id="editStatus" class="form-select">
-          <option value="active" ${s.status === 'active' ? 'selected' : ''}>Active</option>
-          <option value="pending" ${s.status === 'pending' ? 'selected' : ''}>Pending</option>
-          <option value="inactive" ${s.status === 'inactive' ? 'selected' : ''}>Inactive</option>
-        </select></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Attendance rate</label><div class="form-input" style="background:var(--navy);">${s.attendanceRate || '—'}%</div></div>
@@ -4514,14 +4564,12 @@
     document.getElementById("studentDetailName").textContent = `Student: ${name}`;
     document.getElementById("studentDetailBody").innerHTML = html;
     document.getElementById("studentDetailModal")._editUid = uid;
-    // Update the button text after content is injected
-    setTimeout(() => {
-      updateInstructorBtnText();
-      updateCourseBtnText();
-    }, 50);
+    setTimeout(() => { updateCourseBtnText(); }, 50);
     openModal("studentDetailModal");
-  };
-
+  } finally {
+    hideLoading();
+  }
+};
   // ── TOGGLE INSTRUCTOR DROPDOWN IN STUDENT DETAIL ──
   window.toggleInstructorDropdown = function() {
     const panel = document.getElementById("instructorDropdown");
@@ -4956,7 +5004,6 @@ window.approveStudent = async function(uid) {
     const phone = document.getElementById("newPhone").value.trim();
     const pass  = document.getElementById("newPassword").value;
     const course = document.getElementById("newCourse").value;
-    const instructor = document.getElementById("newInstructor").value;
 
     if (!first || !last || !email || !pass) {
       showToast("Fill in all required fields.", "error");
@@ -5004,7 +5051,6 @@ window.approveStudent = async function(uid) {
         email,
         phone,
         courseType: course,
-        instructor,
         role: "student",
         trainingStage: 1,
         status: "active",
@@ -5026,6 +5072,8 @@ window.approveStudent = async function(uid) {
       btn.innerHTML = '<i class="fas fa-user-plus"></i> Create account';
     }
   };
+
+
 
   // ── ATTENDANCE ──
         window.submitAttendance = async function() {
@@ -6150,171 +6198,170 @@ window.approveStudent = async function(uid) {
     let currentInstructorUid = null;
 
     window.openInstructorDetail = async function(uid) {
-      currentInstructorUid = uid;
-      try {
-        const snap = await getDoc(doc(db, "instructors", uid));
-        if (!snap.exists()) return showToast("Instructor not found.", "error");
-        const i = snap.data();
-        window._currentCertifications = i.certifications;  // store for later saving
-        
-        // Fetch courses for dropdown
-        let coursesOptions = '';
-        let selectedCourses = i.assignedCourses || [];
-        try {
-          const coursesSnap = await getDocs(collection(db, "courses"));
-          const allCourses = coursesSnap.docs.map(d => ({ id: d.id, name: d.data().name || d.data().title }));
-          coursesOptions = allCourses.map(course => {
-            const isSelected = selectedCourses.includes(course.name);
-            return `<option value="${escapeHtml(course.name)}" ${isSelected ? 'selected' : ''}>${escapeHtml(course.name)}</option>`;
-          }).join('');
-        } catch(e) { console.error("Error loading courses:", e); }
-        
-        const fullName = `${i.firstName || ''} ${i.lastName || ''}`.trim();
-        const initials = (i.firstName?.[0] || '') + (i.lastName?.[0] || '') || 'I';
-        const profilePhoto = i.profilePhoto || i.avatarUrl || null;
+  showLoading();
+  try {
+    currentInstructorUid = uid;
+    const snap = await getDoc(doc(db, "instructors", uid));
+    if (!snap.exists()) { hideLoading(); return showToast("Instructor not found.", "error"); }
+    const i = snap.data();
+    window._currentCertifications = i.certifications;  // store for later saving
+    
+    // Fetch courses for dropdown
+    let coursesOptions = '';
+    let selectedCourses = i.assignedCourses || [];
+    try {
+      const coursesSnap = await getDocs(collection(db, "courses"));
+      const allCourses = coursesSnap.docs.map(d => ({ id: d.id, name: d.data().name || d.data().title }));
+      coursesOptions = allCourses.map(course => {
+        const isSelected = selectedCourses.includes(course.name);
+        return `<option value="${escapeHtml(course.name)}" ${isSelected ? 'selected' : ''}>${escapeHtml(course.name)}</option>`;
+      }).join('');
+    } catch(e) { console.error("Error loading courses:", e); }
+    
+    const fullName = `${i.firstName || ''} ${i.lastName || ''}`.trim();
+    const initials = (i.firstName?.[0] || '') + (i.lastName?.[0] || '') || 'I';
+    const profilePhoto = i.profilePhoto || i.avatarUrl || null;
 
-        // Avatar HTML
-        let avatarHtml = '';
-        if (profilePhoto) {
-          avatarHtml = `<div style="width: 100px; height: 100px; border-radius: 50%; background: url(${profilePhoto}) center/cover; border: 3px solid var(--gold); margin: 0 auto 16px; cursor: pointer;" onclick="openLightbox('${profilePhoto}')"></div>`;
-        } else {
-          avatarHtml = `<div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 700; color: var(--gold); border: 3px solid var(--gold); margin: 0 auto 16px;">${initials}</div>`;
-        }
+    // Avatar HTML
+    let avatarHtml = '';
+    if (profilePhoto) {
+      avatarHtml = `<div style="width: 100px; height: 100px; border-radius: 50%; background: url(${profilePhoto}) center/cover; border: 3px solid var(--gold); margin: 0 auto 16px; cursor: pointer;" onclick="openLightbox('${profilePhoto}')"></div>`;
+    } else {
+      avatarHtml = `<div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 700; color: var(--gold); border: 3px solid var(--gold); margin: 0 auto 16px;">${initials}</div>`;
+    }
 
-        // Build editable form HTML
-        const html = `
-          <div style="text-align: center; margin-bottom: 24px;">
-            ${avatarHtml}
-            <div style="margin-top: 8px;">
-              <input type="text" id="editFirstName" class="form-input" value="${escapeHtml(i.firstName || '')}" placeholder="First name" style="width: 45%; display: inline-block; margin-right: 8px;" />
-              <input type="text" id="editLastName" class="form-input" value="${escapeHtml(i.lastName || '')}" placeholder="Last name" style="width: 45%; display: inline-block;" />
-            </div>
-            <div style="color: var(--text-muted); margin-top: 4px;"><i class="fas fa-envelope"></i> ${i.email || '—'}</div>
-            <div><i class="fas fa-phone"></i> <input type="tel" id="editPhone" class="form-input" value="${escapeHtml(i.phone || '')}" style="width: auto; display: inline-block; margin-top: 4px;" placeholder="Phone" /></div>
-            <div class="instructor-badge" style="display: inline-block; margin-top: 8px;"><i class="fas fa-id-card"></i> ${i.status === 'active' ? 'Active Instructor' : 'Pending Approval'}</div>
+    // Build editable form HTML
+    const html = `
+      <div style="text-align: center; margin-bottom: 24px;">
+        ${avatarHtml}
+        <div style="margin-top: 8px;">
+          <input type="text" id="editFirstName" class="form-input" value="${escapeHtml(i.firstName || '')}" placeholder="First name" style="width: 45%; display: inline-block; margin-right: 8px;" />
+          <input type="text" id="editLastName" class="form-input" value="${escapeHtml(i.lastName || '')}" placeholder="Last name" style="width: 45%; display: inline-block;" />
+        </div>
+        <div style="color: var(--text-muted); margin-top: 4px;"><i class="fas fa-envelope"></i> ${i.email || '—'}</div>
+        <div><i class="fas fa-phone"></i> <input type="tel" id="editPhone" class="form-input" value="${escapeHtml(i.phone || '')}" style="width: auto; display: inline-block; margin-top: 4px;" placeholder="Phone" /></div>
+        <div class="instructor-badge" style="display: inline-block; margin-top: 8px;"><i class="fas fa-id-card"></i> ${i.status === 'active' ? 'Active Instructor' : 'Pending Approval'}</div>
+      </div>
+
+      <div class="bio-section">
+        <div class="bio-section-title">Basic Information</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div><label class="form-label">Date of birth</label><input type="date" id="editDob" class="form-input" value="${i.dob || ''}" /></div>
+          <div><label class="form-label">Years of experience</label><input type="number" id="editExperience" class="form-input" value="${i.experience || 0}" min="0" /></div>
+        </div>
+      </div>
+
+      <div class="bio-section">
+        <div class="bio-section-title">Professional details</div>
+        <div class="form-group"><label class="form-label">Qualifications</label><textarea id="editQualifications" class="form-input" rows="2">${escapeHtml(i.qualifications || '')}</textarea></div>
+        <div class="form-group">
+          <label class="form-label">Certifications</label>
+          <div id="certificationsContainer">
+            ${(() => {
+              const certs = i.certifications;
+              if (!certs || (Array.isArray(certs) && certs.length === 0)) {
+                return '<div style="color:var(--text-muted);font-size:13px;">No certifications.</div>';
+              }
+              if (typeof certs === 'string') {
+                return `<div style="color:var(--text-light);font-size:13px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">${escapeHtml(certs)}</div>`;
+              }
+              if (Array.isArray(certs)) {
+                return certs.map((c, idx) => {
+                  const name = c.name || `Certification ${idx + 1}`;
+                  const url = c.documentUrl || c.url || null;
+                  return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
+                    <input type="text" class="cert-name-input" data-index="${idx}" value="${escapeHtml(name)}" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--white);font-size:13px;" placeholder="Certification name" />
+                    ${url ? `<button class="btn btn-outline" style="padding:4px 14px;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;cursor:pointer;" onclick="downloadCertFile('${url}', '${escapeHtml(name)}')"><i class="fas fa-download"></i> Download</button>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
+                  </div>`;
+                }).join('');
+              }
+              return '<div style="color:var(--text-muted);font-size:13px;">Invalid certifications data.</div>';
+            })()}
           </div>
+        </div>
+      </div>
 
-          <div class="bio-section">
-            <div class="bio-section-title">Basic Information</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <div><label class="form-label">Date of birth</label><input type="date" id="editDob" class="form-input" value="${i.dob || ''}" /></div>
-              <div><label class="form-label">Years of experience</label><input type="number" id="editExperience" class="form-input" value="${i.experience || 0}" min="0" /></div>
-            </div>
-          </div>
+      <div class="bio-section">
+        <div class="bio-section-title">Ghana Card</div>
+        <div class="form-group">
+          <label class="form-label">Ghana Card Number</label>
+          <input type="text" id="editGhCardNumber" class="form-input" value="${escapeHtml(i.ghanaCardNumber || i.ghCardNumber || '')}" placeholder="e.g., GHA-123456789-1" />
+        </div>
+        ${(i.ghCardFront || i.ghCardBack) ? `
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px;">
+          ${i.ghCardFront ? `<div><div style="color: var(--text-muted); font-size: 11px;">Front side</div><img src="${i.ghCardFront}" style="width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox('${i.ghCardFront}')" /></div>` : ''}
+          ${i.ghCardBack ? `<div><div style="color: var(--text-muted); font-size: 11px;">Back side</div><img src="${i.ghCardBack}" style="width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox('${i.ghCardBack}')" /></div>` : ''}
+        </div>` : ''}
+      </div>
 
-          <div class="bio-section">
-            <div class="bio-section-title">Professional details</div>
-            <div class="form-group"><label class="form-label">Qualifications</label><textarea id="editQualifications" class="form-input" rows="2">${escapeHtml(i.qualifications || '')}</textarea></div>
-            <div class="form-group">
-              <label class="form-label">Certifications</label>
-              <div id="certificationsContainer">
-                ${(() => {
-                  const certs = i.certifications;
-                  if (!certs || (Array.isArray(certs) && certs.length === 0)) {
-                    return '<div style="color:var(--text-muted);font-size:13px;">No certifications.</div>';
-                  }
-                  if (typeof certs === 'string') {
-                    // Legacy string - show as read-only
-                    return `<div style="color:var(--text-light);font-size:13px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">${escapeHtml(certs)}</div>`;
-                  }
-                  if (Array.isArray(certs)) {
-                                            return certs.map((c, idx) => {
-                      const name = c.name || `Certification ${idx + 1}`;
-                      const url = c.documentUrl || c.url || null;
-                      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
-                        <input type="text" class="cert-name-input" data-index="${idx}" value="${escapeHtml(name)}" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--white);font-size:13px;" placeholder="Certification name" />
-                        ${url ? `<button class="btn btn-outline" style="padding:4px 14px;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;cursor:pointer;" onclick="downloadCertFile('${url}', '${escapeHtml(name)}')"><i class="fas fa-download"></i> Download</button>` : '<span style="color:var(--text-muted);font-size:11px;">No document</span>'}
-                      </div>`;
-                    }).join('');
-                  }
-                  return '<div style="color:var(--text-muted);font-size:13px;">Invalid certifications data.</div>';
-                })()}
-              </div>
-            </div>
-          </div>
+      <div class="bio-section">
+        <div class="bio-section-title">Guarantor</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Name</label><input type="text" id="editGuarantorName" class="form-input" value="${escapeHtml(i.guarantor?.name || '')}" /></div>
+          <div class="form-group"><label class="form-label">Email</label><input type="email" id="editGuarantorEmail" class="form-input" value="${escapeHtml(i.guarantor?.email || '')}" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Phone</label><input type="tel" id="editGuarantorPhone" class="form-input" value="${escapeHtml(i.guarantor?.phone || '')}" /></div>
+      </div>
 
-          <div class="bio-section">
-            <div class="bio-section-title">Ghana Card</div>
-            <div class="form-group">
-              <label class="form-label">Ghana Card Number</label>
-              <input type="text" id="editGhCardNumber" class="form-input" value="${escapeHtml(i.ghanaCardNumber || i.ghCardNumber || '')}" placeholder="e.g., GHA-123456789-1" />
-            </div>
-            ${(i.ghCardFront || i.ghCardBack) ? `
-            <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px;">
-              ${i.ghCardFront ? `<div><div style="color: var(--text-muted); font-size: 11px;">Front side</div><img src="${i.ghCardFront}" style="width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox('${i.ghCardFront}')" /></div>` : ''}
-              ${i.ghCardBack ? `<div><div style="color: var(--text-muted); font-size: 11px;">Back side</div><img src="${i.ghCardBack}" style="width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" onclick="openLightbox('${i.ghCardBack}')" /></div>` : ''}
-            </div>` : ''}
-          </div>
+      <div class="bio-section">
+        <div class="bio-section-title">References</div>
+        <div class="form-row">
+          <div class="form-group"><label>Reference 1 – Name</label><input type="text" id="editRef1Name" class="form-input" value="${escapeHtml(i.references?.[0]?.name || '')}" /></div>
+          <div class="form-group"><label>Email</label><input type="email" id="editRef1Email" class="form-input" value="${escapeHtml(i.references?.[0]?.email || '')}" /></div>
+        </div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="editRef1Phone" class="form-input" value="${escapeHtml(i.references?.[0]?.phone || '')}" /></div>
+        <div class="form-row" style="margin-top:12px;">
+          <div class="form-group"><label>Reference 2 – Name</label><input type="text" id="editRef2Name" class="form-input" value="${escapeHtml(i.references?.[1]?.name || '')}" /></div>
+          <div class="form-group"><label>Email</label><input type="email" id="editRef2Email" class="form-input" value="${escapeHtml(i.references?.[1]?.email || '')}" /></div>
+        </div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="editRef2Phone" class="form-input" value="${escapeHtml(i.references?.[1]?.phone || '')}" /></div>
+      </div>
 
-          <div class="bio-section">
-            <div class="bio-section-title">Guarantor</div>
-            <div class="form-row">
-              <div class="form-group"><label class="form-label">Name</label><input type="text" id="editGuarantorName" class="form-input" value="${escapeHtml(i.guarantor?.name || '')}" /></div>
-              <div class="form-group"><label class="form-label">Email</label><input type="email" id="editGuarantorEmail" class="form-input" value="${escapeHtml(i.guarantor?.email || '')}" /></div>
-            </div>
-            <div class="form-group"><label class="form-label">Phone</label><input type="tel" id="editGuarantorPhone" class="form-input" value="${escapeHtml(i.guarantor?.phone || '')}" /></div>
-          </div>
-
-          <div class="bio-section">
-            <div class="bio-section-title">References</div>
-            <div class="form-row">
-              <div class="form-group"><label>Reference 1 – Name</label><input type="text" id="editRef1Name" class="form-input" value="${escapeHtml(i.references?.[0]?.name || '')}" /></div>
-              <div class="form-group"><label>Email</label><input type="email" id="editRef1Email" class="form-input" value="${escapeHtml(i.references?.[0]?.email || '')}" /></div>
-            </div>
-            <div class="form-group"><label>Phone</label><input type="tel" id="editRef1Phone" class="form-input" value="${escapeHtml(i.references?.[0]?.phone || '')}" /></div>
-            <div class="form-row" style="margin-top:12px;">
-              <div class="form-group"><label>Reference 2 – Name</label><input type="text" id="editRef2Name" class="form-input" value="${escapeHtml(i.references?.[1]?.name || '')}" /></div>
-              <div class="form-group"><label>Email</label><input type="email" id="editRef2Email" class="form-input" value="${escapeHtml(i.references?.[1]?.email || '')}" /></div>
-            </div>
-            <div class="form-group"><label>Phone</label><input type="tel" id="editRef2Phone" class="form-input" value="${escapeHtml(i.references?.[1]?.phone || '')}" /></div>
-          </div>
-
-          <!-- Assigned Courses -->
-          <div class="bio-section">
-            <div class="bio-section-title">Assigned Courses</div>
-            <div class="form-group">
-              <label class="form-label">Select courses for this instructor</label>
-              <div style="position:relative;">
-                <button type="button" id="instrCourseDropdownBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleInstrCourseDropdown()">
-                  <span id="instrCourseBtnText">Select courses…</span>
-                  <i class="fas fa-chevron-down" style="font-size:12px;"></i>
-                </button>
-                <div id="instrCourseDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:250;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:none;max-height:200px;overflow-y:auto;box-shadow:var(--shadow);">
-                  ${(() => {
-                    const courseNames = (window._allCourses || []).map(c => c.name || c.title || '');
-                    const selected = i.assignedCourses || [];
-                    return courseNames.map(cn => {
-                      const isChecked = selected.includes(cn) ? 'checked' : '';
-                      return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border-subtle);">
-                        <input type="checkbox" value="${escapeHtml(cn)}" class="instr-course-checkbox" ${isChecked} onchange="updateInstrCourseBtnText()" style="accent-color:var(--gold);width:16px;height:16px;" />
-                        <span style="font-size:13px;">${escapeHtml(cn)}</span>
-                      </label>`;
-                    }).join('');
-                  })()}
-                </div>
-              </div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Click the dropdown to select courses</div>
-            </div>
-            <div id="currentCoursesList" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
-              <!-- Selected course badges will appear here -->
+      <!-- Assigned Courses -->
+      <div class="bio-section">
+        <div class="bio-section-title">Assigned Courses</div>
+        <div class="form-group">
+          <label class="form-label">Select courses for this instructor</label>
+          <div style="position:relative;">
+            <button type="button" id="instrCourseDropdownBtn" class="form-select" style="text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleInstrCourseDropdown()">
+              <span id="instrCourseBtnText">Select courses…</span>
+              <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+            </button>
+            <div id="instrCourseDropdown" style="position:absolute;top:100%;left:0;right:0;z-index:250;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:none;max-height:200px;overflow-y:auto;box-shadow:var(--shadow);">
+              ${(() => {
+                const courseNames = (window._allCourses || []).map(c => c.name || c.title || '');
+                const selected = i.assignedCourses || [];
+                return courseNames.map(cn => {
+                  const isChecked = selected.includes(cn) ? 'checked' : '';
+                  return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border-subtle);">
+                    <input type="checkbox" value="${escapeHtml(cn)}" class="instr-course-checkbox" ${isChecked} onchange="updateInstrCourseBtnText()" style="accent-color:var(--gold);width:16px;height:16px;" />
+                    <span style="font-size:13px;">${escapeHtml(cn)}</span>
+                  </label>`;
+                }).join('');
+              })()}
             </div>
           </div>
-        `;
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Click the dropdown to select courses</div>
+        </div>
+        <div id="currentCoursesList" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;"></div>
+      </div>
+    `;
 
-        document.getElementById("instructorDetailName").textContent = `Edit Instructor: ${fullName}`;
-        document.getElementById("instructorDetailBody").innerHTML = html;
-        
-        // Update course dropdown button text and badges after content loads
-        setTimeout(() => {
-          updateInstrCourseBtnText();
-        }, 100);
-        
-        openModal("instructorDetailModal");
-      } catch(err) {
-        console.error(err);
-        showToast("Could not load instructor details.", "error");
-      }
-    };
+    document.getElementById("instructorDetailName").textContent = `Edit Instructor: ${fullName}`;
+    document.getElementById("instructorDetailBody").innerHTML = html;
+    
+    setTimeout(() => {
+      updateInstrCourseBtnText();
+    }, 100);
+    
+    openModal("instructorDetailModal");
+  } catch(err) {
+    console.error(err);
+    showToast("Could not load instructor details.", "error");
+  } finally {
+    hideLoading();
+  }
+};
 
         // ── TOGGLE INSTRUCTOR COURSE DROPDOWN ──
     window.toggleInstrCourseDropdown = function() {
@@ -6556,11 +6603,11 @@ window.approveStudent = async function(uid) {
 
   // ── MODAL OPENERS ──
   window.openAddStudentModal = () => openModal("addStudentModal");
-            window.openMarkAttendanceModal = async () => {
-    // Check which attendance tab is active
+    window.openMarkAttendanceModal = async function() {
+  showLoading();
+  try {
     const isStudentAtt = document.getElementById("studentAttCard")?.style.display !== "none";
     
-    // Safely get elements with null checks
     const attStudentRow = document.getElementById("attStudentRow");
     const attInstructorRow = document.getElementById("attInstructorRow");
     const attInstructorNameRow = document.getElementById("attInstructorNameRow");
@@ -6570,7 +6617,6 @@ window.approveStudent = async function(uid) {
     const dateInput = document.getElementById("attDate");
     if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
     
-    // Reset course and class dropdowns
     const courseSelect = document.getElementById("attCourse");
     if (courseSelect) {
       courseSelect.innerHTML = '<option value="">Select student/instructor first…</option>';
@@ -6581,7 +6627,6 @@ window.approveStudent = async function(uid) {
     if (classSelect) classSelect.innerHTML = '<option value="">Select course first…</option>';
     
     if (isStudentAtt) {
-      // Student Attendance Modal
       const modalTitle = document.getElementById("attModalTitle");
       if (modalTitle) modalTitle.textContent = "Mark Student Attendance";
       
@@ -6591,11 +6636,9 @@ window.approveStudent = async function(uid) {
       if (attCourseRow) attCourseRow.style.display = "flex";
       if (attClassRow) attClassRow.style.display = "flex";
       
-      // Populate student dropdown
       const studentSelect = document.getElementById("attStudentSelect");
       if (studentSelect) {
         studentSelect.innerHTML = '<option value="">Select student…</option>';
-        // Store the onchange handler
         studentSelect.setAttribute('onchange', 'loadCoursesForInstructor()');
         allStudents.forEach(student => {
           const name = `${student.firstName || ''} ${student.lastName || ''}`.trim();
@@ -6605,7 +6648,6 @@ window.approveStudent = async function(uid) {
         });
       }
       
-      // Populate instructor dropdown (for selecting who taught the class)
       const instrSelect = document.getElementById("attInstructor");
       if (instrSelect) {
         instrSelect.innerHTML = '<option value="">Select instructor…</option>';
@@ -6629,7 +6671,6 @@ window.approveStudent = async function(uid) {
       }
       
     } else {
-      // Instructor Attendance Modal
       const modalTitle = document.getElementById("attModalTitle");
       if (modalTitle) modalTitle.textContent = "Mark Instructor Attendance";
       
@@ -6639,11 +6680,9 @@ window.approveStudent = async function(uid) {
       if (attCourseRow) attCourseRow.style.display = "flex";
       if (attClassRow) attClassRow.style.display = "flex";
       
-      // Populate instructor dropdown for instructor attendance
       const instrNameSelect = document.getElementById("attInstructorName");
       if (instrNameSelect) {
         instrNameSelect.innerHTML = '<option value="">Select instructor…</option>';
-        // Store the onchange handler
         instrNameSelect.setAttribute('onchange', 'loadCoursesForInstructorName()');
         try {
           const instrSnap = await getDocs(collection(db, "instructors"));
@@ -6666,7 +6705,10 @@ window.approveStudent = async function(uid) {
     }
     
     openModal("markAttModal");
-  };
+  } finally {
+    hideLoading();
+  }
+};
 
     
     // Load classes for the selected course
@@ -7183,18 +7225,28 @@ window.approveStudent = async function(uid) {
     instrSel.onchange = function() {
       const selectedId = instrSel.value;
       courseSel.innerHTML = '';
-      
+
+      const doRefresh = () => {
+        if (courseSelId === 'editClassCourse') {
+          if (typeof refreshEditClassAvailability === 'function') refreshEditClassAvailability();
+        } else {
+          if (typeof refreshNewClassAvailability === 'function') refreshNewClassAvailability();
+        }
+      };
+
       if (!selectedId) {
         courseSel.innerHTML = '<option value="">Select instructor first…</option>';
         courseSel.disabled = true;
+        doRefresh();
         return;
       }
 
       courseSel.disabled = false;
       const instructor = allInstructorData.find(inst => inst.id === selectedId);
-      
+
       if (!instructor) {
         courseSel.innerHTML = '<option value="">Select course…</option>';
+        doRefresh();
         return;
       }
 
@@ -7207,6 +7259,7 @@ window.approveStudent = async function(uid) {
 
       if (assignedCourses.length === 0) {
         courseSel.innerHTML = '<option value="">No courses assigned to this instructor</option>';
+        doRefresh();
         return;
       }
 
@@ -7218,6 +7271,7 @@ window.approveStudent = async function(uid) {
 
       if (filteredCourses.length === 0) {
         courseSel.innerHTML = '<option value="">No matching courses found</option>';
+        doRefresh();
         return;
       }
 
@@ -7226,6 +7280,8 @@ window.approveStudent = async function(uid) {
         const name = c.name || c.title || '';
         courseSel.innerHTML += `<option value="${escapeHtml(name)}" ${name === selectedCourseName ? 'selected' : ''}>${escapeHtml(name)}</option>`;
       });
+
+      doRefresh();
     };
 
     // If editing an existing class, trigger the onchange to load courses
@@ -7238,6 +7294,9 @@ window.approveStudent = async function(uid) {
           if (selectedCourseName) {
             courseSel.value = selectedCourseName;
           }
+          // Refresh the student list now that the course is known
+          if (courseSelId === 'editClassCourse') refreshEditClassAvailability();
+          else refreshNewClassAvailability();
         }, 200);
       }, 100);
     }
@@ -7395,9 +7454,458 @@ window.approveStudent = async function(uid) {
     return { start, end };
   }
 
+  /**
+ * Checks if any of the given studentIds or vehicleId are already booked
+ * in a class that overlaps with the given time range.
+ * @param {string[]} studentIds
+ * @param {string|null} vehicleId
+ * @param {Date} start
+ * @param {Date} end
+ * @param {string|null} excludeClassId - the class being edited (if any)
+ * @returns {Object} { conflicts: { students: [name], vehicle: boolean } }
+ */
+function checkResourceAvailability(studentIds, vehicleId, start, end, excludeClassId = null) {
+  const conflicts = { students: [], vehicle: false };
+  if (!allClasses || allClasses.length === 0) return conflicts;
+
+  allClasses.forEach(cls => {
+    if (excludeClassId && cls.id === excludeClassId) return;
+    const range = getClassDateTimeRange(cls);
+    if (!daysOverlap(start, end, range.start, range.end)) return;
+
+    // Check students
+    if (studentIds && studentIds.length > 0) {
+      const clsStudentIds = cls.studentIds || [];
+      studentIds.forEach(sid => {
+        if (clsStudentIds.includes(sid)) {
+          const student = allStudents.find(s => s.id === sid);
+          const name = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
+          if (!conflicts.students.includes(name)) {
+            conflicts.students.push(name);
+          }
+        }
+      });
+    }
+
+    // Check vehicle
+    if (vehicleId && cls.vehicleId === vehicleId) {
+      conflicts.vehicle = true;
+    }
+  });
+
+  return conflicts;
+}
+
   function rangesOverlap(startA, endA, startB, endB) {
     return startA < endB && startB < endA;
   }
+
+  /**
+ * Checks if two date ranges overlap, comparing only the date (ignoring time).
+ */
+function daysOverlap(startA, endA, startB, endB) {
+  const startA_date = new Date(startA.getFullYear(), startA.getMonth(), startA.getDate());
+  const endA_date = new Date(endA.getFullYear(), endA.getMonth(), endA.getDate());
+  const startB_date = new Date(startB.getFullYear(), startB.getMonth(), startB.getDate());
+  const endB_date = new Date(endB.getFullYear(), endB.getMonth(), endB.getDate());
+  return startA_date <= endB_date && startB_date <= endA_date;
+}
+
+// ── SHOW BUSY RESOURCES POPUP ──
+function showBusyResources(mode) {
+  // mode: 'new' or 'edit'
+  const prefix = mode === 'edit' ? 'edit' : 'new';
+  
+  // Get form values
+  const date = document.getElementById(`${prefix}ClassDate`).value;
+  const time = to24h(
+    document.getElementById(`${prefix}ClassTimeHour`).value,
+    document.getElementById(`${prefix}ClassTimeMin`).value,
+    document.getElementById(`${prefix}ClassTimeAmpm`).value
+  );
+  const endDate = document.getElementById(`${prefix}ClassEndDate`).value;
+  const endTime = to24h(
+    document.getElementById(`${prefix}ClassEndTimeHour`).value,
+    document.getElementById(`${prefix}ClassEndTimeMin`).value,
+    document.getElementById(`${prefix}ClassEndTimeAmpm`).value
+  );
+  const courseName = document.getElementById(`${prefix}ClassCourse`).value;
+  const editId = document.getElementById('editClassId')?.value || null;
+  
+  if (!date || !time || !endDate || !endTime) {
+    showToast('Please set both start and end date/time first.', 'error');
+    return;
+  }
+  
+  const start = new Date(`${date}T${time}`);
+  const end = new Date(`${endDate}T${endTime}`);
+  
+  if (isNaN(start) || isNaN(end)) {
+    showToast('Invalid date/time. Please check your inputs.', 'error');
+    return;
+  }
+  
+  // Find conflicting classes
+  const conflicts = [];
+  (allClasses || []).forEach(cls => {
+    if (editId && cls.id === editId) return; // Skip current class when editing
+    const range = getClassDateTimeRange(cls);
+    if (rangesOverlap(start, end, range.start, range.end)) {
+      conflicts.push(cls);
+    }
+  });
+  
+  // Also check day-based conflicts for students (one class per day)
+  const dayConflicts = [];
+  (allClasses || []).forEach(cls => {
+    if (editId && cls.id === editId) return;
+    const range = getClassDateTimeRange(cls);
+    if (daysOverlap(start, end, range.start, range.end)) {
+      // Only add if not already in conflicts (to avoid duplicates)
+      if (!conflicts.some(c => c.id === cls.id)) {
+        dayConflicts.push(cls);
+      }
+    }
+  });
+  
+  // Build the HTML
+  const startDateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  const startTimeStr = formatTime(time);
+  const endDateStr = end.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  const endTimeStr = formatTime(endTime);
+  
+  let html = `
+    <div style="margin-bottom:20px;padding:16px;background:rgba(245,166,35,0.05);border:1px solid var(--border);border-radius:var(--radius);">
+      <div style="font-size:13px;color:var(--text-light);">
+        <strong style="color:var(--gold);">Checking availability for:</strong><br/>
+        ${startDateStr} at ${startTimeStr} – ${endDateStr} at ${endTimeStr}
+        ${courseName ? `<br/><span style="color:var(--text-muted);font-size:12px;">Course: ${escapeHtml(courseName)}</span>` : ''}
+      </div>
+    </div>
+  `;
+  
+  // Build busy students list (day-based)
+  const busyStudents = {};
+  dayConflicts.forEach(cls => {
+    (cls.studentIds || []).forEach(sid => {
+      if (!busyStudents[sid]) {
+        const student = allStudents.find(s => s.id === sid);
+        const name = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
+        busyStudents[sid] = { name, classes: [] };
+      }
+      const clsStart = new Date(`${cls.date}T${cls.time}`);
+      const clsEnd = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(clsStart.getTime() + (cls.durationMinutes || 60) * 60000);
+      busyStudents[sid].classes.push({
+        title: cls.title || 'Untitled',
+        date: cls.date,
+        time: cls.time,
+        start: clsStart,
+        end: clsEnd,
+        clsId: cls.id
+      });
+    });
+  });
+  
+  // Build busy vehicles list (time-based)
+  const busyVehicles = {};
+  conflicts.forEach(cls => {
+    if (cls.vehicleId) {
+      if (!busyVehicles[cls.vehicleId]) {
+        const vehicle = allVehicles.find(v => v.id === cls.vehicleId);
+        const name = vehicle ? `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`.trim() : cls.vehicleId;
+        busyVehicles[cls.vehicleId] = { name, classes: [] };
+      }
+      const clsStart = new Date(`${cls.date}T${cls.time}`);
+      const clsEnd = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(clsStart.getTime() + (cls.durationMinutes || 60) * 60000);
+      busyVehicles[cls.vehicleId].classes.push({
+        title: cls.title || 'Untitled',
+        date: cls.date,
+        time: cls.time,
+        start: clsStart,
+        end: clsEnd,
+        clsId: cls.id
+      });
+    }
+  });
+  
+  // Section: Busy Students
+  const studentEntries = Object.values(busyStudents);
+  if (studentEntries.length > 0) {
+    html += `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+          <i class="fas fa-users" style="margin-right:6px;"></i> Busy Students (${studentEntries.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+    `;
+    studentEntries.forEach(s => {
+      html += `
+        <div style="background:rgba(239,83,80,0.05);border:1px solid rgba(239,83,80,0.2);border-radius:var(--radius);padding:10px 14px;">
+          <div style="font-weight:600;color:var(--white);">${escapeHtml(s.name)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+      `;
+      s.classes.forEach((cls, idx) => {
+        const dateStr = new Date(cls.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        const timeStr = formatTime(cls.time);
+        const endTimeStr = formatTime(cls.end.toTimeString().slice(0,5));
+        html += `
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:${idx < s.classes.length - 1 ? '1px solid var(--border-subtle)' : 'none'};">
+            <span style="color:var(--error);">•</span>
+            <span style="color:var(--text-light);">${escapeHtml(cls.title)}</span>
+            <span style="color:var(--text-muted);font-size:11px;">${dateStr} at ${timeStr} – ${endTimeStr}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div></div>`;
+  } else {
+    html += `
+      <div style="margin-bottom:20px;padding:12px 16px;background:rgba(76,175,80,0.05);border:1px solid rgba(76,175,80,0.2);border-radius:var(--radius);">
+        <div style="font-size:13px;color:var(--success);"><i class="fas fa-check-circle"></i> No students are busy on this day.</div>
+      </div>
+    `;
+  }
+  
+  // Section: Busy Vehicles
+  const vehicleEntries = Object.values(busyVehicles);
+  if (vehicleEntries.length > 0) {
+    html += `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+          <i class="fas fa-car-side" style="margin-right:6px;"></i> Busy Vehicles (${vehicleEntries.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+    `;
+    vehicleEntries.forEach(v => {
+      html += `
+        <div style="background:rgba(239,83,80,0.05);border:1px solid rgba(239,83,80,0.2);border-radius:var(--radius);padding:10px 14px;">
+          <div style="font-weight:600;color:var(--white);">${escapeHtml(v.name)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+      `;
+      v.classes.forEach((cls, idx) => {
+        const dateStr = new Date(cls.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        const timeStr = formatTime(cls.time);
+        const endTimeStr = formatTime(cls.end.toTimeString().slice(0,5));
+        html += `
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:${idx < v.classes.length - 1 ? '1px solid var(--border-subtle)' : 'none'};">
+            <span style="color:var(--error);">•</span>
+            <span style="color:var(--text-light);">${escapeHtml(cls.title)}</span>
+            <span style="color:var(--text-muted);font-size:11px;">${dateStr} at ${timeStr} – ${endTimeStr}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div></div>`;
+  } else {
+    html += `
+      <div style="margin-bottom:20px;padding:12px 16px;background:rgba(76,175,80,0.05);border:1px solid rgba(76,175,80,0.2);border-radius:var(--radius);">
+        <div style="font-size:13px;color:var(--success);"><i class="fas fa-check-circle"></i> No vehicles are busy during this time.</div>
+      </div>
+    `;
+  }
+  
+  // Section: Conflicting Classes (full list)
+  const allConflictClasses = [...conflicts, ...dayConflicts].filter((cls, idx, self) => 
+    self.findIndex(c => c.id === cls.id) === idx
+  );
+  
+  if (allConflictClasses.length > 0) {
+    html += `
+      <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+          <i class="fas fa-chalkboard" style="margin-right:6px;"></i> Conflicting Classes (${allConflictClasses.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;">
+    `;
+    allConflictClasses.sort((a, b) => {
+      const da = new Date(`${a.date}T${a.time}`);
+      const db2 = new Date(`${b.date}T${b.time}`);
+      return da - db2;
+    }).forEach(cls => {
+      const clsStart = new Date(`${cls.date}T${cls.time}`);
+      const clsEnd = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(clsStart.getTime() + (cls.durationMinutes || 60) * 60000);
+      const dateStr = clsStart.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      const timeStr = formatTime(cls.time);
+      const endTimeStr = formatTime(clsEnd.toTimeString().slice(0,5));
+      const studentCount = (cls.studentIds || []).length;
+      const hasVehicle = !!cls.vehicleId;
+      html += `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;flex-wrap:wrap;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:var(--gold);font-weight:600;">${escapeHtml(cls.title || 'Untitled')}</span>
+            <span style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeStr} – ${endTimeStr}</span>
+          </div>
+          <div style="display:flex;gap:8px;font-size:11px;">
+            <span style="color:var(--text-muted);"><i class="fas fa-users"></i> ${studentCount}</span>
+            ${hasVehicle ? `<span style="color:var(--text-muted);"><i class="fas fa-car"></i> Yes</span>` : `<span style="color:var(--text-muted);"><i class="fas fa-car"></i> No</span>`}
+            <span class="pill ${cls.mode === 'online' ? 'pill-pending' : 'pill-active'}" style="font-size:10px;">${cls.mode || 'in-person'}</span>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+  
+  document.getElementById('busyResourcesBody').innerHTML = html;
+  openModal('busyResourcesModal');
+}
+
+
+// ── SHOW ALL SCHEDULED CLASSES POPUP ──
+window.showAllClassesPopup = function(startDate, endDate) {
+  const modalBody = document.getElementById('busyResourcesBody');
+  if (!modalBody) {
+    showToast('Modal not found.', 'error');
+    return;
+  }
+
+  // Build range header if dates provided
+  let rangeHtml = '';
+  let filteredClasses = allClasses;
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    const startStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    const endStr = end.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    rangeHtml = `
+      <div style="margin-bottom:12px; padding:10px 16px; background:rgba(245,166,35,0.08); border:1px solid var(--border); border-radius:var(--radius);">
+        <span style="font-size:13px; color:var(--text-light);">
+          <i class="fas fa-calendar-alt" style="color:var(--gold);"></i>
+          Showing classes from <strong style="color:var(--gold);">${startStr}</strong> to <strong style="color:var(--gold);">${endStr}</strong>
+        </span>
+      </div>
+    `;
+    // Filter classes by date range
+    filteredClasses = allClasses.filter(cls => {
+      const clsDate = new Date(cls.date);
+      return clsDate >= start && clsDate <= end;
+    });
+  }
+
+  let html = `
+    <div style="margin-bottom:20px; padding:16px; background:rgba(245,166,35,0.05); border:1px solid var(--border); border-radius:var(--radius);">
+      <div style="font-size:13px; color:var(--text-light);">
+        <strong style="color:var(--gold);">All Scheduled Classes</strong>
+        <span style="color:var(--text-muted); font-size:12px; margin-left:10px;">Total: ${filteredClasses.length} class(es)</span>
+      </div>
+      ${rangeHtml}
+    </div>
+  `;
+
+  if (!filteredClasses || filteredClasses.length === 0) {
+    html += `<div style="text-align:center; color:var(--text-muted); padding:30px;">No classes scheduled${startDate ? ' in this date range' : ''}.</div>`;
+    modalBody.innerHTML = html;
+    openModal('busyResourcesModal');
+    return;
+  }
+
+  // Sort by date and time
+  const sorted = [...filteredClasses].sort((a, b) => {
+    const da = new Date(`${a.date}T${a.time}`);
+    const db = new Date(`${b.date}T${b.time}`);
+    return da - db;
+  });
+
+  // Group by date
+  const grouped = {};
+  sorted.forEach(cls => {
+    const dateKey = cls.date;
+    if (!grouped[dateKey]) grouped[dateKey] = [];
+    grouped[dateKey].push(cls);
+  });
+
+  // Iterate over dates
+  for (const [date, classes] of Object.entries(grouped)) {
+    const dateObj = new Date(date);
+    const dateStr = dateObj.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    html += `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:14px; font-weight:700; color:var(--gold); margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:4px;">
+          <i class="fas fa-calendar-day"></i> ${dateStr}
+        </div>
+    `;
+    classes.forEach(cls => {
+      const startTime = formatTime(cls.time);
+      const endTime = cls.endTime ? formatTime(cls.endTime) : '';
+      const durationLabel = cls.durationMinutes ? `${cls.durationMinutes}m` : '';
+      const status = computeClassStatus(cls);
+      const statusPill = classStatusPill(status);
+      
+      const instructorName = cls.instructorName || '—';
+      
+      const studentIds = cls.studentIds || [];
+      const studentNames = studentIds.map(sid => {
+        const student = allStudents.find(s => s.id === sid);
+        return student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
+      }).filter(name => name !== '');
+      
+      let vehicleHtml = '';
+      if (cls.vehicleId) {
+        const vehicle = allVehicles.find(v => v.id === cls.vehicleId);
+        if (vehicle) {
+          const vehicleName = `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`.trim() || 'Vehicle';
+          const imgHtml = vehicle.imageUrl 
+            ? `<img src="${vehicle.imageUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border);" />` 
+            : `<div style="width:40px; height:40px; background:var(--navy-light); border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--text-muted);"><i class="fas fa-car"></i></div>`;
+          vehicleHtml = `
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${imgHtml}
+              <span style="font-size:12px; color:var(--text-light);">${escapeHtml(vehicleName)}</span>
+            </div>
+          `;
+        } else {
+          vehicleHtml = `<span style="font-size:12px; color:var(--text-muted);">Vehicle not found</span>`;
+        }
+      } else {
+        vehicleHtml = `<span style="font-size:12px; color:var(--text-muted);">No vehicle assigned</span>`;
+      }
+      
+      const studentsHtml = studentNames.length > 0 ? studentNames.join(', ') : 'No students';
+      
+      html += `
+        <div style="background:var(--navy); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:10px;">
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-weight:600; color:var(--white);">${escapeHtml(cls.title || 'Untitled')}</span>
+              <span style="font-size:11px; color:var(--text-muted);">${startTime} ${endTime ? '- ' + endTime : ''} ${durationLabel ? '('+durationLabel+')' : ''}</span>
+              <span>${statusPill}</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted);">Instructor: ${escapeHtml(instructorName)}</div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:8px; align-items:center;">
+            <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted);">
+              <i class="fas fa-users"></i> <span>${studentsHtml}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted);">
+              <i class="fas fa-car"></i> ${vehicleHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  modalBody.innerHTML = html;
+  openModal('busyResourcesModal');
+};
+
+window.showAllClassesPopupWithRange = function(prefix) {
+  const startDate = document.getElementById(`${prefix}ClassDate`).value;
+  const endDate = document.getElementById(`${prefix}ClassEndDate`).value;
+  if (!startDate || !endDate) {
+    showToast('Please select start and end dates first.', 'error');
+    return;
+  }
+  window.showAllClassesPopup(startDate, endDate);
+};
+
+// Make it globally accessible
+window.showBusyResources = showBusyResources;
 
   // ── STUDENT DROPDOWN TOGGLES ──
   window.toggleNewClassStudentDropdown = function() {
@@ -7423,56 +7931,109 @@ window.approveStudent = async function(uid) {
   window.updateNewClassStudentBtnText = () => updateClassStudentBtnText('new');
   window.updateEditClassStudentBtnText = () => updateClassStudentBtnText('edit');
 
-  // Render the student checkbox list, greying out students already booked in an overlapping class
-  function renderClassStudentCheckboxes(prefix, start, end, preSelectedIds, excludeClassId) {
-    const listEl = document.getElementById(`${prefix}ClassStudentCheckboxList`);
-    if (!listEl) return;
-    if (!start || !end || isNaN(start) || isNaN(end)) {
-      listEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Set start & end date/time first.</div>';
-      return;
-    }
-    // Build a set of studentIds already booked in an overlapping class (from classStudentIds on other class docs)
-    const busyStudentIds = new Set();
-    (allClasses || []).forEach(cls => {
-      if (excludeClassId && cls.id === excludeClassId) return;
-      const range = getClassDateTimeRange(cls);
-      if (rangesOverlap(start, end, range.start, range.end)) {
-        (cls.studentIds || []).forEach(sid => busyStudentIds.add(sid));
-      }
-    });
-
-    listEl.innerHTML = allStudents.length
-      ? allStudents.map(s => {
-          const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email;
-          const busy = busyStudentIds.has(s.id);
-          const checked = preSelectedIds.includes(s.id) ? 'checked' : '';
-          return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:${busy ? 'not-allowed' : 'pointer'};border-bottom:1px solid var(--border-subtle);opacity:${busy ? '0.45' : '1'};">
-            <input type="checkbox" value="${s.id}" data-name="${escapeHtml(name)}" class="${prefix}-class-student-checkbox" ${checked} ${busy ? 'disabled' : ''} onchange="update${prefix === 'new' ? 'New' : 'Edit'}ClassStudentBtnText()" style="accent-color:var(--gold);width:16px;height:16px;" />
-            <span style="font-size:13px;">${escapeHtml(name)} ${busy ? '<span style=\'color:var(--error);font-size:11px;\'>(already scheduled)</span>' : ''}</span>
-          </label>`;
-        }).join('')
-      : '<div style="color:var(--text-muted);font-size:12px;">No students found.</div>';
+  // Render the student checkbox list, filtered to the selected course's assigned students,
+  // and greying out students already booked in an overlapping class
+  function renderClassStudentCheckboxes(prefix, start, end, preSelectedIds, excludeClassId, courseName) {
+  const listEl = document.getElementById(`${prefix}ClassStudentCheckboxList`);
+  if (!listEl) return;
+  if (!start || !end || isNaN(start) || isNaN(end)) {
+    listEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Set start & end date/time first.</div>';
+    return;
   }
+  if (!courseName) {
+    listEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Select a course first.</div>';
+    return;
+  }
+
+  // Build a map: studentId -> { classId, title, date } (first conflict found for the day)
+  const busyInfo = {};
+  (allClasses || []).forEach(cls => {
+    if (excludeClassId && cls.id === excludeClassId) return;
+    const range = getClassDateTimeRange(cls);
+    // Check if the dates overlap (ignoring time)
+    if (daysOverlap(start, end, range.start, range.end)) {
+      (cls.studentIds || []).forEach(sid => {
+        if (!busyInfo[sid]) {
+          // Store the first conflicting class info (or we could store the latest)
+          busyInfo[sid] = {
+            title: cls.title,
+            date: cls.date, // the date of the existing class
+            time: cls.time
+          };
+        }
+      });
+    }
+  });
+
+  // Only show students assigned to this course
+  const courseObj = (window._allCourses || []).find(c => (c.name || c.title || '') === courseName);
+  const assignedIds = courseObj?.assignedStudents || [];
+  const eligibleStudents = allStudents.filter(s => assignedIds.includes(s.id));
+
+  listEl.innerHTML = eligibleStudents.length
+    ? eligibleStudents.map(s => {
+        const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email;
+        const conflict = busyInfo[s.id];
+        const busy = !!conflict;
+        const checked = preSelectedIds.includes(s.id) ? 'checked' : '';
+        let conflictLabel = '';
+        if (busy) {
+          // Format the conflicting class's date
+          const existingDate = conflict.date;
+          const dateObj = new Date(existingDate);
+          const dateStr = dateObj.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+          const timeStr = formatTime(conflict.time);
+          conflictLabel = `(already scheduled on ${dateStr} at ${timeStr})`;
+        }
+        return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:${busy ? 'not-allowed' : 'pointer'};border-bottom:1px solid var(--border-subtle);opacity:${busy ? '0.6' : '1'};">
+          <input type="checkbox" value="${s.id}" data-name="${escapeHtml(name)}" class="${prefix}-class-student-checkbox" ${checked} ${busy ? 'disabled' : ''} onchange="update${prefix === 'new' ? 'New' : 'Edit'}ClassStudentBtnText()" style="accent-color:var(--gold);width:16px;height:16px;" />
+          <span style="font-size:13px;">${escapeHtml(name)} ${busy ? `<span style="color:var(--error);font-size:11px;">${conflictLabel}</span>` : ''}</span>
+        </label>`;
+      }).join('')
+    : '<div style="color:var(--text-muted);font-size:12px;">No students assigned to this course yet.</div>';
+}
 
   // ── VEHICLE DROPDOWN: only show vehicles free during the chosen time range ──
   function renderVehicleSelect(selectId, start, end, preSelectedId, excludeClassId) {
-    const sel = document.getElementById(selectId);
-    if (!sel) return;
-    if (!start || !end || isNaN(start) || isNaN(end)) {
-      sel.innerHTML = '<option value="">Set date/time first…</option>';
-      return;
-    }
-    const busyVehicleIds = new Set();
-    (allClasses || []).forEach(cls => {
-      if (excludeClassId && cls.id === excludeClassId) return;
-      if (!cls.vehicleId) return;
-      const range = getClassDateTimeRange(cls);
-      if (rangesOverlap(start, end, range.start, range.end)) busyVehicleIds.add(cls.vehicleId);
-    });
-    const available = (allVehicles || []).filter(v => !busyVehicleIds.has(v.id) || v.id === preSelectedId);
-    sel.innerHTML = '<option value="">Select vehicle…</option>' +
-      available.map(v => `<option value="${v.id}" ${v.id === preSelectedId ? 'selected' : ''}>${escapeHtml(String(v.year || ''))} ${escapeHtml(v.make || '')} ${escapeHtml(v.model || '')}</option>`).join('');
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  if (!start || !end || isNaN(start) || isNaN(end)) {
+    sel.innerHTML = '<option value="">Set date/time first…</option>';
+    return;
   }
+
+  // Build map: vehicleId -> conflict info (first conflicting class)
+  const busyInfo = {};
+  (allClasses || []).forEach(cls => {
+    if (excludeClassId && cls.id === excludeClassId) return;
+    if (!cls.vehicleId) return;
+    const range = getClassDateTimeRange(cls);
+    if (daysOverlap(start, end, range.start, range.end)) {
+      const vid = cls.vehicleId;
+      if (!busyInfo[vid]) {
+        busyInfo[vid] = {
+          title: cls.title,
+          date: cls.date,
+          time: cls.time
+        };
+      }
+    }
+  });
+
+  const available = (allVehicles || []).filter(v => !busyInfo[v.id] || v.id === preSelectedId);
+  sel.innerHTML = '<option value="">Select vehicle…</option>' +
+    available.map(v => {
+      const conflict = busyInfo[v.id];
+      let label = `${escapeHtml(String(v.year || ''))} ${escapeHtml(v.make || '')} ${escapeHtml(v.model || '')}`;
+      if (conflict && v.id !== preSelectedId) {
+        const dateObj = new Date(conflict.date);
+        const dateStr = dateObj.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        const timeStr = formatTime(conflict.time);
+        label += ` (busy on ${dateStr} at ${timeStr})`;
+      }
+      return `<option value="${v.id}" ${v.id === preSelectedId ? 'selected' : ''}>${label}</option>`;
+    }).join('');
+}
 
   // Recompute both lists whenever the date/time fields change
   window.refreshNewClassAvailability = function() {
@@ -7482,7 +8043,8 @@ window.approveStudent = async function(uid) {
     const endTime = to24h(document.getElementById("newClassEndTimeHour").value, document.getElementById("newClassEndTimeMin").value, document.getElementById("newClassEndTimeAmpm").value);
     const start = startDate ? new Date(`${startDate}T${startTime}`) : null;
     const end = endDate ? new Date(`${endDate}T${endTime}`) : null;
-    renderClassStudentCheckboxes('new', start, end, [], null);
+    const courseName = document.getElementById("newClassCourse").value;
+    renderClassStudentCheckboxes('new', start, end, [], null, courseName);
     renderVehicleSelect('newClassVehicle', start, end, '', null);
   };
 
@@ -7496,19 +8058,20 @@ window.approveStudent = async function(uid) {
     const end = endDate ? new Date(`${endDate}T${endTime}`) : null;
     const cls = allClasses.find(c => c.id === editId);
     const preSelected = cls?.studentIds || [];
-    renderClassStudentCheckboxes('edit', start, end, preSelected, editId);
+    const courseName = document.getElementById("editClassCourse").value;
+    renderClassStudentCheckboxes('edit', start, end, preSelected, editId, courseName);
     renderVehicleSelect('editClassVehicle', start, end, cls?.vehicleId || '', editId);
   };
 
   window.openAddClassModal = async function() {
+  showLoading(); // 👈 immediate feedback
+  try {
     document.getElementById("newClassTitle").value = '';
     document.getElementById("newClassDesc").value  = '';
     document.getElementById("newClassDate").value  = new Date().toISOString().split('T')[0];
     document.getElementById("newClassTimeHour").value = '9';
     document.getElementById("newClassTimeMin").value = '00';
     document.getElementById("newClassTimeAmpm").value = 'AM';
-    document.getElementById("newClassDurationVal").value = '1';
-    document.getElementById("newClassDurationUnit").value = 'hours';
     document.getElementById("newClassEndDate").value = new Date().toISOString().split('T')[0];
     document.getElementById("newClassEndTimeHour").value = '10';
     document.getElementById("newClassEndTimeMin").value = '00';
@@ -7518,31 +8081,28 @@ window.approveStudent = async function(uid) {
     document.getElementById("newClassLink").value = '';
     document.getElementById("newOnlineFields").style.display = 'none';
     refreshNewClassAvailability();
-    // Clear document uploads
     newClassDocFiles = [];
     document.getElementById("classDocList").innerHTML = '';
     document.getElementById("classDocText").textContent = 'Tap to attach documents (PDF, DOC, images)';
     document.getElementById("newClassDocs").value = '';
     
-    // Populate course dropdown from courses collection instead of hardcoded
     const courseSelect = document.getElementById("newClassCourse");
     courseSelect.innerHTML = '<option value="">Select course…</option>';
-    try {
-      const coursesSnap = await getDocs(collection(db, "courses"));
-      coursesSnap.docs.forEach(doc => {
-        const course = doc.data();
-        const name = course.name || course.title;
-        if (name) {
-          courseSelect.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
-        }
-      });
-    } catch(e) {
-      console.error("Error loading courses:", e);
-    }
+    const coursesSnap = await getDocs(collection(db, "courses"));
+    coursesSnap.docs.forEach(doc => {
+      const course = doc.data();
+      const name = course.name || course.title;
+      if (name) {
+        courseSelect.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+      }
+    });
     
     await populateClassModalDropdowns('newClassCourse', 'newClassInstructor');
     openModal("addClassModal");
-  };
+  } finally {
+    hideLoading(); // 👈 hide after everything is done
+  }
+};
 
   window.addClass = async function() {
     const title       = document.getElementById("newClassTitle").value.trim();
@@ -7579,6 +8139,19 @@ window.approveStudent = async function(uid) {
     }
     if (new Date(`${endDate}T${endTime}`) <= new Date(`${date}T${time}`)) {
       showToast("End date/time must be after the start date/time.", "error");
+      return;
+    }
+
+    // Check for overlapping resources
+    const startDateTime = new Date(`${date}T${time}`);
+    const endDateTime = new Date(`${endDate}T${endTime}`);
+    const conflicts = checkResourceAvailability(studentIds, vehicleId, startDateTime, endDateTime);
+    if (conflicts.students.length > 0) {
+      showToast(`Student${conflicts.students.length > 1 ? 's' : ''} already booked: ${conflicts.students.join(', ')}`, "error");
+      return;
+    }
+    if (conflicts.vehicle) {
+      showToast("The selected vehicle is already booked for this time.", "error");
       return;
     }
 
@@ -7625,9 +8198,11 @@ window.approveStudent = async function(uid) {
     }
   };
 
-  window.openEditClassModal = async function(classId) {
+ window.openEditClassModal = async function(classId) {
+  showLoading();
+  try {
     const cls = allClasses.find(c => c.id === classId);
-    if (!cls) return showToast("Class not found.", "error");
+    if (!cls) { hideLoading(); return showToast("Class not found.", "error"); }
 
     document.getElementById("editClassId").value    = cls.id;
     document.getElementById("editClassTitle").value = cls.title || '';
@@ -7642,20 +8217,9 @@ window.approveStudent = async function(uid) {
     document.getElementById("editClassTimeHour").value = String(hour12);
     document.getElementById("editClassTimeMin").value = String(savedMin || '00').padStart(2, '0');
     document.getElementById("editClassTimeAmpm").value = ampm;
-    // Set duration fields
-    const totalMinutes = cls.durationMinutes || 60;
-    if (totalMinutes >= 60 && totalMinutes % 60 === 0) {
-      document.getElementById("editClassDurationVal").value = totalMinutes / 60;
-      document.getElementById("editClassDurationUnit").value = 'hours';
-    } else {
-      document.getElementById("editClassDurationVal").value = totalMinutes;
-      document.getElementById("editClassDurationUnit").value = 'minutes';
-    }
     document.getElementById("editClassMode").value  = cls.mode || 'in-person';
-    // Set platform and link
     document.getElementById("editClassPlatform").value = cls.platform || '';
     document.getElementById("editClassLink").value = cls.meetingLink || '';
-
     // End date/time
     const savedEndDate = cls.endDate || cls.date;
     const savedEndTimeRaw = cls.endTime || (() => {
@@ -7740,7 +8304,10 @@ window.approveStudent = async function(uid) {
     }
 
     openModal("editClassModal");
-  };
+  } finally {
+    hideLoading();
+  }
+};
 
   window.updateClass = async function() {
     const id          = document.getElementById("editClassId").value;
@@ -7778,6 +8345,19 @@ window.approveStudent = async function(uid) {
     }
     if (new Date(`${endDate}T${endTime}`) <= new Date(`${date}T${time}`)) {
       showToast("End date/time must be after the start date/time.", "error");
+      return;
+    }
+
+    // Check for overlapping resources (exclude current class)
+    const startDateTime = new Date(`${date}T${time}`);
+    const endDateTime = new Date(`${endDate}T${endTime}`);
+    const conflicts = checkResourceAvailability(studentIds, vehicleId, startDateTime, endDateTime, id);
+    if (conflicts.students.length > 0) {
+      showToast(`Student${conflicts.students.length > 1 ? 's' : ''} already booked: ${conflicts.students.join(', ')}`, "error");
+      return;
+    }
+    if (conflicts.vehicle) {
+      showToast("The selected vehicle is already booked for this time.", "error");
       return;
     }
 
@@ -8659,9 +9239,14 @@ window.approveStudent = async function(uid) {
   };
 
   window.openAllCertificatesModal = async function() {
+  showLoading();
+  try {
     await loadAllCertificates();
     openModal("allCertificatesModal");
-  };
+  } finally {
+    hideLoading();
+  }
+};
 
   window.viewSavedCertificate = function(imageUrl) {
     const img = document.getElementById("viewCertificateImage");
@@ -9072,5 +9657,32 @@ window.approveStudent = async function(uid) {
   };
   
 </script>
+
+<!-- ── LOADING OVERLAY ── -->
+<div id="globalLoadingOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(10,22,40,0.7); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px;">
+  <div style="width:50px; height:50px; border:4px solid var(--gold); border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+  <div style="color:var(--gold); font-size:14px; font-weight:500;">Loading…</div>
+</div>
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</body>
+
+<!-- ── BUSY RESOURCES MODAL ── -->
+<div class="modal-overlay" id="busyResourcesModal">
+  <div class="modal" style="max-width: 700px;">
+    <div class="modal-header">
+      <div class="modal-title">Resource Availability</div>
+      <button class="modal-close" onclick="closeModal('busyResourcesModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="busyResourcesBody">
+      <!-- Content will be injected by JavaScript -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('busyResourcesModal')">Close</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
