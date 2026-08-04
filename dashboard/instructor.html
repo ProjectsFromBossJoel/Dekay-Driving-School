@@ -725,6 +725,26 @@
       return `${hour}:${m} ${ampm}`;
     }
 
+    // Get time range from a class object
+function getClassTimeRange(cls) {
+  if (!cls) return '';
+  const startTime = formatTime(cls.time);
+  let endTime;
+  if (cls.endTime) {
+    endTime = formatTime(cls.endTime);
+  } else if (cls.durationMinutes) {
+    // Compute end time from start + duration
+    const [h, m] = cls.time.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(h, m, 0, 0);
+    const endDate = new Date(startDate.getTime() + cls.durationMinutes * 60000);
+    endTime = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else {
+    endTime = '';
+  }
+  return endTime ? `${startTime} – ${endTime}` : startTime;
+}
+
     let currentUser = null;
     let instructorData = null;
     let myStudents = [];
@@ -920,50 +940,60 @@
     }
 
     function renderAttendanceTable(records) {
-      const tbody = document.getElementById("attendanceTableBody");
-      if (!records.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records found.</td></tr>`;
-        return;
+  const tbody = document.getElementById("attendanceTableBody");
+  if (!records.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = records.map(rec => {
+    const student = myStudents.find(s => s.id === rec.studentId);
+    const sName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown';
+    let dateTimeStr = '';
+    if (rec.classId) {
+      const cls = allInstructorClasses.find(c => c.id === rec.classId);
+      if (cls) {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const dateStr = start.toLocaleDateString('en-GB');
+        const timeRange = getClassTimeRange(cls);
+        dateTimeStr = `${dateStr} at ${timeRange}`;
       }
-      tbody.innerHTML = records.map(rec => {
-        const student = myStudents.find(s => s.id === rec.studentId);
-        const sName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown';
-        let dateTimeStr = '';
-        if (rec.date?.toDate) {
-          const d = rec.date.toDate();
-          const dateStr = d.toLocaleDateString('en-GB');
-          let hours = d.getHours();
-          const minutes = d.getMinutes().toString().padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          const timeStr = `${hours}:${minutes} ${ampm}`;
-          dateTimeStr = `${dateStr} at ${timeStr}`;
-        } else {
-          dateTimeStr = rec.date || '—';
-        }
-        const date = dateTimeStr;
-        const pillClass = rec.status === 'present' ? 'pill-active' : rec.status === 'excused' ? 'pill-pending' : '';
-        // Get course from student data
-        const courseName = student ? (student.courseType || '—') : '—';
-        // Get class title from allClasses lookup
-        let classTitle = '—';
-        if (rec.classId && allInstructorClasses && allInstructorClasses.length > 0) {
-          const foundClass = allInstructorClasses.find(c => c.id === rec.classId);
-          if (foundClass) classTitle = foundClass.title || '—';
-        }
-        return `<tr>
-          <td><div style="font-weight:600">${sName}</div></td>
-          <td>${date}</td>
-          <td style="font-size:12px;">${escapeHtml(courseName)}</td>
-          <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
-          <td><span class="pill ${pillClass}">${rec.status}</span></td>
-          <td style="display:flex;gap:4px;">
-            <button class="btn btn-icon toggle-present" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${rec.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="instructorToggleAttendance('${rec.id}', 'present')"><i class="fas fa-check"></i></button>
-            <button class="btn btn-icon toggle-absent" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${rec.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="instructorToggleAttendance('${rec.id}', 'absent')"><i class="fas fa-times"></i></button>
-          </td>
-        </tr>`;
-      }).join('');
     }
+    // Fallback to timestamp if no class
+    if (!dateTimeStr) {
+      if (rec.date?.toDate) {
+        const d = rec.date.toDate();
+        const dateStr = d.toLocaleDateString('en-GB');
+        let hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const timeStr = `${hours}:${minutes} ${ampm}`;
+        dateTimeStr = `${dateStr} at ${timeStr}`;
+      } else {
+        dateTimeStr = rec.date || '—';
+      }
+    }
+    const date = dateTimeStr;
+    const pillClass = rec.status === 'present' ? 'pill-active' : rec.status === 'excused' ? 'pill-pending' : '';
+    const courseName = student ? (student.courseType || '—') : '—';
+    let classTitle = '—';
+    if (rec.classId && allInstructorClasses && allInstructorClasses.length > 0) {
+      const foundClass = allInstructorClasses.find(c => c.id === rec.classId);
+      if (foundClass) classTitle = foundClass.title || '—';
+    }
+    return `<tr>
+      <td><div style="font-weight:600">${sName}</div></td>
+      <td>${date}</td>
+      <td style="font-size:12px;">${escapeHtml(courseName)}</td>
+      <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
+      <td><span class="pill ${pillClass}">${rec.status}</span></td>
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-icon toggle-present" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${rec.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="instructorToggleAttendance('${rec.id}', 'present')"><i class="fas fa-check"></i></button>
+        <button class="btn btn-icon toggle-absent" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${rec.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="instructorToggleAttendance('${rec.id}', 'absent')"><i class="fas fa-times"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
     // ── TOGGLE STUDENT ATTENDANCE STATUS ──
     window.instructorToggleAttendance = async function(recordId, newStatus) {
@@ -1360,54 +1390,63 @@
     }
 
     function renderMyAttendanceTable() {
-      const tbody = document.getElementById("myAttendanceTableBody");
-      if (!myAttendanceRecords.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records yet. Click "Mark Attendance" to add one.</td></tr>`;
-        return;
+  const tbody = document.getElementById("myAttendanceTableBody");
+  if (!myAttendanceRecords.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records yet. Click "Mark Attendance" to add one.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = myAttendanceRecords.map(r => {
+    let dateTimeStr = '';
+    if (r.classId) {
+      const cls = allInstructorClasses.find(c => c.id === r.classId);
+      if (cls) {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        const timeRange = getClassTimeRange(cls);
+        dateTimeStr = `${dateStr} at ${timeRange}`;
       }
-      tbody.innerHTML = myAttendanceRecords.map(r => {
-        let dateTimeStr = '';
-        if (r.date?.toDate) {
-          const d = r.date.toDate();
-          const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-          let hours = d.getHours();
-          const minutes = d.getMinutes().toString().padStart(2, '0');
-          const seconds = d.getSeconds().toString().padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          const timeStr = `${hours}:${minutes}:${seconds} ${ampm}`;
-          dateTimeStr = `${dateStr} at ${timeStr}`;
-        } else if (r.timestamp?.toDate) {
-          // Fallback to timestamp field if date is missing time
-          const d = r.timestamp.toDate();
-          const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-          let hours = d.getHours();
-          const minutes = d.getMinutes().toString().padStart(2, '0');
-          const seconds = d.getSeconds().toString().padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          const timeStr = `${hours}:${minutes}:${seconds} ${ampm}`;
-          dateTimeStr = `${dateStr} at ${timeStr}`;
-        } else if (typeof r.date === 'string') {
-          dateTimeStr = r.date;
-        } else {
-          dateTimeStr = '—';
-        }
-        const date = dateTimeStr;
-        const pillClass = r.status === 'present' ? 'pill-active' : 'pill-pending';
-        return `<tr>
-          <td style="font-weight:500;">${date}</td>
-          <td><span class="stage-pill">${r.sessionType || '—'}</span></td>
-          <td style="color:var(--text-muted);">${r.course || '—'}</td>
-          <td style="color:var(--text-muted);font-size:12px;">${r.notes || '—'}</td>
-          <td><span class="pill ${pillClass}">${r.status || 'present'}</span></td>
-          <td style="display:flex;gap:4px;">
-            <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleMyAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
-            <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleMyAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
-          </td>
-        </tr>`;
-      }).join('');
     }
+    // Fallback to timestamp if no class or class not found
+    if (!dateTimeStr) {
+      if (r.date?.toDate) {
+        const d = r.date.toDate();
+        const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        let hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const timeStr = `${hours}:${minutes} ${ampm}`;
+        dateTimeStr = `${dateStr} at ${timeStr}`;
+      } else if (r.timestamp?.toDate) {
+        const d = r.timestamp.toDate();
+        const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        let hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const timeStr = `${hours}:${minutes} ${ampm}`;
+        dateTimeStr = `${dateStr} at ${timeStr}`;
+      } else if (typeof r.date === 'string') {
+        dateTimeStr = r.date;
+      } else {
+        dateTimeStr = '—';
+      }
+    }
+    const date = dateTimeStr;
+    const pillClass = r.status === 'present' ? 'pill-active' : 'pill-pending';
+    return `<tr>
+      <td style="font-weight:500;">${date}</td>
+      <td><span class="stage-pill">${r.sessionType || '—'}</span></td>
+      <td style="color:var(--text-muted);">${r.course || '—'}</td>
+      <td style="color:var(--text-muted);font-size:12px;">${r.notes || '—'}</td>
+      <td><span class="pill ${pillClass}">${r.status || 'present'}</span></td>
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleMyAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
+        <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleMyAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
     // ── TOGGLE MY ATTENDANCE STATUS ──
     window.toggleMyAttendanceStatus = async function(recordId, newStatus) {
@@ -1570,123 +1609,122 @@
     }
 
     function renderUpcomingSessions() {
-      const container = document.getElementById("upcomingSessions");
-      if (!container) return;
-      
-      const now = new Date();
-      const upcoming = allInstructorClasses
-        .filter(cls => {
-          const start = new Date(`${cls.date}T${cls.time}`);
-          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-          return end > now;
-        })
-        .sort((a, b) => {
-          const da = new Date(`${a.date}T${a.time}`);
-          const db = new Date(`${b.date}T${b.time}`);
-          return da - db;
-        })
-        .slice(0, 5);
-      
-      if (upcoming.length === 0) {
-        container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No upcoming sessions scheduled.</div>';
-        return;
-      }
-      
-      container.innerHTML = upcoming.map(cls => {
-        const start = new Date(`${cls.date}T${cls.time}`);
-        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
-        const timeStr = formatTime(cls.time);
-        const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
-        return `
-          <div style="padding:8px 0;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px;">
-            <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:12px;flex-shrink:0;">
-              <i class="fas ${modeIcon}"></i>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(cls.title)}</div>
-              <div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeStr}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
+  const container = document.getElementById("upcomingSessions");
+  if (!container) return;
+  
+  const now = new Date();
+  const upcoming = allInstructorClasses
+    .filter(cls => {
+      const start = new Date(`${cls.date}T${cls.time}`);
+      const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+      return end > now;
+    })
+    .sort((a, b) => {
+      const da = new Date(`${a.date}T${a.time}`);
+      const db = new Date(`${b.date}T${b.time}`);
+      return da - db;
+    })
+    .slice(0, 5);
+  
+  if (upcoming.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No upcoming sessions scheduled.</div>';
+    return;
+  }
+  
+  container.innerHTML = upcoming.map(cls => {
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+    const timeRange = getClassTimeRange(cls);
+    const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
+    return `
+      <div style="padding:8px 0;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:12px;flex-shrink:0;">
+          <i class="fas ${modeIcon}"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(cls.title)}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeRange}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
     function checkInstructorClassSession() {
-      const container = document.getElementById("instructorCheckinContainer");
-      if (!container) return;
+  const container = document.getElementById("instructorCheckinContainer");
+  if (!container) return;
 
-      const now = new Date();
-      const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+  const now = new Date();
+  const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
-      function isClassMarked(classId) {
-        return myAttendanceRecords.some(r => r.classId === classId && r.status === 'present');
-      }
+  function isClassMarked(classId) {
+    return myAttendanceRecords.some(r => r.classId === classId && r.status === 'present');
+  }
 
-      // Any class that's ongoing OR ended within the last 48 hours is checkin-eligible
-      const eligible = allInstructorClasses
-        .map(cls => {
-          const start = new Date(`${cls.date}T${cls.time}`);
-          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-          return { cls, start, end };
-        })
-        .filter(({ start, end }) => now >= start && (now <= end || (now - end) < FORTY_EIGHT_HOURS))
-        .sort((a, b) => b.start - a.start); // newest first
+  const eligible = allInstructorClasses
+    .map(cls => {
+      const start = new Date(`${cls.date}T${cls.time}`);
+      const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+      return { cls, start, end };
+    })
+    .filter(({ start, end }) => now >= start && (now <= end || (now - end) < FORTY_EIGHT_HOURS))
+    .sort((a, b) => b.start - a.start);
 
-      if (!eligible.length) {
-        container.style.display = "none";
-        container.innerHTML = "";
-        return;
-      }
+  if (!eligible.length) {
+    container.style.display = "none";
+    container.innerHTML = "";
+    return;
+  }
 
-      container.style.display = "flex";
-      container.style.flexDirection = "column";
-      container.style.gap = "10px";
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.gap = "10px";
 
-      const [currentItem, ...pastItems] = eligible;
+  const [currentItem, ...pastItems] = eligible;
 
-      function renderCard({ cls, start, end }, isCurrent) {
-        const marked = isClassMarked(cls.id);
-        const timeStr = formatTime(cls.time);
-        const ongoing = now <= end;
-        const titleIcon = marked ? 'fa-check-circle' : (ongoing ? 'fa-map-pin' : 'fa-clock');
-        const titleColor = marked ? 'var(--success)' : 'var(--gold)';
-        const statusText = marked
-          ? "you've already checked in for this class."
-          : (ongoing ? "Your class is active — tap to mark your attendance." : "Class ended — you can still mark attendance (within 48 hours).");
+  function renderCard({ cls, start, end }, isCurrent) {
+    const marked = isClassMarked(cls.id);
+    const timeRange = getClassTimeRange(cls);   // ← USING TIME RANGE
+    const ongoing = now <= end;
+    const titleIcon = marked ? 'fa-check-circle' : (ongoing ? 'fa-map-pin' : 'fa-clock');
+    const titleColor = marked ? 'var(--success)' : 'var(--gold)';
+    const statusText = marked
+      ? "you've already checked in for this class."
+      : (ongoing ? "Your class is active — tap to mark your attendance." : "Class ended — you can still mark attendance (within 48 hours).");
 
-        const btnHtml = marked
-          ? `<button disabled style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:rgba(76,175,80,0.15); color:var(--success); border:1px solid var(--success); border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:default; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; opacity:0.75; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Attendance marked</button>`
-          : `<button onclick="markInstructorAttendance('${cls.id}')" style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:var(--gold); color:var(--navy); border:none; border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; transition:all var(--transition); white-space:nowrap; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Mark attendance</button>`;
+    const btnHtml = marked
+      ? `<button disabled style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:rgba(76,175,80,0.15); color:var(--success); border:1px solid var(--success); border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:default; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; opacity:0.75; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Attendance marked</button>`
+      : `<button onclick="markInstructorAttendance('${cls.id}')" style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:var(--gold); color:var(--navy); border:none; border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; transition:all var(--transition); white-space:nowrap; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Mark attendance</button>`;
 
-        if (isCurrent) {
-          return `
-            <div style="background: linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%); border: 1px solid var(--gold); border-radius: var(--radius-lg); padding: 24px; display:flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; opacity:${marked ? '0.6' : '1'};">
-              <div>
-                <h3 style="font-size:17px; font-weight:700; margin-bottom:4px;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px"></i> ${escapeHtml(cls.title || 'Class')}</h3>
-                <p style="font-size:13px; color:var(--text-muted);">${timeStr} — ${statusText}</p>
-              </div>
-              ${btnHtml}
-            </div>`;
-        }
-        return `
-          <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; opacity:${marked ? '0.55' : '0.9'}; width:220px;">
-            <div style="min-width:0;">
-              <div style="font-size:12px; font-weight:600; line-height:1.4;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px;font-size:10px;"></i> ${escapeHtml(cls.title || 'Class')}</div>
-              <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${timeStr}</div>
-            </div>
-            ${btnHtml}
-          </div>`;
-      }
-
-      const pastHtml = pastItems.length
-        ? `<div style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-top:4px;">Past Classes</div>
-           <div style="display:flex; flex-wrap:wrap; gap:10px;">
-             ${pastItems.map(item => renderCard(item, false)).join('')}
-           </div>`
-        : '';
-
-      container.innerHTML = renderCard(currentItem, true) + pastHtml;
+    if (isCurrent) {
+      return `
+        <div style="background: linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%); border: 1px solid var(--gold); border-radius: var(--radius-lg); padding: 24px; display:flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; opacity:${marked ? '0.6' : '1'};">
+          <div>
+            <h3 style="font-size:17px; font-weight:700; margin-bottom:4px;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px"></i> ${escapeHtml(cls.title || 'Class')}</h3>
+            <p style="font-size:13px; color:var(--text-muted);">${timeRange} — ${statusText}</p>
+          </div>
+          ${btnHtml}
+        </div>`;
     }
+    return `
+      <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; opacity:${marked ? '0.55' : '0.9'}; width:220px;">
+        <div style="min-width:0;">
+          <div style="font-size:12px; font-weight:600; line-height:1.4;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px;font-size:10px;"></i> ${escapeHtml(cls.title || 'Class')}</div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${timeRange}</div>
+        </div>
+        ${btnHtml}
+      </div>`;
+  }
+
+  const pastHtml = pastItems.length
+    ? `<div style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-top:4px;">Past Classes</div>
+       <div style="display:flex; flex-wrap:wrap; gap:10px;">
+         ${pastItems.map(item => renderCard(item, false)).join('')}
+       </div>`
+    : '';
+
+  container.innerHTML = renderCard(currentItem, true) + pastHtml;
+}
 
     // ── SCHOOL GEOFENCE (30m radius) ──
     const SCHOOL_LAT = 5.6120526;

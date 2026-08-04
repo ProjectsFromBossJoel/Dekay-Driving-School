@@ -1063,6 +1063,26 @@
   // ══════════════════════════════════════
   let studentPermissions = {};
 
+  // Get time range from a class object
+function getClassTimeRange(cls) {
+  if (!cls) return '';
+  const startTime = formatTime(cls.time);
+  let endTime;
+  if (cls.endTime) {
+    endTime = formatTime(cls.endTime);
+  } else if (cls.durationMinutes) {
+    // Compute end time from start + duration
+    const [h, m] = cls.time.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(h, m, 0, 0);
+    const endDate = new Date(startDate.getTime() + cls.durationMinutes * 60000);
+    endTime = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else {
+    endTime = '';
+  }
+  return endTime ? `${startTime} – ${endTime}` : startTime;
+}
+
   async function loadStudentPermissions() {
     try {
       const snap = await getDoc(doc(db, "permissions", "student_permissions"));
@@ -1183,29 +1203,42 @@
         ? `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No sessions recorded yet. </div>`
         : records.map(r => {
             // Use timestamp field if available (exact check-in time), fall back to date field
-            let dateTimeStr = '';
-            if (r.timestamp?.toDate) {
-              const d = r.timestamp.toDate();
-              const dateStr = d.toLocaleDateString('en-GB');
-              let hours = d.getHours();
-              const minutes = d.getMinutes().toString().padStart(2, '0');
-              const ampm = hours >= 12 ? 'PM' : 'AM';
-              hours = hours % 12 || 12;
-              const timeStr = `${hours}:${minutes} ${ampm}`;
-              dateTimeStr = `${dateStr} at ${timeStr}`;
-            } else if (r.date) {
-              // Fall back to date field if no timestamp (for older records)
-              const d = new Date(r.date);
-              const dateStr = d.toLocaleDateString('en-GB');
-              let hours = d.getHours();
-              const minutes = d.getMinutes().toString().padStart(2, '0');
-              const ampm = hours >= 12 ? 'PM' : 'AM';
-              hours = hours % 12 || 12;
-              const timeStr = `${hours}:${minutes} ${ampm}`;
-              dateTimeStr = `${dateStr} at ${timeStr}`;
-            } else {
-              dateTimeStr = '—';
-            }
+            // Inside loadAttendance, when building the table rows:
+        let dateTimeStr = '';
+        if (r.classId) {
+          const cls = allMyClasses.find(c => c.id === r.classId);
+          if (cls) {
+            const start = new Date(`${cls.date}T${cls.time}`);
+            const dateStr = start.toLocaleDateString('en-GB');
+            const timeRange = getClassTimeRange(cls);
+            dateTimeStr = `${dateStr} at ${timeRange}`;
+          }
+        }
+        // Fallback to timestamp if no class
+        if (!dateTimeStr) {
+          if (r.timestamp?.toDate) {
+            const d = r.timestamp.toDate();
+            const dateStr = d.toLocaleDateString('en-GB');
+            let hours = d.getHours();
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            const timeStr = `${hours}:${minutes} ${ampm}`;
+            dateTimeStr = `${dateStr} at ${timeStr}`;
+          } else if (r.date) {
+            // fallback to date field
+            const d = new Date(r.date);
+            const dateStr = d.toLocaleDateString('en-GB');
+            let hours = d.getHours();
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            const timeStr = `${hours}:${minutes} ${ampm}`;
+            dateTimeStr = `${dateStr} at ${timeStr}`;
+          } else {
+            dateTimeStr = '—';
+          }
+        }
             
             const pill = `<span class="att-pill ${r.status}">${r.status}</span>`;
             // Get class title from classId if available
@@ -1670,7 +1703,7 @@
     container.innerHTML = upcoming.map(cls => {
       const start = new Date(`${cls.date}T${cls.time}`);
       const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
-      const timeStr = formatTime(cls.time);
+      const timeRange = getClassTimeRange(cls);
       const status = computeClassStatus(cls);
       let statusBadge = '';
       if (status === 'ongoing') {
@@ -1687,7 +1720,7 @@
           </div>
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(cls.title)}</div>
-            <div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeStr}</div>
+            <<div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeRange}</div>
           </div>
           ${statusBadge}
         </div>
@@ -1742,10 +1775,14 @@
     container.style.display = "flex";
 
     function renderCard({ cls, start, end }, isCurrent) {
-      const marked = isClassMarked(cls);
-      const timeLabel = formatTime(cls.time);
-      const isOngoing = now >= start && now <= end;
-      const isUpcoming = now < start;
+    const marked = isClassMarked(cls.id);
+    const timeRange = getClassTimeRange(cls);   // <-- replace formatTime(cls.time) with this
+    const ongoing = now <= end;
+    const titleIcon = marked ? 'fa-check-circle' : (ongoing ? 'fa-map-pin' : 'fa-clock');
+    const titleColor = marked ? 'var(--success)' : 'var(--gold)';
+    const statusText = marked
+      ? "you've already checked in for this class."
+      : (ongoing ? "Your class is active — tap to mark your attendance." : "Class ended — you can still mark attendance (within 48 hours).");
 
       let headerText = 'Session in progress';
       let icon = 'fa-map-pin';
@@ -2431,36 +2468,36 @@
   }
 
     function renderMyClassesTable(classes) {
-    const tbody = document.getElementById("studentClassesTableBody");
-    if (!classes.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">No classes scheduled yet for your course. </div>`;
-      return;
-    }
-    tbody.innerHTML = classes.map(cls => {
-      const status = computeClassStatus(cls);
-      const start  = new Date(`${cls.date}T${cls.time}`);
-      const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-      const timeStr = formatTime(cls.time);
-      const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
-      const modeLabel = cls.mode === 'online' ? 'Online' : 'In-person';
-      const durLabel = cls.durationMinutes >= 60
-        ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
-        : `${cls.durationMinutes}m`;
-      return `<tr>
-        <td><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
-        <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(cls.instructorName || '—')}</td>
-        <td><div style="font-weight:500;">${dateStr}</div><div style="font-size:11px;color:var(--text-muted);">${timeStr}</div></td>
-        <td style="color:var(--text-muted);">${durLabel}</td>
-        <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);"><i class="fas ${modeIcon}" style="color:var(--gold);"></i>${modeLabel}</span></td>
-        <td>${classStatusPill(status)}</td>
-        <td style="display:flex;gap:6px;">
-          <button class="btn-sm btn-sm-outline" onclick="openClassDetailsModal('${cls.id}')" style="padding:5px 10px;">
-            <i class="fas fa-eye"></i> View
-          </button>
-        </td>
-      </tr>`;
-    }).join('');
+  const tbody = document.getElementById("studentClassesTableBody");
+  if (!classes.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">No classes scheduled yet for your course.</td></tr>`;
+    return;
   }
+  tbody.innerHTML = classes.map(cls => {
+    const status = computeClassStatus(cls);
+    const start  = new Date(`${cls.date}T${cls.time}`);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    const timeRange = getClassTimeRange(cls);   // ← NEW: time range
+    const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
+    const modeLabel = cls.mode === 'online' ? 'Online' : 'In-person';
+    const durLabel = cls.durationMinutes >= 60
+      ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
+      : `${cls.durationMinutes}m`;
+    return `<tr>
+      <td><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
+      <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(cls.instructorName || '—')}</td>
+      <td><div style="font-weight:500;">${dateStr}</div><div style="font-size:11px;color:var(--text-muted);">${timeRange}</div></td>
+      <td style="color:var(--text-muted);">${durLabel}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);"><i class="fas ${modeIcon}" style="color:var(--gold);"></i>${modeLabel}</span></td>
+      <td>${classStatusPill(status)}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn-sm btn-sm-outline" onclick="openClassDetailsModal('${cls.id}')" style="padding:5px 10px;">
+          <i class="fas fa-eye"></i> View
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
   window.filterMyClasses = function() {
     const search = document.getElementById("classSearch")?.value.toLowerCase() || '';
@@ -2557,98 +2594,98 @@
 
 
   window.openResourcesModal = function(classId) {
-    const cls = allResourcesClasses.find(c => c.id === classId);
-    if (!cls) return;
+  const cls = allResourcesClasses.find(c => c.id === classId);
+  if (!cls) return;
 
-    const start = new Date(`${cls.date}T${cls.time}`);
-    const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-    const timeStr = formatTime(cls.time);
-    const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
+  const start = new Date(`${cls.date}T${cls.time}`);
+  const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const timeRange = getClassTimeRange(cls);   // ← NEW: time range
+  const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
 
-    document.getElementById("resourcesModalTitle").textContent = cls.title || 'Class Resources';
+  document.getElementById("resourcesModalTitle").textContent = cls.title || 'Class Resources';
 
-    const body = document.getElementById("resourcesModalBody");
-    body.innerHTML = `
-      <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
-        <div style="display:flex;gap:16px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:150px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
-            <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
-          </div>
-          <div style="flex:1;min-width:150px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
-            <div style="font-weight:600;">${dateStr}</div>
-            <div style="font-size:12px;color:var(--text-muted);">${timeStr}</div>
-          </div>
-          <div style="flex:1;min-width:100px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
-            <div style="font-weight:600;">${modeLabel}</div>
-          </div>
+  const body = document.getElementById("resourcesModalBody");
+  body.innerHTML = `
+    <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:150px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
+          <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
+        </div>
+        <div style="flex:1;min-width:150px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
+          <div style="font-weight:600;">${dateStr}</div>
+          <div style="font-size:12px;color:var(--text-muted);">${timeRange}</div>
+        </div>
+        <div style="flex:1;min-width:100px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
+          <div style="font-weight:600;">${modeLabel}</div>
         </div>
       </div>
+    </div>
 
-      <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
-        <i class="fas fa-paperclip" style="margin-right:6px;"></i> Documents (${cls.documents.length})
-      </div>
+    <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+      <i class="fas fa-paperclip" style="margin-right:6px;"></i> Documents (${cls.documents.length})
+    </div>
 
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        ${cls.documents.map((doc, i) => {
-          // Determine file type from extension
-          const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
-          let icon = 'fa-file';
-          let iconColor = 'var(--text-muted)';
-          let bgColor = 'rgba(139,154,176,0.08)';
-          
-          if (ext === 'pdf') {
-            icon = 'fa-file-pdf';
-            iconColor = '#EF5350';
-            bgColor = 'rgba(239,83,80,0.1)';
-          } else if (ext === 'doc' || ext === 'docx') {
-            icon = 'fa-file-word';
-            iconColor = '#42A5F5';
-            bgColor = 'rgba(66,165,245,0.1)';
-          } else if (ext === 'xls' || ext === 'xlsx') {
-            icon = 'fa-file-excel';
-            iconColor = '#66BB6A';
-            bgColor = 'rgba(102,187,106,0.1)';
-          } else if (ext === 'ppt' || ext === 'pptx') {
-            icon = 'fa-file-powerpoint';
-            iconColor = '#FFA726';
-            bgColor = 'rgba(255,167,38,0.1)';
-          } else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
-            icon = 'fa-file-image';
-            iconColor = '#42A5F5';
-            bgColor = 'rgba(66,165,245,0.1)';
-          } else if (ext === 'txt') {
-            icon = 'fa-file-alt';
-            iconColor = 'var(--text-muted)';
-            bgColor = 'rgba(139,154,176,0.08)';
-          } else if (ext === 'csv') {
-            icon = 'fa-file-csv';
-            iconColor = '#66BB6A';
-            bgColor = 'rgba(102,187,106,0.1)';
-          } else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
-            icon = 'fa-file-archive';
-            iconColor = '#8D6E63';
-            bgColor = 'rgba(141,110,99,0.1)';
-          }
-          const safeDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
-          return `
-            <div onclick="forceDownloadDocument('${doc.url}', '${safeDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
-              <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
-              <div style="flex:1;">
-                <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
-                <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
-              </div>
-              <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${cls.documents.map((doc, i) => {
+        // Determine file type from extension
+        const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
+        let icon = 'fa-file';
+        let iconColor = 'var(--text-muted)';
+        let bgColor = 'rgba(139,154,176,0.08)';
+        
+        if (ext === 'pdf') {
+          icon = 'fa-file-pdf';
+          iconColor = '#EF5350';
+          bgColor = 'rgba(239,83,80,0.1)';
+        } else if (ext === 'doc' || ext === 'docx') {
+          icon = 'fa-file-word';
+          iconColor = '#42A5F5';
+          bgColor = 'rgba(66,165,245,0.1)';
+        } else if (ext === 'xls' || ext === 'xlsx') {
+          icon = 'fa-file-excel';
+          iconColor = '#66BB6A';
+          bgColor = 'rgba(102,187,106,0.1)';
+        } else if (ext === 'ppt' || ext === 'pptx') {
+          icon = 'fa-file-powerpoint';
+          iconColor = '#FFA726';
+          bgColor = 'rgba(255,167,38,0.1)';
+        } else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
+          icon = 'fa-file-image';
+          iconColor = '#42A5F5';
+          bgColor = 'rgba(66,165,245,0.1)';
+        } else if (ext === 'txt') {
+          icon = 'fa-file-alt';
+          iconColor = 'var(--text-muted)';
+          bgColor = 'rgba(139,154,176,0.08)';
+        } else if (ext === 'csv') {
+          icon = 'fa-file-csv';
+          iconColor = '#66BB6A';
+          bgColor = 'rgba(102,187,106,0.1)';
+        } else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
+          icon = 'fa-file-archive';
+          iconColor = '#8D6E63';
+          bgColor = 'rgba(141,110,99,0.1)';
+        }
+        const safeDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
+        return `
+          <div onclick="forceDownloadDocument('${doc.url}', '${safeDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
+            <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
+              <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
             </div>
-          `;
-        }).join('')}
-      </div>
-    `;
+            <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
 
-    document.getElementById("resourcesModal").classList.add("open");
-  };
+  document.getElementById("resourcesModal").classList.add("open");
+};
 
   window.closeResourcesModal = function() {
     document.getElementById("resourcesModal").classList.remove("open");
@@ -2676,57 +2713,57 @@
   };
 
   function renderFilteredResources(classes) {
-    const grid = document.getElementById("resourcesCourseGrid");
-    if (!grid) return;
+  const grid = document.getElementById("resourcesCourseGrid");
+  if (!grid) return;
 
-    if (!classes || classes.length === 0) {
-      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No matching resources found.</div>';
-      return;
-    }
+  if (!classes || classes.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No matching resources found.</div>';
+    return;
+  }
 
-    grid.innerHTML = classes.map(cls => {
-      const start = new Date(`${cls.date}T${cls.time}`);
-      const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-      const timeStr = formatTime(cls.time);
-      const docCount = cls.documents.length;
+  grid.innerHTML = classes.map(cls => {
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    const timeRange = getClassTimeRange(cls);   // ← NEW: time range
+    const docCount = cls.documents.length;
 
-      return `
-        <div class="video-item" onclick="openResourcesModal('${cls.id}')" style="cursor:pointer;">
-          <div style="padding:18px;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-              <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px;">
-                <i class="fas fa-folder"></i>
-              </div>
-              <div>
-                <div style="font-weight:600;font-size:14px;">${escapeHtml(cls.title)}</div>
-                <div style="font-size:11px;color:var(--text-muted);">${docCount} document${docCount > 1 ? 's' : ''}</div>
-              </div>
+    return `
+      <div class="video-item" onclick="openResourcesModal('${cls.id}')" style="cursor:pointer;">
+        <div style="padding:18px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px;">
+              <i class="fas fa-folder"></i>
             </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">
-              <i class="fas fa-user" style="margin-right:4px;"></i>${escapeHtml(cls.instructorName || '—')}
-            </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
-              <i class="fas fa-calendar" style="margin-right:4px;"></i>${dateStr} · ${timeStr}
-            </div>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;">
-              ${cls.documents.map(d => {
-                const ext = (d.name || '').split('.').pop()?.toLowerCase() || '';
-                let icon = 'fa-file';
-                let color = 'var(--text-muted)';
-                if (ext === 'pdf') { icon = 'fa-file-pdf'; color = '#EF5350'; }
-                else if (ext === 'doc' || ext === 'docx') { icon = 'fa-file-word'; color = '#42A5F5'; }
-                else if (ext === 'xls' || ext === 'xlsx') { icon = 'fa-file-excel'; color = '#66BB6A'; }
-                else if (ext === 'ppt' || ext === 'pptx') { icon = 'fa-file-powerpoint'; color = '#FFA726'; }
-                else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) { icon = 'fa-file-image'; color = '#42A5F5'; }
-                return `<span style="font-size:10px;background:rgba(245,166,35,0.08);padding:3px 8px;border-radius:4px;color:${color};"><i class="fas ${icon}"></i></span>`;
-              }).join('')}
-              ${docCount > 3 ? `<span style="font-size:10px;color:var(--text-muted);">+${docCount - 3} more</span>` : ''}
+            <div>
+              <div style="font-weight:600;font-size:14px;">${escapeHtml(cls.title)}</div>
+              <div style="font-size:11px;color:var(--text-muted);">${docCount} document${docCount > 1 ? 's' : ''}</div>
             </div>
           </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+            <i class="fas fa-user" style="margin-right:4px;"></i>${escapeHtml(cls.instructorName || '—')}
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+            <i class="fas fa-calendar" style="margin-right:4px;"></i>${dateStr} · ${timeRange}
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            ${cls.documents.map(d => {
+              const ext = (d.name || '').split('.').pop()?.toLowerCase() || '';
+              let icon = 'fa-file';
+              let color = 'var(--text-muted)';
+              if (ext === 'pdf') { icon = 'fa-file-pdf'; color = '#EF5350'; }
+              else if (ext === 'doc' || ext === 'docx') { icon = 'fa-file-word'; color = '#42A5F5'; }
+              else if (ext === 'xls' || ext === 'xlsx') { icon = 'fa-file-excel'; color = '#66BB6A'; }
+              else if (ext === 'ppt' || ext === 'pptx') { icon = 'fa-file-powerpoint'; color = '#FFA726'; }
+              else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) { icon = 'fa-file-image'; color = '#42A5F5'; }
+              return `<span style="font-size:10px;background:rgba(245,166,35,0.08);padding:3px 8px;border-radius:4px;color:${color};"><i class="fas ${icon}"></i></span>`;
+            }).join('')}
+            ${docCount > 3 ? `<span style="font-size:10px;color:var(--text-muted);">+${docCount - 3} more</span>` : ''}
+          </div>
         </div>
-      `;
-    }).join('');
-  }
+      </div>
+    `;
+  }).join('');
+}
 
   // ── MY INSTRUCTORS PAGE FUNCTIONS ──
   let instructorsList = [];
@@ -2951,155 +2988,154 @@
   // CLASS DETAILS MODAL (Student View)
   // ══════════════════════════════════════
   window.openClassDetailsModal = function(classId) {
-    const cls = allMyClasses.find(c => c.id === classId);
-    if (!cls) {
-      showToast("Class details not found.", "error");
-      return;
-    }
+  const cls = allMyClasses.find(c => c.id === classId);
+  if (!cls) {
+    showToast("Class details not found.", "error");
+    return;
+  }
 
-    const start = new Date(`${cls.date}T${cls.time}`);
-    const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-    const timeStr = formatTime(cls.time);
-    const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
-    const status = computeClassStatus(cls);
-    let statusBadge = '';
-    if (status === 'ongoing') {
-      statusBadge = '<span class="att-pill present" style="font-size:11px;">Live Now</span>';
-    } else if (status === 'upcoming') {
-      statusBadge = '<span class="att-pill excused" style="font-size:11px;">Upcoming</span>';
-    } else {
-      statusBadge = '<span class="att-pill absent" style="font-size:11px;">Completed</span>';
-    }
+  const start = new Date(`${cls.date}T${cls.time}`);
+  const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const timeRange = getClassTimeRange(cls);   // ← NEW: time range
+  const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
+  const status = computeClassStatus(cls);
+  let statusBadge = '';
+  if (status === 'ongoing') {
+    statusBadge = '<span class="att-pill present" style="font-size:11px;">Live Now</span>';
+  } else if (status === 'upcoming') {
+    statusBadge = '<span class="att-pill excused" style="font-size:11px;">Upcoming</span>';
+  } else {
+    statusBadge = '<span class="att-pill absent" style="font-size:11px;">Completed</span>';
+  }
 
-    const durLabel = cls.durationMinutes >= 60
-      ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
-      : `${cls.durationMinutes}m`;
+  const durLabel = cls.durationMinutes >= 60
+    ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
+    : `${cls.durationMinutes}m`;
 
-    // Determine if join button should be shown (online mode and meeting link exists)
-    const showJoinButton = cls.mode === 'online' && cls.meetingLink && cls.meetingLink.trim() !== '';
-    const joinButtonHtml = showJoinButton 
-      ? `<button class="btn btn-gold" onclick="window.open('${cls.meetingLink}', '_blank')" style="margin-top:10px; width:100%; justify-content:center;">
-           <i class="fas fa-video"></i> Join Online Class
-         </button>`
-      : '';
+  // Determine if join button should be shown (online mode and meeting link exists)
+  const showJoinButton = cls.mode === 'online' && cls.meetingLink && cls.meetingLink.trim() !== '';
+  const joinButtonHtml = showJoinButton 
+    ? `<button class="btn btn-gold" onclick="window.open('${cls.meetingLink}', '_blank')" style="margin-top:10px; width:100%; justify-content:center;">
+         <i class="fas fa-video"></i> Join Online Class
+       </button>`
+    : '';
 
-    // Build documents HTML
-    let documentsHtml = '';
-    if (cls.documents && cls.documents.length > 0) {
-      documentsHtml = `
-        <div style="margin-top:20px;">
-          <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
-            <i class="fas fa-paperclip" style="margin-right:6px;"></i> Class Materials (${cls.documents.length})
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            ${cls.documents.map((doc, i) => {
-              const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
-              let icon = 'fa-file';
-              let iconColor = 'var(--text-muted)';
-              let bgColor = 'rgba(139,154,176,0.08)';
-              
-              if (ext === 'pdf') {
-                icon = 'fa-file-pdf';
-                iconColor = '#EF5350';
-                bgColor = 'rgba(239,83,80,0.1)';
-              } else if (ext === 'doc' || ext === 'docx') {
-                icon = 'fa-file-word';
-                iconColor = '#42A5F5';
-                bgColor = 'rgba(66,165,245,0.1)';
-              } else if (ext === 'xls' || ext === 'xlsx') {
-                icon = 'fa-file-excel';
-                iconColor = '#66BB6A';
-                bgColor = 'rgba(102,187,106,0.1)';
-              } else if (ext === 'ppt' || ext === 'pptx') {
-                icon = 'fa-file-powerpoint';
-                iconColor = '#FFA726';
-                bgColor = 'rgba(255,167,38,0.1)';
-              } else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
-                icon = 'fa-file-image';
-                iconColor = '#42A5F5';
-                bgColor = 'rgba(66,165,245,0.1)';
-              }
-              const safeClassDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
-              return `
-                <div onclick="forceDownloadDocument('${doc.url}', '${safeClassDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
-                  <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
-                  <div style="flex:1;">
-                    <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
-                    <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
-                  </div>
-                  <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+  // Build documents HTML
+  let documentsHtml = '';
+  if (cls.documents && cls.documents.length > 0) {
+    documentsHtml = `
+      <div style="margin-top:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+          <i class="fas fa-paperclip" style="margin-right:6px;"></i> Class Materials (${cls.documents.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${cls.documents.map((doc, i) => {
+            const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
+            let icon = 'fa-file';
+            let iconColor = 'var(--text-muted)';
+            let bgColor = 'rgba(139,154,176,0.08)';
+            
+            if (ext === 'pdf') {
+              icon = 'fa-file-pdf';
+              iconColor = '#EF5350';
+              bgColor = 'rgba(239,83,80,0.1)';
+            } else if (ext === 'doc' || ext === 'docx') {
+              icon = 'fa-file-word';
+              iconColor = '#42A5F5';
+              bgColor = 'rgba(66,165,245,0.1)';
+            } else if (ext === 'xls' || ext === 'xlsx') {
+              icon = 'fa-file-excel';
+              iconColor = '#66BB6A';
+              bgColor = 'rgba(102,187,106,0.1)';
+            } else if (ext === 'ppt' || ext === 'pptx') {
+              icon = 'fa-file-powerpoint';
+              iconColor = '#FFA726';
+              bgColor = 'rgba(255,167,38,0.1)';
+            } else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
+              icon = 'fa-file-image';
+              iconColor = '#42A5F5';
+              bgColor = 'rgba(66,165,245,0.1)';
+            }
+            const safeClassDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
+            return `
+              <div onclick="forceDownloadDocument('${doc.url}', '${safeClassDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
+                <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
+                <div style="flex:1;">
+                  <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
+                  <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
                 </div>
-              `;
-            }).join('')}
-          </div>
+                <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+              </div>
+            `;
+          }).join('')}
         </div>
-      `;
-    }
+      </div>
+    `;
+  }
 
-    // Build platform info HTML for online classes
-    let platformHtml = '';
-    if (cls.mode === 'online' && cls.platform) {
-      platformHtml = `
+  // Build platform info HTML for online classes
+  let platformHtml = '';
+  if (cls.mode === 'online' && cls.platform) {
+    platformHtml = `
+      <div style="flex:1;min-width:150px;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Platform</div>
+        <div style="font-weight:600;">${escapeHtml(cls.platform)}</div>
+      </div>
+    `;
+  }
+
+  const html = `
+    <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+        <h2 style="font-size:18px;font-weight:700;color:var(--gold);">${escapeHtml(cls.title)}</h2>
+        ${statusBadge}
+      </div>
+      ${cls.description ? `<p style="font-size:13px;color:var(--text-light);margin-bottom:16px;line-height:1.5;">${escapeHtml(cls.description)}</p>` : ''}
+      
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
         <div style="flex:1;min-width:150px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Platform</div>
-          <div style="font-weight:600;">${escapeHtml(cls.platform)}</div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
+          <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
         </div>
-      `;
-    }
-
-    const html = `
-      <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-          <h2 style="font-size:18px;font-weight:700;color:var(--gold);">${escapeHtml(cls.title)}</h2>
-          ${statusBadge}
+        <div style="flex:1;min-width:150px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
+          <div style="font-weight:600;">${dateStr}</div>
+          <div style="font-size:12px;color:var(--text-muted);">${timeRange}</div>
         </div>
-        ${cls.description ? `<p style="font-size:13px;color:var(--text-light);margin-bottom:16px;line-height:1.5;">${escapeHtml(cls.description)}</p>` : ''}
-        
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
-          <div style="flex:1;min-width:150px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
-            <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
-          </div>
-          <div style="flex:1;min-width:150px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
-            <div style="font-weight:600;">${dateStr}</div>
-            <div style="font-size:12px;color:var(--text-muted);">${timeStr}</div>
-          </div>
-          <div style="flex:1;min-width:100px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Duration</div>
-            <div style="font-weight:600;">${durLabel}</div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
-          <div style="flex:1;min-width:150px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
-            <div style="font-weight:600;">
-              <i class="fas ${cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt'}" style="color:var(--gold);margin-right:6px;"></i>
-              ${modeLabel}
-            </div>
-          </div>
-          ${platformHtml}
-          ${cls.mode === 'online' && cls.meetingLink ? `
-          <div style="flex:2;min-width:200px;">
-            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Meeting Link</div>
-            <div style="font-size:12px;word-break:break-all;">
-              <a href="${cls.meetingLink}" target="_blank" style="color:var(--gold);text-decoration:none;">${escapeHtml(cls.meetingLink.length > 50 ? cls.meetingLink.substring(0, 50) + '...' : cls.meetingLink)}</a>
-            </div>
-          </div>
-          ` : ''}
+        <div style="flex:1;min-width:100px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Duration</div>
+          <div style="font-weight:600;">${durLabel}</div>
         </div>
       </div>
 
-      ${documentsHtml}
-      ${joinButtonHtml}
-    `;
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+        <div style="flex:1;min-width:150px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
+          <div style="font-weight:600;">
+            <i class="fas ${cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt'}" style="color:var(--gold);margin-right:6px;"></i>
+            ${modeLabel}
+          </div>
+        </div>
+        ${platformHtml}
+        ${cls.mode === 'online' && cls.meetingLink ? `
+        <div style="flex:2;min-width:200px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Meeting Link</div>
+          <div style="font-size:12px;word-break:break-all;">
+            <a href="${cls.meetingLink}" target="_blank" style="color:var(--gold);text-decoration:none;">${escapeHtml(cls.meetingLink.length > 50 ? cls.meetingLink.substring(0, 50) + '...' : cls.meetingLink)}</a>
+          </div>
+        </div>
+        ` : ''}
+      </div>
+    </div>
 
-    document.getElementById("classDetailsModalTitle").textContent = `Class: ${cls.title}`;
-    document.getElementById("classDetailsModalBody").innerHTML = html;
-    // Use the student dashboard's modal method (add 'open' class)
-    document.getElementById("classDetailsModal").classList.add("open");
-  };
+    ${documentsHtml}
+    ${joinButtonHtml}
+  `;
+
+  document.getElementById("classDetailsModalTitle").textContent = `Class: ${cls.title}`;
+  document.getElementById("classDetailsModalBody").innerHTML = html;
+  document.getElementById("classDetailsModal").classList.add("open");
+};
 
   window.closeClassDetailsModal = function() {
     // Use the student dashboard's modal method (remove 'open' class)
