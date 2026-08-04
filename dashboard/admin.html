@@ -1907,6 +1907,20 @@
               </select>
             </div>
           </div>
+
+          <!-- NEW SCHEDULE SECTION -->
+          <div class="bio-section" id="vehicleScheduleSection" style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+      <div class="bio-section-title">Assigned Schedule</div>
+      <div id="vehicleScheduleList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;"></div>
+      <!-- Pagination controls -->
+      <div id="vehicleSchedulePagination" style="display:none; margin-top:12px; padding-top:10px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span id="vehicleSchedulePageInfo">Showing 1–5 of 0</span>
+          <div class="pagination-btns" id="vehicleSchedulePageBtns"></div>
+        </div>
+      </div>
+      </div>
+          <!-- END NEW SCHEDULE SECTION -->
         </div>
         <div class="modal-footer">
           <button class="btn btn-danger" id="vehicleDeleteBtn" style="display:none;" onclick="deleteVehicleFromModal()"><i class="fas fa-trash"></i> Delete</button>
@@ -6901,8 +6915,13 @@ window.approveStudent = async function(uid) {
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No vehicles added yet.</div>';
         return;
       }
-      grid.innerHTML = allVehicles.map(v => `
-        <div class="stat-card" style="padding:0;overflow:hidden;">
+      grid.innerHTML = allVehicles.map(v => {
+        // Check if this vehicle is assigned to any class
+        const busyClasses = (allClasses || []).filter(c => c.vehicleId === v.id);
+        const isBusy = busyClasses.length > 0;
+        return `
+        <div class="stat-card" style="padding:0;overflow:hidden;position:relative;">
+          ${isBusy ? `<div style="position:absolute;top:10px;right:10px;z-index:10;"><span class="pill" style="font-size:10px; background:rgba(239,83,80,0.15); color:var(--error);">Busy</span></div>` : ''}
           <div style="width:100%;aspect-ratio:16/9;background:var(--navy);${v.imageUrl ? `background-image:url(${v.imageUrl});background-size:cover;background-position:center;` : 'display:flex;align-items:center;justify-content:center;'}">
             ${v.imageUrl ? '' : '<i class="fas fa-car" style="font-size:32px;color:var(--border);"></i>'}
           </div>
@@ -6915,8 +6934,8 @@ window.approveStudent = async function(uid) {
             </div>
             <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:12px;" onclick="openEditVehicleModal('${v.id}')"><i class="fas fa-eye"></i> View / Edit</button>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     } catch(e) {
       console.error(e);
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load vehicles.</div>';
@@ -6969,6 +6988,20 @@ window.approveStudent = async function(uid) {
     else { preview.style.display = 'none'; document.getElementById("vehicleImgText").textContent = 'Tap to upload a photo'; }
     document.getElementById("vehicleDeleteBtn").style.display = 'inline-flex';
     document.getElementById("vehicleModal")._imageUrl = v.imageUrl || null;
+
+    // --- POPULATE SCHEDULE SECTION WITH PAGINATION ---
+const assignedClasses = (allClasses || []).filter(c => c.vehicleId === id);
+// Sort by date descending (newest first)
+assignedClasses.sort((a, b) => {
+  const da = new Date(`${a.date}T${a.time}`);
+  const db = new Date(`${b.date}T${b.time}`);
+  return db - da;
+});
+_vehicleScheduleData = assignedClasses;
+_vehicleSchedulePage = 1;
+_vehicleScheduleVehicleId = id;
+renderVehicleSchedulePage();
+
     openModal("vehicleModal");
   };
 
@@ -8687,61 +8720,55 @@ window.showBusyResources = showBusyResources;
     // ══════════════════════════════════════
   // PAGE NAVIGATION & UI HELPERS (from the old regular script)
   // ══════════════════════════════════════
-  function showPage(name, btn) {
-    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    document.getElementById(`page-${name}`).classList.add("active");
-    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-    if (btn) btn.classList.add("active");
-    const titles = {
-      overview:'Overview', students:'Students', attendance:'Attendance',
-      lessons:'Video Lessons', quizzes:'Quizzes', courses:'Courses',
-      instructors:'Instructors', classes:'Classes',
-      resources:'Resources', permissions:'Permissions',
-      notifications:'Send Notifications', enquiries:'Enquiries', settings:'Settings'
-    };
-    document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
-    
-    // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
-    if (name === "students") {
-      loadStudents().then(() => buildOverview());
+  async function showPage(name, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(`page-${name}`).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  const titles = {
+    overview:'Overview', students:'Students', attendance:'Attendance',
+    lessons:'Video Lessons', quizzes:'Quizzes', courses:'Courses',
+    instructors:'Instructors', classes:'Classes',
+    resources:'Resources', permissions:'Permissions',
+    notifications:'Send Notifications', enquiries:'Enquiries', settings:'Settings'
+  };
+  document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
+
+  // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
+  if (name === "students") {
+    await loadStudents();
+    buildOverview();
+  } else if (name === "overview") {
+    buildOverview();
+  } else if (name === "attendance") {
+    await loadAttendance();
+  } else if (name === "lessons") {
+    backToLessonFolders();
+    await loadLessons();
+  } else if (name === "quizzes") {
+    await loadQuizzes();
+  } else if (name === "courses") {
+    await loadCourses();
+  } else if (name === "instructors") {
+    await loadInstructors();
+  } else if (name === "classes") {
+    await loadClasses();
+  } else if (name === "resources") {
+    await loadAdminResources();
+  } else if (name === "vehicles") {
+    // Ensure classes are loaded first so busy tags appear immediately
+    if (!allClasses || allClasses.length === 0) {
+      await loadClasses();
     }
-    if (name === "overview") {
-      buildOverview();
-    }
-    if (name === "attendance") {
-      loadAttendance();
-    }
-    if (name === "lessons") {
-      backToLessonFolders();
-      loadLessons();
-    }
-    if (name === "quizzes") {
-      loadQuizzes();
-    }
-    if (name === "courses") {
-      loadCourses();
-    }
-    if (name === "instructors") {
-      loadInstructors();
-    }
-    if (name === "classes") {
-      loadClasses();
-    }
-    if (name === "resources") {
-      loadAdminResources();
-    }
-    if (name === "vehicles") {
-      loadVehicles();
-    }
-    if (name === "permissions") {
-      loadAllPermissions();
-    }
-        if (name === "enquiries") {
-      loadEnquiries();
-    }
-    
-    if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
+    await loadVehicles();
+  } else if (name === "permissions") {
+    await loadAllPermissions();
+  } else if (name === "enquiries") {
+    await loadEnquiries();
   }
+
+  if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
+}
 
   function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
 
@@ -9633,6 +9660,140 @@ window.showBusyResources = showBusyResources;
     }
   };
   
+  // ── VEHICLE SCHEDULE PAGINATION ──
+let _vehicleScheduleData = [];
+let _vehicleSchedulePage = 1;
+const _vehicleSchedulePageSize = 5;
+let _vehicleScheduleVehicleId = null;
+
+// Reusable function to build schedule HTML for a list of classes
+function buildScheduleItems(classes) {
+  if (!classes || classes.length === 0) return '';
+  return classes.map(cls => {
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const end = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+    const startDateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    const startTimeStr = formatTime(cls.time);
+    let endDateStr, endTimeStr;
+    const isMultiDay = cls.endDate && cls.endDate !== cls.date;
+    if (isMultiDay && cls.endTime) {
+      const endDateObj = new Date(`${cls.endDate}T${cls.endTime}`);
+      endDateStr = endDateObj.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      endTimeStr = formatTime(cls.endTime);
+    } else {
+      const endDateObj = new Date(end);
+      endDateStr = endDateObj.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      endTimeStr = new Date(end).toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+    }
+    const status = computeClassStatus(cls);
+    const statusPill = classStatusPill(status);
+    const studentNames = (cls.studentIds || []).map(sid => {
+      const student = allStudents.find(s => s.id === sid);
+      return student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
+    }).filter(name => name !== '');
+    const studentsDisplay = studentNames.length > 0 ? studentNames.join(', ') : 'None';
+    let dateTimeHtml = `<span style="font-weight:600;color:var(--gold);">From:</span> ${startDateStr} at ${startTimeStr}`;
+    if (isMultiDay) {
+      dateTimeHtml += ` &nbsp;|&nbsp; <span style="font-weight:600;color:var(--gold);">To:</span> ${endDateStr} at ${endTimeStr}`;
+    } else {
+      dateTimeHtml += ` &nbsp;–&nbsp; ${endTimeStr}`;
+    }
+    return `
+      <div style="background:var(--navy);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+          <span style="font-weight:600;color:var(--gold);font-size:13px;">Class: ${escapeHtml(cls.title)}</span>
+          ${statusPill}
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${dateTimeHtml}</div>
+        <div style="font-size:11px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">
+          <span><i class="fas fa-chalkboard-teacher" style="color:var(--gold);width:14px;"></i> ${escapeHtml(cls.instructorName || '—')}</span>
+          <span><i class="fas fa-book" style="color:var(--gold);width:14px;"></i> ${escapeHtml(cls.courseName || '—')}</span>
+          <span><i class="fas fa-users" style="color:var(--gold);width:14px;"></i> ${escapeHtml(studentsDisplay)}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderVehicleSchedulePage() {
+  const data = _vehicleScheduleData;
+  const total = data.length;
+  const totalPages = Math.ceil(total / _vehicleSchedulePageSize) || 1;
+  if (_vehicleSchedulePage < 1) _vehicleSchedulePage = 1;
+  if (_vehicleSchedulePage > totalPages) _vehicleSchedulePage = totalPages;
+  const start = (_vehicleSchedulePage - 1) * _vehicleSchedulePageSize;
+  const end = Math.min(start + _vehicleSchedulePageSize, total);
+  const pageData = data.slice(start, end);
+
+  const listEl = document.getElementById("vehicleScheduleList");
+  const paginationEl = document.getElementById("vehicleSchedulePagination");
+  const infoEl = document.getElementById("vehicleSchedulePageInfo");
+  const btnsEl = document.getElementById("vehicleSchedulePageBtns");
+
+  if (!listEl || !paginationEl) return;
+
+  if (total === 0) {
+    listEl.innerHTML = '';
+    paginationEl.style.display = 'none';
+    document.getElementById("vehicleScheduleSection").style.display = 'none';
+    return;
+  }
+
+  document.getElementById("vehicleScheduleSection").style.display = 'block';
+  listEl.innerHTML = buildScheduleItems(pageData);
+  paginationEl.style.display = 'flex';
+
+  const startDisplay = total === 0 ? 0 : start + 1;
+  const endDisplay = Math.min(end, total);
+  infoEl.textContent = `Showing ${startDisplay}–${endDisplay} of ${total}`;
+
+  btnsEl.innerHTML = '';
+  // Previous
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'page-btn';
+  prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+  prevBtn.disabled = _vehicleSchedulePage === 1;
+  prevBtn.onclick = () => changeVehicleSchedulePage(-1);
+  btnsEl.appendChild(prevBtn);
+
+  // Page numbers
+  const maxVisible = 5;
+  let startPage = Math.max(1, _vehicleSchedulePage - Math.floor(maxVisible / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+  if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+  for (let i = startPage; i <= endPage; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (i === _vehicleSchedulePage ? ' active' : '');
+    btn.textContent = i;
+    btn.onclick = () => goToVehicleSchedulePage(i);
+    btnsEl.appendChild(btn);
+  }
+
+  // Next
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'page-btn';
+  nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+  nextBtn.disabled = _vehicleSchedulePage === totalPages;
+  nextBtn.onclick = () => changeVehicleSchedulePage(1);
+  btnsEl.appendChild(nextBtn);
+}
+
+function changeVehicleSchedulePage(delta) {
+  const total = _vehicleScheduleData.length;
+  const totalPages = Math.ceil(total / _vehicleSchedulePageSize) || 1;
+  const newPage = _vehicleSchedulePage + delta;
+  if (newPage < 1 || newPage > totalPages) return;
+  _vehicleSchedulePage = newPage;
+  renderVehicleSchedulePage();
+}
+
+function goToVehicleSchedulePage(page) {
+  const total = _vehicleScheduleData.length;
+  const totalPages = Math.ceil(total / _vehicleSchedulePageSize) || 1;
+  if (page < 1 || page > totalPages) return;
+  _vehicleSchedulePage = page;
+  renderVehicleSchedulePage();
+}
+
 </script>
 
 <!-- ── LOADING OVERLAY ── -->

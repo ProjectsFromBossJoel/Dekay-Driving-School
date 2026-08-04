@@ -1907,6 +1907,13 @@
               </select>
             </div>
           </div>
+
+          <!-- NEW SCHEDULE SECTION -->
+          <div class="bio-section" id="vehicleScheduleSection" style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+            <div class="bio-section-title">Assigned Schedule</div>
+            <div id="vehicleScheduleList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;"></div>
+          </div>
+          <!-- END NEW SCHEDULE SECTION -->
         </div>
         <div class="modal-footer">
           <button class="btn btn-danger" id="vehicleDeleteBtn" style="display:none;" onclick="deleteVehicleFromModal()"><i class="fas fa-trash"></i> Delete</button>
@@ -6907,8 +6914,13 @@ window.approveStudent = async function(uid) {
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No vehicles added yet.</div>';
         return;
       }
-      grid.innerHTML = allVehicles.map(v => `
-        <div class="stat-card" style="padding:0;overflow:hidden;">
+      grid.innerHTML = allVehicles.map(v => {
+        // Check if this vehicle is assigned to any class
+        const busyClasses = (allClasses || []).filter(c => c.vehicleId === v.id);
+        const isBusy = busyClasses.length > 0;
+        return `
+        <div class="stat-card" style="padding:0;overflow:hidden;position:relative;">
+          ${isBusy ? `<div style="position:absolute;top:10px;right:10px;z-index:10;"><span class="pill" style="font-size:10px; background:rgba(239,83,80,0.15); color:var(--error);">Busy</span></div>` : ''}
           <div style="width:100%;aspect-ratio:16/9;background:var(--navy);${v.imageUrl ? `background-image:url(${v.imageUrl});background-size:cover;background-position:center;` : 'display:flex;align-items:center;justify-content:center;'}">
             ${v.imageUrl ? '' : '<i class="fas fa-car" style="font-size:32px;color:var(--border);"></i>'}
           </div>
@@ -6921,8 +6933,8 @@ window.approveStudent = async function(uid) {
             </div>
             <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:12px;" onclick="openEditVehicleModal('${v.id}')"><i class="fas fa-eye"></i> View / Edit</button>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     } catch(e) {
       console.error(e);
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load vehicles.</div>';
@@ -6975,6 +6987,57 @@ window.approveStudent = async function(uid) {
     else { preview.style.display = 'none'; document.getElementById("vehicleImgText").textContent = 'Tap to upload a photo'; }
     document.getElementById("vehicleDeleteBtn").style.display = 'inline-flex';
     document.getElementById("vehicleModal")._imageUrl = v.imageUrl || null;
+
+    // --- POPULATE SCHEDULE SECTION ---
+    const scheduleSection = document.getElementById("vehicleScheduleSection");
+    const scheduleList = document.getElementById("vehicleScheduleList");
+    
+    const assignedClasses = (allClasses || []).filter(c => c.vehicleId === id);
+    
+    if (assignedClasses.length > 0) {
+      scheduleSection.style.display = "block";
+      // Sort classes by date (newest first)
+      const sortedClasses = assignedClasses.sort((a, b) => {
+        const da = new Date(`${a.date}T${a.time}`);
+        const db2 = new Date(`${b.date}T${b.time}`);
+        return db2 - da;
+      });
+
+      scheduleList.innerHTML = sortedClasses.map(cls => {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const end = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        const timeStr = formatTime(cls.time);
+        const endTimeStr = cls.endTime ? formatTime(cls.endTime) : new Date(end).toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+        const status = computeClassStatus(cls);
+        const statusPill = classStatusPill(status);
+        // Get student names
+        const studentNames = (cls.studentIds || []).map(sid => {
+          const student = allStudents.find(s => s.id === sid);
+          return student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
+        }).filter(name => name !== '');
+        
+        return `
+          <div style="background:var(--navy);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-weight:600;color:var(--gold);font-size:13px;">Class: ${escapeHtml(cls.title)}</span>
+                <span style="font-size:10px;color:var(--text-muted);">${dateRangeStr} · ${timeStr} – ${endTimeStr}</span>
+              </div>
+              ${statusPill}
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:10px;">
+              <span><i class="fas fa-chalkboard-teacher" style="color:var(--gold);width:14px;"></i> ${escapeHtml(cls.instructorName || '—')}</span>
+              <span><i class="fas fa-book" style="color:var(--gold);width:14px;"></i> ${escapeHtml(cls.courseName || '—')}</span>
+              <span><i class="fas fa-users" style="color:var(--gold);width:14px;"></i> ${studentNames.length > 0 ? escapeHtml(studentNames.join(', ')) : 'None'}</span>
+            </div>
+          </div>`;
+      }).join('');
+    } else {
+      scheduleSection.style.display = "none";
+      scheduleList.innerHTML = '';
+    }
+
     openModal("vehicleModal");
   };
 
