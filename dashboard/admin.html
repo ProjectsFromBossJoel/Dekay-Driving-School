@@ -1784,69 +1784,96 @@
     </div>
 
     <!-- ═══ NOTIFICATIONS ═══ -->
-    <div class="page" id="page-notifications">
-      <div class="page-header">
-        <div class="page-title">Send Notifications</div>
-        <div class="page-sub">Push messages directly to individual students or all students.</div>
-      </div>
+<!-- ═══ NOTIFICATIONS ═══ -->
+<div class="page" id="page-notifications">
+  <div class="page-header">
+    <div class="page-title">Send Notifications</div>
+    <div class="page-sub">Push messages directly to individual students or all students.</div>
+  </div>
 
-      <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
-        <div class="card">
-          <div class="card-header"><div class="card-title"><i class="fas fa-paper-plane"></i> New notification</div></div>
-          <div class="card-body">
-            <div class="form-group">
-              <label class="form-label">Recipient <span>*</span></label>
-              <div style="position:relative;">
-                <button type="button" id="recipientDropdownBtn" class="form-select" style="text-align:left; display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="toggleRecipientDropdown()">
-                  <span id="recipientBtnText">Select students…</span>
-                  <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+  <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-paper-plane"></i> New notification</div></div>
+      <div class="card-body">
+        <!-- Recipient type + Filter by course in one row (flexible layout) -->
+        <div class="form-group">
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; width:100%;">
+            <div style="flex:1 1 180px; min-width:140px;">
+              <label class="form-label">Recipient type <span>*</span></label>
+              <div style="display:flex; gap:6px;">
+                <button type="button" class="btn btn-gold" id="tabNotifStudent" onclick="switchNotifRecipientType('student')" style="flex:1; justify-content:center; font-size:12px;">
+                  <i class="fas fa-users"></i> Students
                 </button>
-                                <div id="recipientDropdown" style="position:absolute; top:100%; left:0; right:0; z-index:200; background:var(--navy-mid); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; display:none; max-height:280px; overflow-y:auto; box-shadow:var(--shadow);">
-                  <label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer; border-bottom:1px solid var(--border-subtle); font-weight:600; color:var(--gold);">
-                    <input type="checkbox" id="notifyAll" onchange="toggleAllStudents(this)" style="accent-color:var(--gold);" />
-                    <i class="fas fa-users"></i> All students
-                  </label>
-                  <!-- Search bar inside dropdown -->
-                  <div class="search-input-wrap" style="margin:8px 0;">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="recipientSearch" class="search-input" style="padding:8px 14px 8px 36px; font-size:13px;" placeholder="Search students…" oninput="filterRecipientStudents()" />
-                  </div>
-                  <div id="studentCheckboxList">
-                    <!-- Individual student checkboxes injected by JS -->
-                  </div>
-                </div>
+                <button type="button" class="btn btn-outline" id="tabNotifInstructor" onclick="switchNotifRecipientType('instructor')" style="flex:1; justify-content:center; font-size:12px;">
+                  <i class="fas fa-chalkboard-teacher"></i> Instructors
+                </button>
+                <button type="button" class="btn btn-outline" id="tabNotifBoth" onclick="switchNotifRecipientType('both')" style="flex:1; justify-content:center; font-size:12px;">
+                  <i class="fas fa-users"></i> Both
+                </button>
               </div>
-              <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Click the button to choose recipients.</div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Icon</label>
-              <select class="form-select" id="notifIcon">
-                <option value="fa-bell">🔔 General</option>
-                <option value="fa-calendar-check">📅 Session</option>
-                <option value="fa-trophy">🏆 Achievement</option>
-                <option value="fa-exclamation-triangle">⚠️ Warning</option>
-                <option value="fa-info-circle">ℹ️ Info</option>
-                <option value="fa-check-circle">✅ Completion</option>
+            <div style="flex:0 1 auto; min-width:110px; max-width:180px;">
+              <label class="form-label">Filter by course</label>
+              <select class="form-select" id="notifCourseFilter" onchange="filterRecipientsByCourse()" style="width:100%; min-width:0;">
+                <option value="">All courses</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">Message <span>*</span></label>
-              <textarea class="form-textarea" id="notifMessage" placeholder="Type your message here…"></textarea>
-            </div>
-            <button class="btn btn-gold" style="width:100%; justify-content:center;" onclick="sendNotification()">
-              <i class="fas fa-paper-plane"></i> Send notification
-            </button>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header"><div class="card-title"><i class="fas fa-history"></i> Recent sent</div></div>
-          <div id="sentNotifList" style="max-height:400px;overflow-y:auto;">
-            <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
+        <!-- Recipient selection -->
+        <div class="form-group">
+          <label class="form-label">Recipient <span>*</span></label>
+          <div style="position:relative;">
+            <button type="button" id="recipientDropdownBtn" class="form-select" style="text-align:left; display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="toggleRecipientDropdown()">
+              <span id="recipientBtnText">Select students…</span>
+              <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+            </button>
+            <div id="recipientDropdown" style="position:absolute; top:100%; left:0; right:0; z-index:200; background:var(--navy-mid); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; display:none; max-height:280px; overflow-y:auto; box-shadow:var(--shadow);">
+              <label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer; border-bottom:1px solid var(--border-subtle); font-weight:600; color:var(--gold);">
+                <input type="checkbox" id="notifyAll" onchange="toggleAllRecipients(this)" style="accent-color:var(--gold);" />
+                <i class="fas fa-users"></i> <span id="notifyAllLabel">All students</span>
+              </label>
+              <div class="search-input-wrap" style="margin:8px 0;">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="recipientSearch" class="search-input" style="padding:8px 14px 8px 36px; font-size:13px;" placeholder="Search…" oninput="filterRecipientStudents()" />
+              </div>
+              <div id="studentCheckboxList"></div>
+              <div id="instructorCheckboxListNotif" style="display:none;"></div>
+            </div>
           </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Click the button to choose recipients.</div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label">Icon</label>
+          <select class="form-select" id="notifIcon">
+            <option value="fa-bell">🔔 General</option>
+            <option value="fa-calendar-check">📅 Session</option>
+            <option value="fa-trophy">🏆 Achievement</option>
+            <option value="fa-exclamation-triangle">⚠️ Warning</option>
+            <option value="fa-info-circle">ℹ️ Info</option>
+            <option value="fa-check-circle">✅ Completion</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message <span>*</span></label>
+          <textarea class="form-textarea" id="notifMessage" placeholder="Type your message here…"></textarea>
+        </div>
+        <button class="btn btn-gold" style="width:100%; justify-content:center;" onclick="sendNotification()">
+          <i class="fas fa-paper-plane"></i> Send notification
+        </button>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-history"></i> Recent sent</div></div>
+      <div id="sentNotifList" style="max-height:400px;overflow-y:auto;">
+        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- ═══ VEHICLES (Admin) ═══ -->
     <div class="page" id="page-vehicles">
@@ -3105,18 +3132,20 @@ function hideLoading() {
   // ALL YOUR ADMIN FUNCTIONS (exactly the same logic, with /login fix)
   // ══════════════════════════════════════
   async function loadAll() {
-    await loadStudents();
-    await loadClasses();              // Load classes FIRST so _allClassesMap is ready
-    await loadAttendance();           // Now renderAttTable can use _allClassesMap
-    await loadInstructorAttendance();
-    await loadLessons();
-    await loadQuizzes();
-    await loadNotifications();
-    await loadCourses();
-    await loadInstructors();
-    await loadVehicles();
-    buildOverview();
-  }
+  await loadStudents();
+  await loadClasses();
+  await loadAttendance();
+  await loadInstructorAttendance();
+  await loadLessons();
+  await loadQuizzes();
+  await loadInstructorsForNotif();
+  await loadNotifications();
+  await loadCourses();
+  populateNotifCourseFilter();
+  await loadInstructors();
+  await loadVehicles();
+  buildOverview();
+}
 
     async function loadStudents() {
     try {
@@ -3129,14 +3158,15 @@ function hideLoading() {
       attSel.innerHTML = '<option value="">Select student…</option>';
       
       // Populate student checkboxes for notifications
-      const checkboxList = document.getElementById("studentCheckboxList");
+            const checkboxList = document.getElementById("studentCheckboxList");
       if (checkboxList) {
         checkboxList.innerHTML = allStudents.length === 0
           ? '<div style="padding:8px; color:var(--text-muted); font-size:12px;">No students yet.</div>'
           : allStudents.map(s => {
               const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email;
+              const course = s.courseType || '';
               return `<label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
-                <input type="checkbox" value="${s.id}" style="accent-color:var(--gold);" onchange="updateRecipientBtnText()" />
+                <input type="checkbox" value="${s.id}" data-course="${escapeHtml(course)}" style="accent-color:var(--gold);" onchange="updateRecipientBtnText()" />
                 <span>${name}</span>
               </label>`;
             }).join('');
@@ -3293,29 +3323,124 @@ function hideLoading() {
 
     // Update the recipient dropdown button text
   function updateRecipientBtnText() {
-    const allChecked = document.getElementById("notifyAll").checked;
-    const checkboxes = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked');
-    const selectedCount = allChecked ? allStudents.length : checkboxes.length;
-    const btnText = document.getElementById("recipientBtnText");
-    if (selectedCount === 0) {
-      btnText.textContent = "Select students…";
-    } else if (selectedCount === allStudents.length) {
-      btnText.textContent = `All students (${selectedCount})`;
-    } else {
-      btnText.textContent = `${selectedCount} student${selectedCount>1?'s':''} selected`;
-    }
+  const studentChecks = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked');
+  const instructorChecks = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]:checked');
+  const total = studentChecks.length + instructorChecks.length;
+  const btnText = document.getElementById("recipientBtnText");
+  
+  if (total === 0) {
+    btnText.textContent = notifRecipientType === 'both' ? 'Select recipients…' : 
+                          (notifRecipientType === 'student' ? 'Select students…' : 'Select instructors…');
+  } else {
+    btnText.textContent = `${total} recipient${total > 1 ? 's' : ''} selected`;
   }
+}
 
       // ── TOGGLE ALL STUDENT CHECKBOXES ──
-  window.toggleAllStudents = function(allCheckbox) {
-    const isChecked = allCheckbox.checked;
-    const checkboxes = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]');
-    checkboxes.forEach(cb => {
+  window.toggleAllRecipients = function(allCheckbox) {
+  const isChecked = allCheckbox.checked;
+  
+  if (notifRecipientType === 'both') {
+    // Select all in both lists
+    document.querySelectorAll('#studentCheckboxList input[type="checkbox"]').forEach(cb => {
       cb.checked = isChecked;
       cb.disabled = isChecked;
     });
-    updateRecipientBtnText();
-  };
+    document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]').forEach(cb => {
+      cb.checked = isChecked;
+      cb.disabled = isChecked;
+    });
+  } else if (notifRecipientType === 'student') {
+    document.querySelectorAll('#studentCheckboxList input[type="checkbox"]').forEach(cb => {
+      cb.checked = isChecked;
+      cb.disabled = isChecked;
+    });
+  } else if (notifRecipientType === 'instructor') {
+    document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]').forEach(cb => {
+      cb.checked = isChecked;
+      cb.disabled = isChecked;
+    });
+  }
+  updateRecipientBtnText();
+};
+
+function updateAllCheckboxState() {
+  const allCheckbox = document.getElementById("notifyAll");
+  if (!allCheckbox) return;
+  
+  let total = 0, checked = 0;
+  if (notifRecipientType === 'both') {
+    const studentCbs = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]');
+    const instructorCbs = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]');
+    total = studentCbs.length + instructorCbs.length;
+    checked = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked').length +
+              document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]:checked').length;
+  } else if (notifRecipientType === 'student') {
+    const cbs = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]');
+    total = cbs.length;
+    checked = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked').length;
+  } else {
+    const cbs = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]');
+    total = cbs.length;
+    checked = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]:checked').length;
+  }
+  
+  allCheckbox.checked = total > 0 && checked === total;
+}
+
+
+function populateNotifCourseFilter() {
+  const sel = document.getElementById("notifCourseFilter");
+  if (!sel) return;
+  const courses = window._allCourses || [];
+  const currentValue = sel.value;
+  sel.innerHTML = '<option value="">All courses</option>';
+  courses.forEach(c => {
+    const name = c.name || c.title || '';
+    if (name) {
+      sel.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+    }
+  });
+  // Restore previous selection if still valid
+  if (currentValue && [...sel.options].some(opt => opt.value === currentValue)) {
+    sel.value = currentValue;
+  }
+}
+
+window.filterRecipientsByCourse = function() {
+  const selectedCourse = document.getElementById("notifCourseFilter").value;
+  const studentList = document.getElementById("studentCheckboxList");
+  const instructorList = document.getElementById("instructorCheckboxListNotif");
+
+  // Filter students
+  if (studentList) {
+    const studentLabels = studentList.querySelectorAll('label');
+    studentLabels.forEach(label => {
+      const checkbox = label.querySelector('input[type="checkbox"]');
+      if (!checkbox) return;
+      const course = checkbox.dataset.course || '';
+      const match = !selectedCourse || course === selectedCourse;
+      label.style.display = match ? 'flex' : 'none';
+    });
+  }
+
+  // Filter instructors
+  if (instructorList) {
+    const instrLabels = instructorList.querySelectorAll('label');
+    instrLabels.forEach(label => {
+      const checkbox = label.querySelector('input[type="checkbox"]');
+      if (!checkbox) return;
+      const coursesAttr = checkbox.dataset.courses || '';
+      const courses = coursesAttr.split(',').map(s => s.trim()).filter(Boolean);
+      const match = !selectedCourse || courses.includes(selectedCourse);
+      label.style.display = match ? 'flex' : 'none';
+    });
+  }
+
+  // Update "All" checkbox state and button text
+  updateAllCheckboxState();
+  updateRecipientBtnText();
+};
 
     // ── FILTER STUDENT CHECKBOXES IN DROPDOWN ──
   window.filterRecipientStudents = function() {
@@ -4417,36 +4542,133 @@ function hideLoading() {
   };
 
   async function loadNotifications() {
-    try {
-      const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(30));
-      const snaps = await getDocs(q);
-      const notifs = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
-      const list = document.getElementById("sentNotifList");
-      if (!notifs.length) {
-        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications sent yet.</div>`;
-        return;
+  try {
+    const [studentSnaps, instrSnaps] = await Promise.all([
+      getDocs(query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(30))),
+      getDocs(query(collection(db, "instructorNotifications"), orderBy("createdAt", "desc"), limit(30)))
+    ]);
+    const studentNotifs = studentSnaps.docs.map(d => ({ id: d.id, ...d.data(), _kind: 'student' }));
+    const instrNotifs = instrSnaps.docs.map(d => ({ id: d.id, ...d.data(), _kind: 'instructor' }));
+    const notifs = [...studentNotifs, ...instrNotifs]
+      .sort((a,b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0))
+      .slice(0, 30);
+
+    const list = document.getElementById("sentNotifList");
+    if (!notifs.length) {
+      list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications sent yet.</div>`;
+      return;
+    }
+    list.innerHTML = notifs.map(n => {
+      const date = n.createdAt?.toDate();
+      let timeStr = '';
+      if (date) {
+        const formattedDate = date.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        timeStr = `${formattedDate} at ${hours}:${minutes} ${ampm}`;
       }
-      list.innerHTML = notifs.map(n => {
-        const date = n.createdAt?.toDate();
-        let timeStr = '';
-        if (date) {
-          const formattedDate = date.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
-          let hours = date.getHours();
-          const minutes = date.getMinutes().toString().padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          const formattedTime = `${hours}:${minutes} ${ampm}`;
-          timeStr = `${formattedDate} at ${formattedTime}`;
-        }
-        const student = allStudents.find(s => s.id === n.studentId);
-        const recipient = n.studentId === 'all' ? 'All students' : (student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown');
-        return `<div style="padding:12px 16px;border-bottom:1px solid var(--border-subtle);">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">To: <strong style="color:var(--gold)">${recipient}</strong> · ${timeStr}</div>
-          <div style="font-size:13px;color:var(--text-light)">${n.message}</div>
-        </div>`;
-      }).join('');
-    } catch(e) {}
+      let recipient = 'Unknown';
+      if (n._kind === 'student') {
+        const s = allStudents.find(x => x.id === n.studentId);
+        recipient = s ? `${s.firstName || ''} ${s.lastName || ''}`.trim() : 'Unknown student';
+      } else {
+        const i = (window._allInstructorsForNotif || []).find(x => x.id === n.instructorId);
+        recipient = i ? `${i.firstName || ''} ${i.lastName || ''}`.trim() : 'Unknown instructor';
+      }
+      const badge = n._kind === 'instructor' ? ' <span style="color:var(--info);font-size:10px;">(Instructor)</span>' : '';
+      return `<div style="padding:12px 16px;border-bottom:1px solid var(--border-subtle);">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">To: <strong style="color:var(--gold)">${recipient}</strong>${badge} · ${timeStr}</div>
+        <div style="font-size:13px;color:var(--text-light)">${n.message}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+// ── NOTIFICATION RECIPIENT TOGGLE ──
+let notifRecipientType = 'student';
+
+window.switchNotifRecipientType = function(type) {
+  notifRecipientType = type;
+  
+  // Update button styles
+  const studentBtn = document.getElementById("tabNotifStudent");
+  const instructorBtn = document.getElementById("tabNotifInstructor");
+  const bothBtn = document.getElementById("tabNotifBoth");
+  const btns = [studentBtn, instructorBtn, bothBtn];
+  const gold = 'btn btn-gold';
+  const outline = 'btn btn-outline';
+  
+  btns.forEach(b => { if (b) b.className = outline; });
+  if (type === 'student') studentBtn.className = gold;
+  else if (type === 'instructor') instructorBtn.className = gold;
+  else if (type === 'both') bothBtn.className = gold;
+  
+  // Show/hide the appropriate checkbox lists
+  const studentList = document.getElementById("studentCheckboxList");
+  const instructorList = document.getElementById("instructorCheckboxListNotif");
+  
+  if (type === 'both') {
+    studentList.style.display = 'block';
+    instructorList.style.display = 'block';
+  } else {
+    studentList.style.display = (type === 'student') ? 'block' : 'none';
+    instructorList.style.display = (type === 'instructor') ? 'block' : 'none';
   }
+  
+  // Update "All" label and button text
+  const allLabel = document.getElementById("notifyAllLabel");
+  const btnText = document.getElementById("recipientBtnText");
+  
+  if (type === 'both') {
+    allLabel.textContent = 'All recipients (students & instructors)';
+    btnText.textContent = 'Select recipients…';
+  } else {
+    allLabel.textContent = type === 'student' ? 'All students' : 'All instructors';
+    btnText.textContent = type === 'student' ? 'Select students…' : 'Select instructors…';
+  }
+  
+  // Populate instructor list if needed
+  if (type === 'instructor' || type === 'both') {
+    populateInstructorCheckboxes();
+  }
+  
+  // Refresh the "All" checkbox state
+  updateAllCheckboxState();
+  updateRecipientBtnText();
+};
+
+
+async function populateInstructorCheckboxes() {
+  const container = document.getElementById("instructorCheckboxListNotif");
+  if (!container) return;
+  
+  try {
+    const snaps = await getDocs(collection(db, "instructors"));
+    const instructors = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    container.innerHTML = instructors.length === 0
+      ? '<div style="padding:8px; color:var(--text-muted); font-size:12px;">No instructors yet.</div>'
+      : instructors.map(i => {
+          const name = `${i.firstName || ''} ${i.lastName || ''}`.trim() || i.email;
+          // Normalize assignedCourses to a comma-separated string for data attribute
+          let courses = i.assignedCourses || [];
+          if (courses && typeof courses === 'object' && !Array.isArray(courses)) {
+            courses = Object.values(courses);
+          }
+          if (!Array.isArray(courses)) courses = [];
+          const courseStr = courses.map(c => escapeHtml(c)).join(',');
+          return `<label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
+            <input type="checkbox" value="${i.id}" data-courses="${courseStr}" style="accent-color:var(--gold);" onchange="updateRecipientBtnText()" />
+            <span>${name}</span>
+          </label>`;
+        }).join('');
+  } catch(e) {
+    console.error("Failed to load instructors for notifications:", e);
+    container.innerHTML = '<div style="padding:8px; color:var(--error); font-size:12px;">Failed to load instructors.</div>';
+  }
+}
 
   function buildOverview() {
     const total    = allStudents.length;
@@ -5847,51 +6069,70 @@ window.approveStudent = async function(uid) {
   };
 
   // ── NOTIFICATIONS ──
-    // ── NOTIFICATIONS (with checkbox recipients) ──
-  window.sendNotification = async function() {
-    const allChecked = document.getElementById("notifyAll").checked;
-    const message = document.getElementById("notifMessage").value.trim();
-    const icon = document.getElementById("notifIcon").value;
+    window.sendNotification = async function() {
+  const message = document.getElementById("notifMessage").value.trim();
+  const icon = document.getElementById("notifIcon").value;
 
-    if (!message) {
-      showToast("Enter a message.", "error");
-      return;
-    }
+  if (!message) { showToast("Enter a message.", "error"); return; }
 
-    // Determine recipients
-    let recipients = [];
-    if (allChecked) {
-      // Send to all students
-      recipients = allStudents.map(s => s.id);
-    } else {
-      // Collect checked individual student IDs
-      const checkboxes = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked');
-      recipients = Array.from(checkboxes).map(cb => cb.value);
-      if (recipients.length === 0) {
-        showToast("Select at least one recipient.", "error");
-        return;
-      }
-    }
+  // Gather checked students and instructors
+  const studentChecks = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked');
+  const instructorChecks = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]:checked');
+  
+  let studentIds = [], instructorIds = [];
+  
+  if (notifRecipientType === 'student' || notifRecipientType === 'both') {
+    studentIds = Array.from(studentChecks).map(cb => cb.value);
+  }
+  if (notifRecipientType === 'instructor' || notifRecipientType === 'both') {
+    instructorIds = Array.from(instructorChecks).map(cb => cb.value);
+  }
+  
+  const total = studentIds.length + instructorIds.length;
+  if (total === 0) {
+    showToast("Select at least one recipient.", "error");
+    return;
+  }
 
-    try {
-      const batch = recipients.map(studentId =>
-        addDoc(collection(db, "notifications"), {
-          studentId,
+  try {
+    const batch = [];
+    // Send to students
+    if (studentIds.length > 0) {
+      studentIds.forEach(id => {
+        batch.push(addDoc(collection(db, "notifications"), {
+          studentId: id,
           message,
           icon,
           read: false,
-          type: "instructor",
+          type: "admin",
           createdAt: serverTimestamp()
-        })
-      );
-      await Promise.all(batch);
-      showToast(`Sent to ${recipients.length} student${recipients.length > 1 ? 's' : ''} ✓`, "success");
-      document.getElementById("notifMessage").value = "";
-      await loadNotifications();
-    } catch (e) {
-      showToast("Send failed. Try again.", "error");
+        }));
+      });
     }
-  };
+    // Send to instructors
+    if (instructorIds.length > 0) {
+      instructorIds.forEach(id => {
+        batch.push(addDoc(collection(db, "instructorNotifications"), {
+          instructorId: id,
+          message,
+          icon,
+          read: false,
+          type: "admin",
+          createdAt: serverTimestamp()
+        }));
+      });
+    }
+    
+    await Promise.all(batch);
+    showToast(`Sent to ${total} recipient${total > 1 ? 's' : ''} ✓`, "success");
+    document.getElementById("notifMessage").value = "";
+    await loadNotifications();
+  } catch (e) {
+    console.error(e);
+    showToast("Send failed. Try again.", "error");
+  }
+};
+
 
     window.handleLogout = async function() {
     await signOut(auth);
@@ -6186,6 +6427,16 @@ window.approveStudent = async function(uid) {
       renderInstructorTable(approved);
     } catch(e) { console.error(e); }
   }
+
+  async function loadInstructorsForNotif() {
+  try {
+    const snaps = await getDocs(collection(db, "instructors"));
+    window._allInstructorsForNotif = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) {
+    console.error("Failed to load instructors for notifications:", e);
+    window._allInstructorsForNotif = [];
+  }
+}
 
   function renderPendingInstructorTable(pending) {
     const card = document.getElementById("pendingInstructorCard");

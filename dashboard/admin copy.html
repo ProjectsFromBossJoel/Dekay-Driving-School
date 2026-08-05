@@ -1569,9 +1569,9 @@
           <!-- Assign students -->
           <div class="bio-section" style="display:flex;align-items:center;justify-content:space-between;">
             <div class="bio-section-title" style="margin-bottom:0;">Assign Students <span style="font-weight:normal;color:var(--text-muted);">(greyed = already booked for this time)</span></div>
-            <button class="btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="showAllClassesPopup()">
-              <i class="fas fa-calendar-alt"></i> View All Classes
-            </button>
+            <button class="btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="showAllClassesPopupWithRange('new')">
+          <i class="fas fa-calendar-alt"></i> View All Classes
+        </button>
           </div>
           <div class="form-group">
             <div style="position:relative;">
@@ -1641,16 +1641,16 @@
             <textarea id="editClassDesc" class="form-textarea"></textarea>
           </div>
           <div class="form-row">
+                        <div class="form-group">
+              <label class="form-label">Instructor <span>*</span></label>
+              <select id="editClassInstructor" class="form-select">
+                <option value="">Select instructor…</option>
+              </select>
+            </div>
             <div class="form-group">
               <label class="form-label">Course <span>*</span></label>
               <select id="editClassCourse" class="form-select" onchange="refreshEditClassAvailability()">
                 <option value="">Select course…</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Instructor <span>*</span></label>
-              <select id="editClassInstructor" class="form-select">
-                <option value="">Select instructor…</option>
               </select>
             </div>
           </div>
@@ -1718,9 +1718,9 @@
           <!-- Assign students -->
           <div class="bio-section" style="display:flex;align-items:center;justify-content:space-between;">
             <div class="bio-section-title" style="margin-bottom:0;">Assign Students <span style="font-weight:normal;color:var(--text-muted);">(greyed = already booked for this time)</span></div>
-            <button class="btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="showAllClassesPopup()">
-              <i class="fas fa-calendar-alt"></i> View All Classes
-            </button>
+            <button class="btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="showAllClassesPopupWithRange('edit')">
+            <i class="fas fa-calendar-alt"></i> View All Classes
+          </button>
           </div>
           <div class="form-group">
             <div style="position:relative;">
@@ -1910,9 +1910,16 @@
 
           <!-- NEW SCHEDULE SECTION -->
           <div class="bio-section" id="vehicleScheduleSection" style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
-            <div class="bio-section-title">Assigned Schedule</div>
-            <div id="vehicleScheduleList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;"></div>
-          </div>
+      <div class="bio-section-title">Assigned Schedule</div>
+      <div id="vehicleScheduleList" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;"></div>
+      <!-- Pagination controls -->
+      <div id="vehicleSchedulePagination" style="display:none; margin-top:12px; padding-top:10px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span id="vehicleSchedulePageInfo">Showing 1–5 of 0</span>
+          <div class="pagination-btns" id="vehicleSchedulePageBtns"></div>
+        </div>
+      </div>
+      </div>
           <!-- END NEW SCHEDULE SECTION -->
         </div>
         <div class="modal-footer">
@@ -2200,27 +2207,20 @@
         </div>
         <div class="form-group"><label class="form-label">Email <span>*</span></label><input type="email" id="newEmail" class="form-input" placeholder="kwame@example.com" /></div>
         <div class="form-group"><label class="form-label">Phone <span>*</span></label><input type="tel" id="newPhone" class="form-input" placeholder="024 000 0000" /></div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Course type <span>*</span></label>
-            <select id="newCourse" class="form-select">
-              <option value="Manual">Manual Transmission</option>
-              <option value="Automatic">Automatic Transmission</option>
-              <option value="Motorcycle">Motorcycle</option>
-              <option value="Commercial Bus">Commercial Bus</option>
-              <option value="Truck / HGV">Truck / HGV</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Instructor</label>
-            <select id="newInstructor" class="form-select">
-              <option value="Mr. Kwaku Adom Obiri Antwi">Mr. Kwaku Adom Obiri Antwi</option>
-              <option value="Emmanuel Agyei">Emmanuel Agyei</option>
-              <option value="Abena Boateng">Abena Boateng</option>
-              <option value="Kwabena Mensah">Kwabena Mensah</option>
-            </select>
-          </div>
-        </div>
+       
+        <div class="form-group">
+  <label class="form-label">Course type <span>*</span></label>
+  <select id="newCourse" class="form-select">
+    <option value="Manual">Manual Transmission</option>
+    <option value="Automatic">Automatic Transmission</option>
+    <option value="Motorcycle">Motorcycle</option>
+    <option value="Commercial Bus">Commercial Bus</option>
+    <option value="Truck / HGV">Truck / HGV</option>
+  </select>
+  <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+    <i class="fas fa-info-circle"></i> Students will be assigned to instructors via the course edit page.
+  </div>
+</div>
         <div class="form-group">
           <label class="form-label">Temporary password <span>*</span></label>
           <input type="text" id="newPassword" class="form-input" placeholder="Set a temporary password" />
@@ -3341,17 +3341,33 @@ function hideLoading() {
   }
 
   function renderAttTable(records) {
-    const tbody = document.getElementById("adminAttTable");
-    if (!records.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No attendance records found.</td></tr>`;
-      return;
+  const tbody = document.getElementById("adminAttTable");
+  if (!records.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No attendance records found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = records.map(r => {
+    const student = allStudents.find(s => s.id === r.studentId);
+    const sName   = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : r.studentId || '—';
+    // Get class date & time range if classId exists
+    let dateTimeDisplay = '—';
+    if (r.classId) {
+      const cls = allClasses.find(c => c.id === r.classId);
+      if (cls) {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        const startTime = formatTime(cls.time);
+        let endTime = cls.endTime ? formatTime(cls.endTime) : (() => {
+          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+          return end.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+        })();
+        dateTimeDisplay = `${dateStr} at ${startTime} – ${endTime}`;
+      }
     }
-    tbody.innerHTML = records.map(r => {
-      const student = allStudents.find(s => s.id === r.studentId);
-      const sName   = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : r.studentId || '—';
+    // Fallback to attendance timestamp if no class
+    if (dateTimeDisplay === '—') {
       let dateTimeStr = '';
       if (r.timestamp?.toDate) {
-        // Use timestamp field if available (for precise check-in time)
         const d = r.timestamp.toDate();
         const dateStr = d.toLocaleDateString('en-GB');
         let hours = d.getHours();
@@ -3361,7 +3377,6 @@ function hideLoading() {
         const timeStr = `${hours}:${minutes} ${ampm}`;
         dateTimeStr = `${dateStr} at ${timeStr}`;
       } else if (r.date?.toDate) {
-        // Fall back to date field if no timestamp
         const d = r.date.toDate();
         const dateStr = d.toLocaleDateString('en-GB');
         let hours = d.getHours();
@@ -3373,30 +3388,30 @@ function hideLoading() {
       } else {
         dateTimeStr = r.date || '—';
       }
-      const date = dateTimeStr;
-      const pill    = `<span class="pill pill-${r.status === 'present' ? 'active' : r.status === 'excused' ? 'pending' : 'inactive'}">${r.status}</span>`;
-      // Get course from student data
-      const courseName = student ? (student.courseType || '—') : '—';
-      // Get class title from classId
-      let classTitle = '—';
-      if (r.classId && window._allClassesMap && window._allClassesMap[r.classId]) {
-        classTitle = window._allClassesMap[r.classId];
-      }
-      return `<tr>
-        <td><div style="font-weight:600">${sName}</div></td>
-        <td style="color:var(--text-muted)">${date}</td>
-        <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(courseName)}</td>
-        <td style="color:var(--text-muted)">${r.instructor || '—'}</td>
-        <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
-        <td>${pill}</td>
-        <td style="display:flex;gap:6px;">
-          <button class="btn btn-icon toggle-present" id="btnPresent_${r.id}" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
-          <button class="btn btn-icon toggle-absent" id="btnAbsent_${r.id}" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
-          <button class="btn btn-icon btn-danger" title="Delete" onclick="deleteAttRecord('${r.id}')"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`;
-    }).join('');
-  }
+      dateTimeDisplay = dateTimeStr;
+    }
+
+    const pill    = `<span class="pill pill-${r.status === 'present' ? 'active' : r.status === 'excused' ? 'pending' : 'inactive'}">${r.status}</span>`;
+    const courseName = student ? (student.courseType || '—') : '—';
+    let classTitle = '—';
+    if (r.classId && window._allClassesMap && window._allClassesMap[r.classId]) {
+      classTitle = window._allClassesMap[r.classId];
+    }
+    return `<tr>
+      <td><div style="font-weight:600">${sName}</div></td>
+      <td style="color:var(--text-muted)">${dateTimeDisplay}</td>
+      <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(courseName)}</td>
+      <td style="color:var(--text-muted)">${r.instructor || '—'}</td>
+      <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
+      <td>${pill}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-icon toggle-present" id="btnPresent_${r.id}" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
+        <button class="btn btn-icon toggle-absent" id="btnAbsent_${r.id}" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
+        <button class="btn btn-icon btn-danger" title="Delete" onclick="deleteAttRecord('${r.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
   window.filterAttendance = function() {
     const search = document.getElementById("attSearch").value.toLowerCase();
@@ -4791,6 +4806,7 @@ function hideLoading() {
     const lastName = document.getElementById("editLast").value.trim();
     const phone = document.getElementById("editPhone").value.trim();
     const ghCardNumber = document.getElementById("editGhCardNumber").value.trim();
+    const dob = document.getElementById("editDob") ? document.getElementById("editDob").value : '';
     
     // Collect checked course names
     const courseCheckboxes = document.querySelectorAll('.course-checkbox:checked');
@@ -4813,7 +4829,7 @@ function hideLoading() {
       
             // Update users collection
       await updateDoc(doc(db, "users", uid), {
-        firstName, lastName, phone, ghCardNumber,
+        firstName, lastName, phone, ghCardNumber, dob,
         courseType, courseTypes, trainingStage,
         status, instructor: primaryInstructor, instructors
       });
@@ -5323,58 +5339,73 @@ window.approveStudent = async function(uid) {
   }
 
   function renderInstructorAttTableRows(records) {
-    const tbody = document.getElementById("instructorAttTableBody");
-    if (!records || !records.length) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No matching records found.</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = records.map(r => {
-              let dateTimeStr = '';
-        if (r.timestamp?.toDate) {
-          // Use timestamp field if available (for precise check-in time)
-          const d = r.timestamp.toDate();
-          const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-          let hours = d.getHours();
-          const minutes = d.getMinutes().toString().padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          const timeStr = `${hours}:${minutes} ${ampm}`;
-          dateTimeStr = `${dateStr} at ${timeStr}`;
-        } else if (r.date?.toDate) {
-          // Fall back to date field if no timestamp
-          const d = r.date.toDate();
-          const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-          let hours = d.getHours();
-          const minutes = d.getMinutes().toString().padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          const timeStr = `${hours}:${minutes} ${ampm}`;
-          dateTimeStr = `${dateStr} at ${timeStr}`;
-        } else {
-          dateTimeStr = r.date || '—';
-        }
-        const date = dateTimeStr;
-
-      const pillClass = r.status === 'present' ? 'pill-active' : 'pill-pending';
-      // Extract class title from notes if it was stored there
-      let classTitle = '—';
-      if (r.notes && r.notes.startsWith('Class: ')) {
-        classTitle = r.notes.replace('Class: ', '');
-      }
-      return `<tr>
-        <td><div style="font-weight:600">${r.instructorName || 'Unknown'}</div></td>
-        <td style="color:var(--text-muted);">${date}</td>
-        <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
-        <td style="color:var(--text-muted);">${r.course || '—'}</td>
-        <td><span class="pill ${pillClass}">${r.status || 'present'}</span></td>
-        <td style="display:flex;gap:4px;">
-          <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleInstructorAttStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
-          <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleInstructorAttStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
-          <button class="btn btn-icon btn-danger" title="Delete" onclick="deleteInstructorAttRecord('${r.id}')"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`;
-    }).join('');
+  const tbody = document.getElementById("instructorAttTableBody");
+  if (!records || !records.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No matching records found.</td></tr>`;
+    return;
   }
+  tbody.innerHTML = records.map(r => {
+    // Get class date & time range if classId exists
+    let dateTimeDisplay = '—';
+    if (r.classId) {
+      const cls = allClasses.find(c => c.id === r.classId);
+      if (cls) {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        const startTime = formatTime(cls.time);
+        let endTime = cls.endTime ? formatTime(cls.endTime) : (() => {
+          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+          return end.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+        })();
+        dateTimeDisplay = `${dateStr} at ${startTime} – ${endTime}`;
+      }
+    }
+    // Fallback to attendance timestamp
+    if (dateTimeDisplay === '—') {
+      if (r.timestamp?.toDate) {
+        const d = r.timestamp.toDate();
+        const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        let hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const timeStr = `${hours}:${minutes} ${ampm}`;
+        dateTimeDisplay = `${dateStr} at ${timeStr}`;
+      } else if (r.date?.toDate) {
+        const d = r.date.toDate();
+        const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+        let hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const timeStr = `${hours}:${minutes} ${ampm}`;
+        dateTimeDisplay = `${dateStr} at ${timeStr}`;
+      } else {
+        dateTimeDisplay = r.date || '—';
+      }
+    }
+
+    const pillClass = r.status === 'present' ? 'pill-active' : 'pill-pending';
+    let classTitle = '—';
+    if (r.notes && r.notes.startsWith('Class: ')) {
+      classTitle = r.notes.replace('Class: ', '');
+    } else if (r.classId && window._allClassesMap && window._allClassesMap[r.classId]) {
+      classTitle = window._allClassesMap[r.classId];
+    }
+    return `<tr>
+      <td><div style="font-weight:600">${r.instructorName || 'Unknown'}</div></td>
+      <td style="color:var(--text-muted);">${dateTimeDisplay}</td>
+      <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
+      <td style="color:var(--text-muted);">${r.course || '—'}</td>
+      <td><span class="pill ${pillClass}">${r.status || 'present'}</span></td>
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleInstructorAttStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
+        <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleInstructorAttStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
+        <button class="btn btn-icon btn-danger" title="Delete" onclick="deleteInstructorAttRecord('${r.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
   // ── TOGGLE INSTRUCTOR ATTENDANCE STATUS ──
   window.toggleInstructorAttStatus = async function(recordId, newStatus) {
@@ -5861,6 +5892,142 @@ window.approveStudent = async function(uid) {
       showToast("Send failed. Try again.", "error");
     }
   };
+
+
+  function populateNotifCourseFilter() {
+  const sel = document.getElementById("notifCourseFilter");
+  if (!sel) return;
+  const courses = window._allCourses || [];
+  const currentValue = sel.value;
+  sel.innerHTML = '<option value="">All courses</option>';
+  courses.forEach(c => {
+    const name = c.name || c.title || '';
+    if (name) {
+      sel.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+    }
+  });
+  // Restore previous selection if still valid
+  if (currentValue && [...sel.options].some(opt => opt.value === currentValue)) {
+    sel.value = currentValue;
+  }
+}
+
+  let notifRecipientType = 'student';
+let allInstructorsForNotif = [];
+
+window.switchNotifRecipientType = function(type) {
+  notifRecipientType = type;
+  document.getElementById("tabNotifStudent").className = type === 'student' ? 'btn btn-gold' : 'btn btn-outline';
+  document.getElementById("tabNotifInstructor").className = type === 'instructor' ? 'btn btn-gold' : 'btn btn-outline';
+  document.getElementById("notifyAllLabel").textContent = type === 'student' ? 'All students' : 'All instructors';
+  document.getElementById("recipientBtnText").textContent = type === 'student' ? 'Select students…' : 'Select instructors…';
+  document.getElementById("studentCheckboxList").style.display = type === 'student' ? 'block' : 'none';
+  document.getElementById("instructorCheckboxListNotif").style.display = type === 'instructor' ? 'block' : 'none';
+  document.getElementById("notifyAll").checked = false;
+  document.getElementById("recipientSearch").value = '';
+  populateNotifCourseFilter();
+  filterRecipientsByCourse();
+  updateRecipientBtnText();
+};
+
+async function loadInstructorsForNotif() {
+  try {
+    const snaps = await getDocs(collection(db, "instructors"));
+    allInstructorsForNotif = snaps.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(i => i.status === 'active');
+    window._allInstructorsForNotif = allInstructorsForNotif;
+    renderInstructorCheckboxListNotif();
+  } catch(e) { console.error(e); }
+}
+
+function renderInstructorCheckboxListNotif() {
+  const el = document.getElementById("instructorCheckboxListNotif");
+  if (!el) return;
+  el.innerHTML = allInstructorsForNotif.length === 0
+    ? '<div style="padding:8px; color:var(--text-muted); font-size:12px;">No instructors yet.</div>'
+    : allInstructorsForNotif.map(i => {
+        const name = `${i.firstName || ''} ${i.lastName || ''}`.trim() || i.email;
+        let courses = i.assignedCourses || [];
+        if (courses && typeof courses === 'object' && !Array.isArray(courses)) courses = Object.values(courses);
+        return `<label class="notif-instructor-row" data-courses='${JSON.stringify(courses).replace(/'/g, "&#39;")}' style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
+          <input type="checkbox" value="${i.id}" style="accent-color:var(--gold);" onchange="updateRecipientBtnText()" />
+          <span>${escapeHtml(name)}</span>
+        </label>`;
+      }).join('');
+}
+
+async function populateNotifCourseFilter() {
+  const sel = document.getElementById("notifCourseFilter");
+  if (!sel) return;
+  let courses = window._allCourses;
+  if (!courses || !courses.length) {
+    try {
+      const snaps = await getDocs(collection(db, "courses"));
+      courses = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      window._allCourses = courses;
+    } catch(e) { courses = []; }
+  }
+  const names = [...new Set(courses.map(c => c.name || c.title).filter(Boolean))];
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All courses</option>' +
+    names.map(n => `<option value="${escapeHtml(n)}" ${current === n ? 'selected' : ''}>${escapeHtml(n)}</option>`).join('');
+}
+
+window.filterRecipientsByCourse = function() {
+  const course = document.getElementById("notifCourseFilter").value;
+  if (notifRecipientType === 'student') {
+    document.querySelectorAll('#studentCheckboxList label').forEach(label => {
+      const cb = label.querySelector('input[type=checkbox]');
+      const student = allStudents.find(s => s.id === cb?.value);
+      const match = !course || (student && (student.courseType === course || (student.courseTypes || []).includes(course)));
+      label.style.display = match ? 'flex' : 'none';
+    });
+  } else {
+    document.querySelectorAll('#instructorCheckboxListNotif label').forEach(label => {
+      let courses = [];
+      try { courses = JSON.parse(label.dataset.courses || '[]'); } catch(e) {}
+      const match = !course || courses.includes(course);
+      label.style.display = match ? 'flex' : 'none';
+    });
+  }
+};
+
+window.toggleAllRecipients = function(allCheckbox) {
+  const isChecked = allCheckbox.checked;
+  const containerId = notifRecipientType === 'student' ? 'studentCheckboxList' : 'instructorCheckboxListNotif';
+  document.querySelectorAll(`#${containerId} label`).forEach(label => {
+    if (label.style.display === 'none') return; // skip filtered-out entries
+    const cb = label.querySelector('input[type=checkbox]');
+    if (cb) cb.checked = isChecked;
+  });
+  updateRecipientBtnText();
+};
+
+function updateRecipientBtnText() {
+  const allChecked = document.getElementById("notifyAll").checked;
+  const containerId = notifRecipientType === 'student' ? 'studentCheckboxList' : 'instructorCheckboxListNotif';
+  const checkboxes = document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`);
+  const selectedCount = checkboxes.length;
+  const btnText = document.getElementById("recipientBtnText");
+  const noun = notifRecipientType === 'student' ? 'student' : 'instructor';
+  if (selectedCount === 0) {
+    btnText.textContent = `Select ${noun}s…`;
+  } else {
+    btnText.textContent = `${selectedCount} ${noun}${selectedCount > 1 ? 's' : ''} selected`;
+  }
+}
+
+window.filterRecipientStudents = function() {
+  filterRecipientsByCourse();
+  const term = document.getElementById("recipientSearch").value.toLowerCase();
+  const containerId = notifRecipientType === 'student' ? 'studentCheckboxList' : 'instructorCheckboxListNotif';
+  document.querySelectorAll(`#${containerId} label`).forEach(label => {
+    if (label.style.display === 'none') return; // already excluded by course filter
+    const text = label.textContent.toLowerCase();
+    if (!text.includes(term)) label.style.display = 'none';
+  });
+};
 
     window.handleLogout = async function() {
     await signOut(auth);
@@ -6988,58 +7155,21 @@ window.approveStudent = async function(uid) {
     document.getElementById("vehicleDeleteBtn").style.display = 'inline-flex';
     document.getElementById("vehicleModal")._imageUrl = v.imageUrl || null;
 
-    // --- POPULATE SCHEDULE SECTION ---
-    const scheduleSection = document.getElementById("vehicleScheduleSection");
-    const scheduleList = document.getElementById("vehicleScheduleList");
-    
-    const assignedClasses = (allClasses || []).filter(c => c.vehicleId === id);
-    
-    if (assignedClasses.length > 0) {
-      scheduleSection.style.display = "block";
-      // Sort classes by date (newest first)
-      const sortedClasses = assignedClasses.sort((a, b) => {
-        const da = new Date(`${a.date}T${a.time}`);
-        const db2 = new Date(`${b.date}T${b.time}`);
-        return db2 - da;
-      });
-
-      scheduleList.innerHTML = sortedClasses.map(cls => {
-        const start = new Date(`${cls.date}T${cls.time}`);
-        const end = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-        const timeStr = formatTime(cls.time);
-        const endTimeStr = cls.endTime ? formatTime(cls.endTime) : new Date(end).toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
-        const status = computeClassStatus(cls);
-        const statusPill = classStatusPill(status);
-        // Get student names
-        const studentNames = (cls.studentIds || []).map(sid => {
-          const student = allStudents.find(s => s.id === sid);
-          return student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
-        }).filter(name => name !== '');
-        
-        return `
-          <div style="background:var(--navy);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span style="font-weight:600;color:var(--gold);font-size:13px;">Class: ${escapeHtml(cls.title)}</span>
-                <span style="font-size:10px;color:var(--text-muted);">${dateRangeStr} · ${timeStr} – ${endTimeStr}</span>
-              </div>
-              ${statusPill}
-            </div>
-            <div style="font-size:11px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:10px;">
-              <span><i class="fas fa-chalkboard-teacher" style="color:var(--gold);width:14px;"></i> ${escapeHtml(cls.instructorName || '—')}</span>
-              <span><i class="fas fa-book" style="color:var(--gold);width:14px;"></i> ${escapeHtml(cls.courseName || '—')}</span>
-              <span><i class="fas fa-users" style="color:var(--gold);width:14px;"></i> ${studentNames.length > 0 ? escapeHtml(studentNames.join(', ')) : 'None'}</span>
-            </div>
-          </div>`;
-      }).join('');
-    } else {
-      scheduleSection.style.display = "none";
-      scheduleList.innerHTML = '';
-    }
+    // --- POPULATE SCHEDULE SECTION WITH PAGINATION ---
+const assignedClasses = (allClasses || []).filter(c => c.vehicleId === id);
+// Sort by date descending (newest first)
+assignedClasses.sort((a, b) => {
+  const da = new Date(`${a.date}T${a.time}`);
+  const db = new Date(`${b.date}T${b.time}`);
+  return db - da;
+});
+_vehicleScheduleData = assignedClasses;
+_vehicleSchedulePage = 1;
+_vehicleScheduleVehicleId = id;
+renderVehicleSchedulePage();
 
     openModal("vehicleModal");
-  };
+  }; 
 
   window.saveVehicle = async function() {
     const id = document.getElementById("editVehicleId").value;
@@ -7152,36 +7282,45 @@ window.approveStudent = async function(uid) {
   }
 
   function renderClassesTable(classes) {
-    const tbody = document.getElementById("classesTableBody");
-    if (!classes.length) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No classes scheduled yet.</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = classes.map(cls => {
-      const status = computeClassStatus(cls);
-      const start  = new Date(`${cls.date}T${cls.time}`);
-      const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-      const timeStr = formatTime(cls.time);
-      const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
-      const modeLabel = cls.mode === 'online' ? 'Online' : 'In-person';
-      const durLabel = cls.durationMinutes >= 60
-        ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
-        : `${cls.durationMinutes}m`;
-      return `<tr>
-        <td><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
-        <td><span class="stage-pill">${escapeHtml(cls.courseName || '—')}</span></td>
-        <td style="color:var(--text-muted);font-size:12px">${escapeHtml(cls.instructorName || '—')}</td>
-        <td><div style="font-weight:500">${dateStr}</div><div style="font-size:11px;color:var(--text-muted)">${timeStr}</div></td>
-        <td style="color:var(--text-muted)">${durLabel}</td>
-        <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted)"><i class="fas ${modeIcon}" style="color:var(--gold)"></i>${modeLabel}</span></td>
-        <td>${classStatusPill(status)}</td>
-        <td style="display:flex;gap:6px;">
-          <button class="btn btn-icon btn-outline" title="View / Edit" onclick="openEditClassModal('${cls.id}')"><i class="fas fa-eye"></i></button>
-          <button class="btn btn-icon btn-danger" title="Delete" onclick="deleteClassById('${cls.id}')"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`;
-    }).join('');
+  const tbody = document.getElementById("classesTableBody");
+  if (!classes.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No classes scheduled yet.</td></tr>`;
+    return;
   }
+  tbody.innerHTML = classes.map(cls => {
+    const status = computeClassStatus(cls);
+    const start  = new Date(`${cls.date}T${cls.time}`);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    const startTimeStr = formatTime(cls.time);
+    // Get end time – use cls.endTime if present, otherwise compute from duration
+    let endTimeStr;
+    if (cls.endTime) {
+      endTimeStr = formatTime(cls.endTime);
+    } else {
+      const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+      endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+    }
+    const timeRange = `${startTimeStr} – ${endTimeStr}`;
+    const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
+    const modeLabel = cls.mode === 'online' ? 'Online' : 'In-person';
+    const durLabel = cls.durationMinutes >= 60
+      ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
+      : `${cls.durationMinutes}m`;
+    return `<tr>
+      <td><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
+      <td><span class="stage-pill">${escapeHtml(cls.courseName || '—')}</span></td>
+      <td style="color:var(--text-muted);font-size:12px">${escapeHtml(cls.instructorName || '—')}</td>
+      <td><div style="font-weight:500">${dateStr}</div><div style="font-size:11px;color:var(--text-muted)">${timeRange}</div></td>
+      <td style="color:var(--text-muted)">${durLabel}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted)"><i class="fas ${modeIcon}" style="color:var(--gold)"></i>${modeLabel}</span></td>
+      <td>${classStatusPill(status)}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-icon btn-outline" title="View / Edit" onclick="openEditClassModal('${cls.id}')"><i class="fas fa-eye"></i></button>
+        <button class="btn btn-icon btn-danger" title="Delete" onclick="deleteClassById('${cls.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
   function populateClassCourseFilter() {
     const sel = document.getElementById("classCourseFilter");
@@ -7532,6 +7671,402 @@ function daysOverlap(startA, endA, startB, endB) {
   const endB_date = new Date(endB.getFullYear(), endB.getMonth(), endB.getDate());
   return startA_date <= endB_date && startB_date <= endA_date;
 }
+
+// ── SHOW BUSY RESOURCES POPUP ──
+function showBusyResources(mode) {
+  // mode: 'new' or 'edit'
+  const prefix = mode === 'edit' ? 'edit' : 'new';
+  
+  // Get form values
+  const date = document.getElementById(`${prefix}ClassDate`).value;
+  const time = to24h(
+    document.getElementById(`${prefix}ClassTimeHour`).value,
+    document.getElementById(`${prefix}ClassTimeMin`).value,
+    document.getElementById(`${prefix}ClassTimeAmpm`).value
+  );
+  const endDate = document.getElementById(`${prefix}ClassEndDate`).value;
+  const endTime = to24h(
+    document.getElementById(`${prefix}ClassEndTimeHour`).value,
+    document.getElementById(`${prefix}ClassEndTimeMin`).value,
+    document.getElementById(`${prefix}ClassEndTimeAmpm`).value
+  );
+  const courseName = document.getElementById(`${prefix}ClassCourse`).value;
+  const editId = document.getElementById('editClassId')?.value || null;
+  
+  if (!date || !time || !endDate || !endTime) {
+    showToast('Please set both start and end date/time first.', 'error');
+    return;
+  }
+  
+  const start = new Date(`${date}T${time}`);
+  const end = new Date(`${endDate}T${endTime}`);
+  
+  if (isNaN(start) || isNaN(end)) {
+    showToast('Invalid date/time. Please check your inputs.', 'error');
+    return;
+  }
+  
+  // Find conflicting classes
+  const conflicts = [];
+  (allClasses || []).forEach(cls => {
+    if (editId && cls.id === editId) return; // Skip current class when editing
+    const range = getClassDateTimeRange(cls);
+    if (rangesOverlap(start, end, range.start, range.end)) {
+      conflicts.push(cls);
+    }
+  });
+  
+  // Also check day-based conflicts for students (one class per day)
+  const dayConflicts = [];
+  (allClasses || []).forEach(cls => {
+    if (editId && cls.id === editId) return;
+    const range = getClassDateTimeRange(cls);
+    if (daysOverlap(start, end, range.start, range.end)) {
+      // Only add if not already in conflicts (to avoid duplicates)
+      if (!conflicts.some(c => c.id === cls.id)) {
+        dayConflicts.push(cls);
+      }
+    }
+  });
+  
+  // Build the HTML
+  const startDateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  const startTimeStr = formatTime(time);
+  const endDateStr = end.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  const endTimeStr = formatTime(endTime);
+  
+  let html = `
+    <div style="margin-bottom:20px;padding:16px;background:rgba(245,166,35,0.05);border:1px solid var(--border);border-radius:var(--radius);">
+      <div style="font-size:13px;color:var(--text-light);">
+        <strong style="color:var(--gold);">Checking availability for:</strong><br/>
+        ${startDateStr} at ${startTimeStr} – ${endDateStr} at ${endTimeStr}
+        ${courseName ? `<br/><span style="color:var(--text-muted);font-size:12px;">Course: ${escapeHtml(courseName)}</span>` : ''}
+      </div>
+    </div>
+  `;
+  
+  // Build busy students list (day-based)
+  const busyStudents = {};
+  dayConflicts.forEach(cls => {
+    (cls.studentIds || []).forEach(sid => {
+      if (!busyStudents[sid]) {
+        const student = allStudents.find(s => s.id === sid);
+        const name = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
+        busyStudents[sid] = { name, classes: [] };
+      }
+      const clsStart = new Date(`${cls.date}T${cls.time}`);
+      const clsEnd = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(clsStart.getTime() + (cls.durationMinutes || 60) * 60000);
+      busyStudents[sid].classes.push({
+        title: cls.title || 'Untitled',
+        date: cls.date,
+        time: cls.time,
+        start: clsStart,
+        end: clsEnd,
+        clsId: cls.id
+      });
+    });
+  });
+  
+  // Build busy vehicles list (time-based)
+  const busyVehicles = {};
+  conflicts.forEach(cls => {
+    if (cls.vehicleId) {
+      if (!busyVehicles[cls.vehicleId]) {
+        const vehicle = allVehicles.find(v => v.id === cls.vehicleId);
+        const name = vehicle ? `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`.trim() : cls.vehicleId;
+        busyVehicles[cls.vehicleId] = { name, classes: [] };
+      }
+      const clsStart = new Date(`${cls.date}T${cls.time}`);
+      const clsEnd = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(clsStart.getTime() + (cls.durationMinutes || 60) * 60000);
+      busyVehicles[cls.vehicleId].classes.push({
+        title: cls.title || 'Untitled',
+        date: cls.date,
+        time: cls.time,
+        start: clsStart,
+        end: clsEnd,
+        clsId: cls.id
+      });
+    }
+  });
+  
+  // Section: Busy Students
+  const studentEntries = Object.values(busyStudents);
+  if (studentEntries.length > 0) {
+    html += `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+          <i class="fas fa-users" style="margin-right:6px;"></i> Busy Students (${studentEntries.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+    `;
+    studentEntries.forEach(s => {
+      html += `
+        <div style="background:rgba(239,83,80,0.05);border:1px solid rgba(239,83,80,0.2);border-radius:var(--radius);padding:10px 14px;">
+          <div style="font-weight:600;color:var(--white);">${escapeHtml(s.name)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+      `;
+      s.classes.forEach((cls, idx) => {
+        const dateStr = new Date(cls.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        const timeStr = formatTime(cls.time);
+        const endTimeStr = formatTime(cls.end.toTimeString().slice(0,5));
+        html += `
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:${idx < s.classes.length - 1 ? '1px solid var(--border-subtle)' : 'none'};">
+            <span style="color:var(--error);">•</span>
+            <span style="color:var(--text-light);">${escapeHtml(cls.title)}</span>
+            <span style="color:var(--text-muted);font-size:11px;">${dateStr} at ${timeStr} – ${endTimeStr}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div></div>`;
+  } else {
+    html += `
+      <div style="margin-bottom:20px;padding:12px 16px;background:rgba(76,175,80,0.05);border:1px solid rgba(76,175,80,0.2);border-radius:var(--radius);">
+        <div style="font-size:13px;color:var(--success);"><i class="fas fa-check-circle"></i> No students are busy on this day.</div>
+      </div>
+    `;
+  }
+  
+  // Section: Busy Vehicles
+  const vehicleEntries = Object.values(busyVehicles);
+  if (vehicleEntries.length > 0) {
+    html += `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+          <i class="fas fa-car-side" style="margin-right:6px;"></i> Busy Vehicles (${vehicleEntries.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+    `;
+    vehicleEntries.forEach(v => {
+      html += `
+        <div style="background:rgba(239,83,80,0.05);border:1px solid rgba(239,83,80,0.2);border-radius:var(--radius);padding:10px 14px;">
+          <div style="font-weight:600;color:var(--white);">${escapeHtml(v.name)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+      `;
+      v.classes.forEach((cls, idx) => {
+        const dateStr = new Date(cls.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        const timeStr = formatTime(cls.time);
+        const endTimeStr = formatTime(cls.end.toTimeString().slice(0,5));
+        html += `
+          <div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:${idx < v.classes.length - 1 ? '1px solid var(--border-subtle)' : 'none'};">
+            <span style="color:var(--error);">•</span>
+            <span style="color:var(--text-light);">${escapeHtml(cls.title)}</span>
+            <span style="color:var(--text-muted);font-size:11px;">${dateStr} at ${timeStr} – ${endTimeStr}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div></div>`;
+  } else {
+    html += `
+      <div style="margin-bottom:20px;padding:12px 16px;background:rgba(76,175,80,0.05);border:1px solid rgba(76,175,80,0.2);border-radius:var(--radius);">
+        <div style="font-size:13px;color:var(--success);"><i class="fas fa-check-circle"></i> No vehicles are busy during this time.</div>
+      </div>
+    `;
+  }
+  
+  // Section: Conflicting Classes (full list)
+  const allConflictClasses = [...conflicts, ...dayConflicts].filter((cls, idx, self) => 
+    self.findIndex(c => c.id === cls.id) === idx
+  );
+  
+  if (allConflictClasses.length > 0) {
+    html += `
+      <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+          <i class="fas fa-chalkboard" style="margin-right:6px;"></i> Conflicting Classes (${allConflictClasses.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;">
+    `;
+    allConflictClasses.sort((a, b) => {
+      const da = new Date(`${a.date}T${a.time}`);
+      const db2 = new Date(`${b.date}T${b.time}`);
+      return da - db2;
+    }).forEach(cls => {
+      const clsStart = new Date(`${cls.date}T${cls.time}`);
+      const clsEnd = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(clsStart.getTime() + (cls.durationMinutes || 60) * 60000);
+      const dateStr = clsStart.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      const timeStr = formatTime(cls.time);
+      const endTimeStr = formatTime(clsEnd.toTimeString().slice(0,5));
+      const studentCount = (cls.studentIds || []).length;
+      const hasVehicle = !!cls.vehicleId;
+      html += `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--navy);border:1px solid var(--border);border-radius:6px;flex-wrap:wrap;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:var(--gold);font-weight:600;">${escapeHtml(cls.title || 'Untitled')}</span>
+            <span style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeStr} – ${endTimeStr}</span>
+          </div>
+          <div style="display:flex;gap:8px;font-size:11px;">
+            <span style="color:var(--text-muted);"><i class="fas fa-users"></i> ${studentCount}</span>
+            ${hasVehicle ? `<span style="color:var(--text-muted);"><i class="fas fa-car"></i> Yes</span>` : `<span style="color:var(--text-muted);"><i class="fas fa-car"></i> No</span>`}
+            <span class="pill ${cls.mode === 'online' ? 'pill-pending' : 'pill-active'}" style="font-size:10px;">${cls.mode || 'in-person'}</span>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+  
+  document.getElementById('busyResourcesBody').innerHTML = html;
+  openModal('busyResourcesModal');
+}
+
+
+// ── SHOW ALL SCHEDULED CLASSES POPUP ──
+window.showAllClassesPopup = function(startDate, endDate) {
+  const modalBody = document.getElementById('busyResourcesBody');
+  if (!modalBody) {
+    showToast('Modal not found.', 'error');
+    return;
+  }
+
+  // Build range header if dates provided
+  let rangeHtml = '';
+  let filteredClasses = allClasses;
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    const startStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    const endStr = end.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    rangeHtml = `
+      <div style="margin-bottom:12px; padding:10px 16px; background:rgba(245,166,35,0.08); border:1px solid var(--border); border-radius:var(--radius);">
+        <span style="font-size:13px; color:var(--text-light);">
+          <i class="fas fa-calendar-alt" style="color:var(--gold);"></i>
+          Showing classes from <strong style="color:var(--gold);">${startStr}</strong> to <strong style="color:var(--gold);">${endStr}</strong>
+        </span>
+      </div>
+    `;
+    // Filter classes by date range
+    filteredClasses = allClasses.filter(cls => {
+      const clsDate = new Date(cls.date);
+      return clsDate >= start && clsDate <= end;
+    });
+  }
+
+  let html = `
+    <div style="margin-bottom:20px; padding:16px; background:rgba(245,166,35,0.05); border:1px solid var(--border); border-radius:var(--radius);">
+      <div style="font-size:13px; color:var(--text-light);">
+        <strong style="color:var(--gold);">All Scheduled Classes</strong>
+        <span style="color:var(--text-muted); font-size:12px; margin-left:10px;">Total: ${filteredClasses.length} class(es)</span>
+      </div>
+      ${rangeHtml}
+    </div>
+  `;
+
+  if (!filteredClasses || filteredClasses.length === 0) {
+    html += `<div style="text-align:center; color:var(--text-muted); padding:30px;">No classes scheduled${startDate ? ' in this date range' : ''}.</div>`;
+    modalBody.innerHTML = html;
+    openModal('busyResourcesModal');
+    return;
+  }
+
+  // Sort by date and time
+  const sorted = [...filteredClasses].sort((a, b) => {
+    const da = new Date(`${a.date}T${a.time}`);
+    const db = new Date(`${b.date}T${b.time}`);
+    return da - db;
+  });
+
+  // Group by date
+  const grouped = {};
+  sorted.forEach(cls => {
+    const dateKey = cls.date;
+    if (!grouped[dateKey]) grouped[dateKey] = [];
+    grouped[dateKey].push(cls);
+  });
+
+  // Iterate over dates
+  for (const [date, classes] of Object.entries(grouped)) {
+    const dateObj = new Date(date);
+    const dateStr = dateObj.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    html += `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:14px; font-weight:700; color:var(--gold); margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:4px;">
+          <i class="fas fa-calendar-day"></i> ${dateStr}
+        </div>
+    `;
+    classes.forEach(cls => {
+      const startTime = formatTime(cls.time);
+      const endTime = cls.endTime ? formatTime(cls.endTime) : '';
+      const durationLabel = cls.durationMinutes ? `${cls.durationMinutes}m` : '';
+      const status = computeClassStatus(cls);
+      const statusPill = classStatusPill(status);
+      
+      const instructorName = cls.instructorName || '—';
+      
+      const studentIds = cls.studentIds || [];
+      const studentNames = studentIds.map(sid => {
+        const student = allStudents.find(s => s.id === sid);
+        return student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
+      }).filter(name => name !== '');
+      
+      let vehicleHtml = '';
+      if (cls.vehicleId) {
+        const vehicle = allVehicles.find(v => v.id === cls.vehicleId);
+        if (vehicle) {
+          const vehicleName = `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`.trim() || 'Vehicle';
+          const imgHtml = vehicle.imageUrl 
+            ? `<img src="${vehicle.imageUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border);" />` 
+            : `<div style="width:40px; height:40px; background:var(--navy-light); border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--text-muted);"><i class="fas fa-car"></i></div>`;
+          vehicleHtml = `
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${imgHtml}
+              <span style="font-size:12px; color:var(--text-light);">${escapeHtml(vehicleName)}</span>
+            </div>
+          `;
+        } else {
+          vehicleHtml = `<span style="font-size:12px; color:var(--text-muted);">Vehicle not found</span>`;
+        }
+      } else {
+        vehicleHtml = `<span style="font-size:12px; color:var(--text-muted);">No vehicle assigned</span>`;
+      }
+      
+      const studentsHtml = studentNames.length > 0 ? studentNames.join(', ') : 'No students';
+      
+      html += `
+        <div style="background:var(--navy); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:10px;">
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-weight:600; color:var(--white);">${escapeHtml(cls.title || 'Untitled')}</span>
+              <span style="font-size:11px; color:var(--text-muted);">${startTime} ${endTime ? '- ' + endTime : ''} ${durationLabel ? '('+durationLabel+')' : ''}</span>
+              <span>${statusPill}</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted);">Instructor: ${escapeHtml(instructorName)}</div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:8px; align-items:center;">
+            <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted);">
+              <i class="fas fa-users"></i> <span>${studentsHtml}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted);">
+              <i class="fas fa-car"></i> ${vehicleHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  modalBody.innerHTML = html;
+  openModal('busyResourcesModal');
+};
+
+window.showAllClassesPopupWithRange = function(prefix) {
+  const startDate = document.getElementById(`${prefix}ClassDate`).value;
+  const endDate = document.getElementById(`${prefix}ClassEndDate`).value;
+  if (!startDate || !endDate) {
+    showToast('Please select start and end dates first.', 'error');
+    return;
+  }
+  window.showAllClassesPopup(startDate, endDate);
+};
+
+// Make it globally accessible
+window.showBusyResources = showBusyResources;
 
   // ── STUDENT DROPDOWN TOGGLES ──
   window.toggleNewClassStudentDropdown = function() {
@@ -8092,68 +8627,74 @@ function daysOverlap(startA, endA, startB, endB) {
   }
 
   function renderAdminResources(resources) {
-    const container = document.getElementById("adminResourcesContainer");
-    if (!resources.length) {
-      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No class documents found.</div>';
-      return;
-    }
+  const container = document.getElementById("adminResourcesContainer");
+  if (!resources.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No class documents found.</div>';
+    return;
+  }
 
-    // Group by course
-    const grouped = {};
-    resources.forEach(cls => {
-      const course = cls.courseName || 'Uncategorized';
-      if (!grouped[course]) grouped[course] = [];
-      grouped[course].push(cls);
-    });
+  // Group by course
+  const grouped = {};
+  resources.forEach(cls => {
+    const course = cls.courseName || 'Uncategorized';
+    if (!grouped[course]) grouped[course] = [];
+    grouped[course].push(cls);
+  });
 
-    container.innerHTML = Object.entries(grouped).map(([course, classes]) => {
-      const totalDocs = classes.reduce((sum, cls) => sum + cls.documents.length, 0);
-      return `
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-folder" style="color:var(--gold);"></i>
-              ${escapeHtml(course)}
-              <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;">${classes.length} class${classes.length > 1 ? 'es' : ''} · ${totalDocs} document${totalDocs > 1 ? 's' : ''}</span>
-            </div>
-          </div>
-          <div style="overflow-x:auto;">
-            <table class="data-table">
-              <thead>
-                <tr><th>Class Title</th><th>Instructor</th><th>Date</th><th>Documents</th><th>Actions</th></tr>
-              </thead>
-              <tbody>
-                ${classes.map(cls => {
-                  const start = new Date(`${cls.date}T${cls.time}`);
-                  const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-                  const docCount = cls.documents.length;
-                  const docPreviews = cls.documents.slice(0, 4).map(d => {
-                    const ext = (d.name || '').split('.').pop()?.toLowerCase() || '';
-                    const { icon, color } = getFileIcon(ext);
-                    return `<i class="fas ${icon}" style="color:${color};font-size:14px;" title="${escapeHtml(d.name)}"></i>`;
-                  }).join(' ');
-                  return `<tr>
-                    <td><div style="font-weight:600;">${escapeHtml(cls.title)}</div></td>
-                    <td style="color:var(--text-muted);">${escapeHtml(cls.instructorName || '—')}</td>
-                    <td style="color:var(--text-muted);font-size:12px;">${dateStr}</td>
-                    <td>
-                      <div style="display:flex;gap:6px;align-items:center;">
-                        ${docPreviews}
-                        <span style="font-size:11px;color:var(--text-muted);">${docCount} file${docCount > 1 ? 's' : ''}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <button class="btn btn-icon btn-outline" title="View documents" onclick="openAdminResourceModal('${cls.id}')"><i class="fas fa-eye"></i></button>
-                    </td>
-                  </tr>`;
-                }).join('')}
-              </tbody>
-            </table>
+  container.innerHTML = Object.entries(grouped).map(([course, classes]) => {
+    const totalDocs = classes.reduce((sum, cls) => sum + cls.documents.length, 0);
+    return `
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-folder" style="color:var(--gold);"></i>
+            ${escapeHtml(course)}
+            <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;">${classes.length} class${classes.length > 1 ? 'es' : ''} · ${totalDocs} document${totalDocs > 1 ? 's' : ''}</span>
           </div>
         </div>
-      `;
-    }).join('');
-  }
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr><th>Class Title</th><th>Instructor</th><th>Date & Time</th><th>Documents</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              ${classes.map(cls => {
+                const start = new Date(`${cls.date}T${cls.time}`);
+                const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+                const startTime = formatTime(cls.time);
+                let endTime = cls.endTime ? formatTime(cls.endTime) : (() => {
+                  const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+                  return end.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+                })();
+                const dateTimeDisplay = `${dateStr} at ${startTime} – ${endTime}`;
+                const docCount = cls.documents.length;
+                const docPreviews = cls.documents.slice(0, 4).map(d => {
+                  const ext = (d.name || '').split('.').pop()?.toLowerCase() || '';
+                  const { icon, color } = getFileIcon(ext);
+                  return `<i class="fas ${icon}" style="color:${color};font-size:14px;" title="${escapeHtml(d.name)}"></i>`;
+                }).join(' ');
+                return `<tr>
+                  <td><div style="font-weight:600;">${escapeHtml(cls.title)}</div></td>
+                  <td style="color:var(--text-muted);">${escapeHtml(cls.instructorName || '—')}</td>
+                  <td style="color:var(--text-muted);font-size:12px;">${dateTimeDisplay}</td>
+                  <td>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                      ${docPreviews}
+                      <span style="font-size:11px;color:var(--text-muted);">${docCount} file${docCount > 1 ? 's' : ''}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button class="btn btn-icon btn-outline" title="View documents" onclick="openAdminResourceModal('${cls.id}')"><i class="fas fa-eye"></i></button>
+                  </td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
   window.filterResources = function() {
     const search = document.getElementById("resourceSearch")?.value.toLowerCase() || '';
@@ -8360,61 +8901,55 @@ function daysOverlap(startA, endA, startB, endB) {
     // ══════════════════════════════════════
   // PAGE NAVIGATION & UI HELPERS (from the old regular script)
   // ══════════════════════════════════════
-  function showPage(name, btn) {
-    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    document.getElementById(`page-${name}`).classList.add("active");
-    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-    if (btn) btn.classList.add("active");
-    const titles = {
-      overview:'Overview', students:'Students', attendance:'Attendance',
-      lessons:'Video Lessons', quizzes:'Quizzes', courses:'Courses',
-      instructors:'Instructors', classes:'Classes',
-      resources:'Resources', permissions:'Permissions',
-      notifications:'Send Notifications', enquiries:'Enquiries', settings:'Settings'
-    };
-    document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
-    
-    // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
-    if (name === "students") {
-      loadStudents().then(() => buildOverview());
+  async function showPage(name, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(`page-${name}`).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  const titles = {
+    overview:'Overview', students:'Students', attendance:'Attendance',
+    lessons:'Video Lessons', quizzes:'Quizzes', courses:'Courses',
+    instructors:'Instructors', classes:'Classes',
+    resources:'Resources', permissions:'Permissions',
+    notifications:'Send Notifications', enquiries:'Enquiries', settings:'Settings'
+  };
+  document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
+
+  // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
+  if (name === "students") {
+    await loadStudents();
+    buildOverview();
+  } else if (name === "overview") {
+    buildOverview();
+  } else if (name === "attendance") {
+    await loadAttendance();
+  } else if (name === "lessons") {
+    backToLessonFolders();
+    await loadLessons();
+  } else if (name === "quizzes") {
+    await loadQuizzes();
+  } else if (name === "courses") {
+    await loadCourses();
+  } else if (name === "instructors") {
+    await loadInstructors();
+  } else if (name === "classes") {
+    await loadClasses();
+  } else if (name === "resources") {
+    await loadAdminResources();
+  } else if (name === "vehicles") {
+    // Ensure classes are loaded first so busy tags appear immediately
+    if (!allClasses || allClasses.length === 0) {
+      await loadClasses();
     }
-    if (name === "overview") {
-      buildOverview();
-    }
-    if (name === "attendance") {
-      loadAttendance();
-    }
-    if (name === "lessons") {
-      backToLessonFolders();
-      loadLessons();
-    }
-    if (name === "quizzes") {
-      loadQuizzes();
-    }
-    if (name === "courses") {
-      loadCourses();
-    }
-    if (name === "instructors") {
-      loadInstructors();
-    }
-    if (name === "classes") {
-      loadClasses();
-    }
-    if (name === "resources") {
-      loadAdminResources();
-    }
-    if (name === "vehicles") {
-      loadVehicles();
-    }
-    if (name === "permissions") {
-      loadAllPermissions();
-    }
-        if (name === "enquiries") {
-      loadEnquiries();
-    }
-    
-    if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
+    await loadVehicles();
+  } else if (name === "permissions") {
+    await loadAllPermissions();
+  } else if (name === "enquiries") {
+    await loadEnquiries();
   }
+
+  if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
+}
 
   function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
 
@@ -9281,7 +9816,168 @@ function daysOverlap(startA, endA, startB, endB) {
       showToast("Could not update status.", "error");
     }
   };
+
+
+    // ── AGE CALCULATION HELPERS ──
+  window.calculateAgeDisplay = function(dobString) {
+    if (!dobString) return '—';
+    // Split the YYYY-MM-DD string to avoid timezone bugs
+    const parts = dobString.split('-');
+    const birthDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 0 ? `${age} years` : '—';
+  };
+
+  window.updateAgeDisplay = function() {
+    const dobInput = document.getElementById("editDob");
+    const ageDisplay = document.getElementById("ageDisplay");
+    if (dobInput && ageDisplay) {
+      ageDisplay.textContent = window.calculateAgeDisplay(dobInput.value);
+    }
+  };
   
+  // ── VEHICLE SCHEDULE PAGINATION ──
+let _vehicleScheduleData = [];
+let _vehicleSchedulePage = 1;
+const _vehicleSchedulePageSize = 5;
+let _vehicleScheduleVehicleId = null;
+
+// Reusable function to build schedule HTML for a list of classes
+function buildScheduleItems(classes) {
+  if (!classes || classes.length === 0) return '';
+  return classes.map(cls => {
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const end = cls.endDate && cls.endTime ? new Date(`${cls.endDate}T${cls.endTime}`) : new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+    const startDateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    const startTimeStr = formatTime(cls.time);
+    let endDateStr, endTimeStr;
+    const isMultiDay = cls.endDate && cls.endDate !== cls.date;
+    if (isMultiDay && cls.endTime) {
+      const endDateObj = new Date(`${cls.endDate}T${cls.endTime}`);
+      endDateStr = endDateObj.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      endTimeStr = formatTime(cls.endTime);
+    } else {
+      const endDateObj = new Date(end);
+      endDateStr = endDateObj.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      endTimeStr = new Date(end).toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+    }
+    const status = computeClassStatus(cls);
+    const statusPill = classStatusPill(status);
+    const studentNames = (cls.studentIds || []).map(sid => {
+      const student = allStudents.find(s => s.id === sid);
+      return student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : sid;
+    }).filter(name => name !== '');
+    const studentsDisplay = studentNames.length > 0 ? studentNames.join(', ') : 'None';
+    
+    // NEW: show time range for each date
+    const timeRange = `${startTimeStr} – ${endTimeStr}`;
+    let dateTimeHtml = `<span style="font-weight:600;color:var(--gold);">From:</span> ${startDateStr} at ${timeRange}`;
+    if (isMultiDay) {
+      dateTimeHtml += ` &nbsp;|&nbsp; <span style="font-weight:600;color:var(--gold);">To:</span> ${endDateStr} at ${timeRange}`;
+    }
+    // (single-day already shows the range)
+    
+    return `
+      <div style="background:var(--navy);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+          <span style="font-weight:600;color:var(--gold);font-size:13px;">Class: ${escapeHtml(cls.title)}</span>
+          ${statusPill}
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${dateTimeHtml}</div>
+        <div style="font-size:11px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">
+          <span><i class="fas fa-chalkboard-teacher" style="color:var(--gold);width:14px;"></i> ${escapeHtml(cls.instructorName || '—')}</span>
+          <span><i class="fas fa-book" style="color:var(--gold);width:14px;"></i> ${escapeHtml(cls.courseName || '—')}</span>
+          <span><i class="fas fa-users" style="color:var(--gold);width:14px;"></i> ${escapeHtml(studentsDisplay)}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderVehicleSchedulePage() {
+  const data = _vehicleScheduleData;
+  const total = data.length;
+  const totalPages = Math.ceil(total / _vehicleSchedulePageSize) || 1;
+  if (_vehicleSchedulePage < 1) _vehicleSchedulePage = 1;
+  if (_vehicleSchedulePage > totalPages) _vehicleSchedulePage = totalPages;
+  const start = (_vehicleSchedulePage - 1) * _vehicleSchedulePageSize;
+  const end = Math.min(start + _vehicleSchedulePageSize, total);
+  const pageData = data.slice(start, end);
+
+  const listEl = document.getElementById("vehicleScheduleList");
+  const paginationEl = document.getElementById("vehicleSchedulePagination");
+  const infoEl = document.getElementById("vehicleSchedulePageInfo");
+  const btnsEl = document.getElementById("vehicleSchedulePageBtns");
+
+  if (!listEl || !paginationEl) return;
+
+  if (total === 0) {
+    listEl.innerHTML = '';
+    paginationEl.style.display = 'none';
+    document.getElementById("vehicleScheduleSection").style.display = 'none';
+    return;
+  }
+
+  document.getElementById("vehicleScheduleSection").style.display = 'block';
+  listEl.innerHTML = buildScheduleItems(pageData);
+  paginationEl.style.display = 'flex';
+
+  const startDisplay = total === 0 ? 0 : start + 1;
+  const endDisplay = Math.min(end, total);
+  infoEl.textContent = `Showing ${startDisplay}–${endDisplay} of ${total}`;
+
+  btnsEl.innerHTML = '';
+  // Previous
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'page-btn';
+  prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+  prevBtn.disabled = _vehicleSchedulePage === 1;
+  prevBtn.onclick = () => changeVehicleSchedulePage(-1);
+  btnsEl.appendChild(prevBtn);
+
+  // Page numbers
+  const maxVisible = 5;
+  let startPage = Math.max(1, _vehicleSchedulePage - Math.floor(maxVisible / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+  if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+  for (let i = startPage; i <= endPage; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (i === _vehicleSchedulePage ? ' active' : '');
+    btn.textContent = i;
+    btn.onclick = () => goToVehicleSchedulePage(i);
+    btnsEl.appendChild(btn);
+  }
+
+  // Next
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'page-btn';
+  nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+  nextBtn.disabled = _vehicleSchedulePage === totalPages;
+  nextBtn.onclick = () => changeVehicleSchedulePage(1);
+  btnsEl.appendChild(nextBtn);
+}
+
+function changeVehicleSchedulePage(delta) {
+  const total = _vehicleScheduleData.length;
+  const totalPages = Math.ceil(total / _vehicleSchedulePageSize) || 1;
+  const newPage = _vehicleSchedulePage + delta;
+  if (newPage < 1 || newPage > totalPages) return;
+  _vehicleSchedulePage = newPage;
+  renderVehicleSchedulePage();
+}
+
+function goToVehicleSchedulePage(page) {
+  const total = _vehicleScheduleData.length;
+  const totalPages = Math.ceil(total / _vehicleSchedulePageSize) || 1;
+  if (page < 1 || page > totalPages) return;
+  _vehicleSchedulePage = page;
+  renderVehicleSchedulePage();
+}
+
 </script>
 
 <!-- ── LOADING OVERLAY ── -->
@@ -9293,6 +9989,22 @@ function daysOverlap(startA, endA, startB, endB) {
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </body>
+
+<!-- ── BUSY RESOURCES MODAL ── -->
+<div class="modal-overlay" id="busyResourcesModal">
+  <div class="modal" style="max-width: 700px;">
+    <div class="modal-header">
+      <div class="modal-title">Resource Availability</div>
+      <button class="modal-close" onclick="closeModal('busyResourcesModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="busyResourcesBody">
+      <!-- Content will be injected by JavaScript -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('busyResourcesModal')">Close</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
