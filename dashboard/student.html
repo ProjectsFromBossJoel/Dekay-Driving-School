@@ -1,11 +1,10 @@
-<!-- Student Dashboard Page for Dekay Driving School -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <!-- To further prevent any cached page from being shown before the auth guard runs -->
-   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
@@ -30,7 +29,7 @@
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-    /* ── SIDEBAR ── */
+    /* ── SIDEBAR (DESKTOP) ── */
     .sidebar {
       width: var(--sidebar);
       background: var(--navy-mid);
@@ -377,11 +376,7 @@
     .toast.success i { color: var(--success); }
     .toast.error i { color: var(--error); }
 
-    /* ── MOBILE ── */
-    .hamburger-btn { display: none; width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--border); background: var(--navy-mid); align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 14px; }
-
-
-        /* ── BUTTON ANIMATIONS ── */
+    /* ── BUTTON ANIMATIONS ── */
     .btn-animated {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
@@ -411,25 +406,199 @@
       height: 200px;
     }
 
+    /* ========================================================= */
+    /* MOBILE NAVIGATION & APP-LIKE RESPONSIVE UI               */
+    /* ========================================================= */
+    .mobile-bottom-nav { display: none; }
+    .mobile-more-overlay { display: none; }
+    .mobile-more-sheet { display: none; }
 
     @media (max-width: 900px) {
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      .main { margin-left: 0; }
-      .hamburger-btn { display: flex; }
-      .stat-grid { grid-template-columns: 1fr 1fr; }
+      /* Hide desktop sidebar on mobile */
+      .sidebar { display: none !important; }
+      .main { margin-left: 0 !important; padding-bottom: 80px !important; }
+
+      /* Topbar Mobile Optimizations */
+      .topbar { padding: 0 16px; height: 58px; }
+
+      /* Stat cards responsive vertical stacking */
+      .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       .profile-grid { grid-template-columns: 1fr; }
+      .pf-row { grid-template-columns: 1fr; }
+      .page { padding: 18px 16px; }
+
+      /* Stack Dashboard & Progress Grids */
+      #page-dashboard > div[style*="grid-template-columns"],
+      #page-progress > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Mobile App Bottom Navigation Bar */
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 62px;
+        background: rgba(18, 34, 63, 0.95);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid var(--border);
+        justify-content: space-around;
+        align-items: center;
+        z-index: 990;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 20%;
+        height: 100%;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .mobile-nav-item i {
+        font-size: 18px;
+        transition: transform 0.2s ease, color 0.2s ease;
+      }
+
+      .mobile-nav-item.active {
+        color: var(--gold);
+        font-weight: 700;
+      }
+
+      .mobile-nav-item.active i {
+        transform: translateY(-2px);
+        color: var(--gold);
+      }
+
+      /* Slide-up Bottom Sheet for "More" Menu */
+      .mobile-more-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .mobile-more-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .mobile-more-sheet {
+        display: block;
+        position: fixed;
+        bottom: -100%;
+        left: 0;
+        right: 0;
+        background: var(--navy-mid);
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        border-top: 1px solid var(--border);
+        padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+        z-index: 1001;
+        transition: bottom 0.35s cubic-bezier(0.1, 0.9, 0.2, 1);
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
+      }
+
+      .mobile-more-sheet.open {
+        bottom: 0;
+      }
+
+      .sheet-handle {
+        width: 40px;
+        height: 5px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 3px;
+        margin: 0 auto 18px;
+      }
+
+      .sheet-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+        text-align: center;
+      }
+
+      .sheet-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .sheet-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px 8px;
+        background: var(--navy);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        color: var(--white);
+        font-size: 11px;
+        font-weight: 500;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .sheet-item i {
+        font-size: 20px;
+        color: var(--gold);
+      }
+
+      .sheet-item:active {
+        background: rgba(245, 166, 35, 0.15);
+        border-color: var(--gold);
+        transform: scale(0.97);
+      }
+
+      .sheet-item.logout {
+        border-color: rgba(239, 83, 80, 0.3);
+      }
+      .sheet-item.logout i {
+        color: var(--error);
+      }
     }
-    @media (max-width: 600px) {
+
+    @media (max-width: 500px) {
       .stat-grid { grid-template-columns: 1fr 1fr; }
       .video-grid { grid-template-columns: 1fr; }
-      .pf-row { grid-template-columns: 1fr; }
+      .sheet-grid { grid-template-columns: repeat(2, 1fr); }
+      .toast { left: 16px; right: 16px; max-width: none; bottom: 80px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ── SIDEBAR ── -->
+  <!-- ── SIDEBAR (DESKTOP) ── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="sidebar-brand-icon">
@@ -451,7 +620,7 @@
       <button class="nav-item" onclick="showPage('classes', this)"><i class="fas fa-chalkboard"></i> My Classes</button>
       <button class="nav-item" onclick="showPage('resources', this)"><i class="fas fa-folder-open"></i> Resources</button>
       <button class="nav-item" onclick="showPage('instructors', this)"><i class="fas fa-chalkboard-teacher"></i> My Instructors</button>
-            <button class="nav-item" onclick="showPage('certificates', this)"><i class="fas fa-certificate"></i> My Certificates</button>
+      <button class="nav-item" onclick="showPage('certificates', this)"><i class="fas fa-certificate"></i> My Certificates</button>
 
       <div class="nav-section-label">Account</div>
       <button class="nav-item" onclick="showPage('notifications', this)"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notifBadge">3</span></button>
@@ -473,7 +642,6 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
         <div class="topbar-title" id="topbarTitle">Dashboard</div>
       </div>
       <div class="topbar-right">
@@ -522,7 +690,6 @@
       <div style="display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start;">
         <!-- LEFT COLUMN -->
         <div>
-          <!-- Recent notifications -->
           <div class="card">
             <div class="card-header">
               <div class="card-title"><i class="fas fa-bell"></i> Recent notifications</div>
@@ -533,7 +700,6 @@
             </div>
           </div>
 
-          <!-- Stage Unlock Button (Placed directly beneath Notifications) -->
           <div id="stageUnlockContainer" style="display:none; margin-top:16px;">
             <div class="card" style="border: 2px solid var(--gold); background: linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.02) 100%);">
               <div class="card-body" style="text-align:center; padding:20px;">
@@ -550,7 +716,6 @@
 
         <!-- RIGHT COLUMN -->
         <div style="display:flex;flex-direction:column;gap:16px;">
-          <!-- Upcoming classes -->
           <div class="card">
             <div class="card-header">
               <div class="card-title"><i class="fas fa-calendar-alt"></i> Ongoing & Upcoming classes</div>
@@ -561,15 +726,12 @@
             </div>
           </div>
 
-          <!-- Training stage quick view -->
           <div class="card">
             <div class="card-header">
               <div class="card-title"><i class="fas fa-route"></i> Training stages</div>
             </div>
             <div class="card-body">
-              <div class="pipeline-steps" id="miniPipeline">
-                <!-- Injected by JS -->
-              </div>
+              <div class="pipeline-steps" id="miniPipeline"></div>
             </div>
           </div>
         </div>
@@ -599,9 +761,7 @@
         </div>
       </div>
 
-      <div class="video-grid" id="videoGrid" style="display:none;">
-        <!-- Injected by JS -->
-      </div>
+      <div class="video-grid" id="videoGrid" style="display:none;"></div>
     </div>
 
     <!-- ═══ QUIZZES PAGE ═══ -->
@@ -610,9 +770,7 @@
         <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Quizzes</div>
         <div style="font-size:14px; color:var(--text-muted)">Complete all quizzes to advance to practical lessons.</div>
       </div>
-      <div class="quiz-list" id="quizList">
-        <!-- Injected by JS -->
-      </div>
+      <div class="quiz-list" id="quizList"></div>
     </div>
 
     <!-- ═══ ATTENDANCE PAGE ═══ -->
@@ -624,7 +782,7 @@
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
+      <div class="stat-grid" style="grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
         <div class="stat-card"><div class="stat-card-label"><i class="fas fa-check-circle"></i> Present</div><div class="stat-card-value" id="attPresent" style="color:var(--success)">—</div></div>
         <div class="stat-card"><div class="stat-card-label"><i class="fas fa-times-circle"></i> Absent</div><div class="stat-card-value" id="attAbsent" style="color:var(--error)">—</div></div>
         <div class="stat-card"><div class="stat-card-label"><i class="fas fa-calendar-alt"></i> Rate</div><div class="stat-card-value" id="attRate" style="color:var(--gold)">—</div></div>
@@ -675,18 +833,6 @@
             </div>
           </div>
         </div>
-                <div id="progressUnlockContainer" style="display:none; margin-top:16px;">
-          <div class="card" style="border: 2px solid var(--gold); background: linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.02) 100%);">
-            <div class="card-body" style="text-align:center; padding:20px;">
-              <div style="font-size: 20px; margin-bottom: 8px;">🎓</div>
-              <div style="font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 4px;">Ready to start your theory lessons?</div>
-              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">You've completed registration. Start learning the theory modules now!</div>
-              <button class="btn btn-gold btn-animated" onclick="unlockNextStage()" style="padding: 12px 32px; font-size: 15px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-                <i class="fas fa-play-circle"></i> Start Theory Lessons
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -728,7 +874,7 @@
               </tr>
             </thead>
             <tbody id="studentClassesTableBody">
-              <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">Loading classes…</td></tr>
+              <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">Loading classes…</td></tr>
             </tbody>
           </table>
         </div>
@@ -752,25 +898,8 @@
         </button>
       </div>
 
-      <!-- Course Cards Grid -->
       <div class="video-grid" id="resourcesCourseGrid">
         <div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading resources…</div>
-      </div>
-    </div>
-
-    <!-- ═══ RESOURCES MODAL ═══ -->
-    <div id="resourcesModal" class="modal-overlay">
-      <div class="modal" style="max-width: 700px;">
-        <div class="modal-header">
-          <div class="modal-title" id="resourcesModalTitle">Class Resources</div>
-          <button class="modal-close" onclick="closeResourcesModal()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body" id="resourcesModalBody">
-          <!-- Content injected -->
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline" onclick="closeResourcesModal()">Close</button>
-        </div>
       </div>
     </div>
 
@@ -785,7 +914,7 @@
       </div>
     </div>
 
-        <!-- ═══ MY CERTIFICATES PAGE ═══ -->
+    <!-- ═══ MY CERTIFICATES PAGE ═══ -->
     <div class="page" id="page-certificates">
       <div class="page-header">
         <div class="page-title">My Certificates</div>
@@ -800,23 +929,6 @@
           <div id="studentCertificatesList" style="display:flex;flex-direction:column;gap:12px;">
             <div style="text-align:center;color:var(--text-muted);padding:32px;">Loading your certificates…</div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ VIEW CERTIFICATE MODAL (Student) ═══ -->
-    <div class="modal-overlay" id="studentViewCertificateModal">
-      <div class="modal" style="max-width: 750px;">
-        <div class="modal-header">
-          <div class="modal-title">Certificate</div>
-          <button class="modal-close" onclick="closeStudentViewCertificateModal()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body" style="text-align:center;">
-          <img id="studentViewCertificateImage" src="" style="max-width:100%; border-radius:12px; border:2px solid var(--gold);" />
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-gold btn-animated" onclick="downloadStudentCertificate()"><i class="fas fa-download"></i> Download</button>
-          <button class="btn btn-outline" onclick="closeStudentViewCertificateModal()">Close</button>
         </div>
       </div>
     </div>
@@ -842,10 +954,9 @@
       </div>
       <div class="profile-grid">
         <div class="profile-avatar-card">
-           <div class="profile-avatar-big" id="profileAvatarBig" onclick="viewProfileImage()">
-              <span id="avatarInitials">--</span>
-              <div class="avatar-edit-badge" id="avatarEditBadge" onclick="event.stopPropagation(); document.getElementById('avatarUpload').click();"><i class="fas fa-camera"></i></div>
-            </div>
+          <div class="profile-avatar-big" id="profileAvatarBig" onclick="viewProfileImage()">
+            <span id="avatarInitials">--</span>
+            <div class="avatar-edit-badge" id="avatarEditBadge" onclick="event.stopPropagation(); document.getElementById('avatarUpload').click();"><i class="fas fa-camera"></i></div>
           </div>
           <input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="uploadAvatar(this)" />
           <div class="profile-name" id="profileFullName">Loading…</div>
@@ -853,6 +964,7 @@
           <div class="profile-course-badge" id="profileCourseBadge"><i class="fas fa-car"></i> —</div>
           <div style="margin-top:20px; font-size:12px; color:var(--text-muted); line-height:1.6;" id="profileUploadHint">Tap the camera icon to upload your profile picture. You can only set it once.</div>
         </div>
+
         <div class="profile-form-card">
           <div class="card-header"><div class="card-title"><i class="fas fa-user-edit"></i> Personal details</div></div>
           <div class="card-body">
@@ -875,7 +987,7 @@
               </div>
             </div>
             <div style="margin-top:20px;" id="profileSaveBtnContainer">
-              <button class="btn-sm btn-sm-gold" onclick="saveProfile()"><i class="fas fa-save"></i> Save changes</button>
+              <button class="btn-sm btn-sm-gold" id="profileSaveBtn" onclick="saveProfile()"><i class="fas fa-save"></i> Save changes</button>
             </div>
             <div style="margin-top:20px; font-size:12px; color:var(--gold); text-align:center; display:none;" id="profileLockedMsg">
               <i class="fas fa-lock"></i> Profile editing has been disabled by the school administration
@@ -884,23 +996,92 @@
         </div>
       </div>
     </div>
-
   </div><!-- end main -->
 
-  <!-- ── QUIZ MODAL ── -->
+  <!-- MOBILE APP BOTTOM NAVIGATION BAR -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-item active" data-page="dashboard" onclick="mobileSelectTab('dashboard')">
+      <i class="fas fa-th-large"></i>
+      <span>Dashboard</span>
+    </button>
+    <button class="mobile-nav-item" data-page="lessons" onclick="mobileSelectTab('lessons')">
+      <i class="fas fa-play-circle"></i>
+      <span>Lessons</span>
+    </button>
+    <button class="mobile-nav-item" data-page="quizzes" onclick="mobileSelectTab('quizzes')">
+      <i class="fas fa-tasks"></i>
+      <span>Quizzes</span>
+    </button>
+    <button class="mobile-nav-item" data-page="classes" onclick="mobileSelectTab('classes')">
+      <i class="fas fa-chalkboard"></i>
+      <span>Classes</span>
+    </button>
+    <button class="mobile-nav-item" id="mobileMoreBtn" onclick="toggleMobileMoreSheet()">
+      <i class="fas fa-ellipsis-h"></i>
+      <span>More</span>
+    </button>
+  </nav>
+
+  <!-- MOBILE "MORE" SLIDE-UP SHEET -->
+  <div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="closeMobileMoreSheet()"></div>
+  <div class="mobile-more-sheet" id="mobileMoreSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">More Options</div>
+    <div class="sheet-grid">
+      <div class="sheet-item" onclick="mobileMoreNavigate('attendance')">
+        <i class="fas fa-calendar-check"></i>
+        <span>Attendance</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('progress')">
+        <i class="fas fa-route"></i>
+        <span>My Progress</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('resources')">
+        <i class="fas fa-folder-open"></i>
+        <span>Resources</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('instructors')">
+        <i class="fas fa-chalkboard-teacher"></i>
+        <span>Instructors</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('certificates')">
+        <i class="fas fa-certificate"></i>
+        <span>Certificates</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('notifications')">
+        <i class="fas fa-bell"></i>
+        <span>Notifs</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('profile')">
+        <i class="fas fa-user-circle"></i>
+        <span>Profile</span>
+      </div>
+      <a href="../faqs.html" class="sheet-item" style="text-decoration:none;">
+        <i class="fas fa-question-circle"></i>
+        <span>FAQs</span>
+      </a>
+      <a href="../contact.html" class="sheet-item" style="text-decoration:none;">
+        <i class="fas fa-headset"></i>
+        <span>Contact</span>
+      </a>
+      <div class="sheet-item logout" onclick="closeMobileMoreSheet(); handleLogout();">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Sign Out</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
   <div class="modal-overlay" id="quizModal">
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title" id="quizModalTitle">Quiz</div>
         <button class="modal-close" onclick="closeQuizModal()"><i class="fas fa-times"></i></button>
       </div>
-      <div class="modal-body" id="quizModalBody">
-        <!-- Injected by JS -->
-      </div>
+      <div class="modal-body" id="quizModalBody"></div>
     </div>
   </div>
 
-  <!-- ── LESSON VIDEO MODAL ── -->
   <div class="modal-overlay" id="lessonVideoModal">
     <div class="modal" style="max-width:800px;">
       <div class="modal-header">
@@ -919,45 +1100,83 @@
     </div>
   </div>
 
-  <!-- TOAST -->
   <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
 
-  
-
-    <!-- LIGHTBOX / IMAGE VIEWER -->
   <div id="imageLightbox" style="position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; cursor:pointer;" onclick="closeLightbox()">
     <button style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:1px solid var(--border); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--white); font-size:16px; cursor:pointer; z-index:1;" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
     <img id="lightboxImage" src="" style="max-width:90vw; max-height:90vh; border-radius:var(--radius-lg); border:2px solid var(--gold); cursor:default;" onclick="event.stopPropagation()" />
   </div>
 
-   <!-- INSTRUCTOR INFO MODAL -->
   <div id="instructorInfoModal" class="modal-overlay">
     <div class="modal" style="max-width: 550px;">
       <div class="modal-header">
         <div class="modal-title" id="instructorModalTitle">Instructor Details</div>
         <button class="modal-close" onclick="closeInstructorModal()"><i class="fas fa-times"></i></button>
       </div>
-      <div class="modal-body" id="instructorModalBody">
-        <!-- Content injected -->
-      </div>
+      <div class="modal-body" id="instructorModalBody"></div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeInstructorModal()">Close</button>
       </div>
     </div>
   </div>
 
-    <!-- CLASS DETAILS MODAL (for students) -->
   <div id="classDetailsModal" class="modal-overlay">
     <div class="modal" style="max-width: 650px;">
       <div class="modal-header">
         <div class="modal-title" id="classDetailsModalTitle">Class Details</div>
         <button class="modal-close" onclick="closeClassDetailsModal()"><i class="fas fa-times"></i></button>
       </div>
-      <div class="modal-body" id="classDetailsModalBody">
-        <!-- Content will be injected dynamically -->
-      </div>
+      <div class="modal-body" id="classDetailsModalBody"></div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeClassDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resourcesModal" class="modal-overlay">
+    <div class="modal" style="max-width: 700px;">
+      <div class="modal-header">
+        <div class="modal-title" id="resourcesModalTitle">Class Resources</div>
+        <button class="modal-close" onclick="closeResourcesModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="resourcesModalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeResourcesModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="studentViewCertificateModal">
+    <div class="modal" style="max-width: 750px;">
+      <div class="modal-header">
+        <div class="modal-title">Certificate</div>
+        <button class="modal-close" onclick="closeStudentViewCertificateModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <img id="studentViewCertificateImage" src="" style="max-width:100%; border-radius:12px; border:2px solid var(--gold);" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-gold btn-animated" onclick="downloadStudentCertificate()"><i class="fas fa-download"></i> Download</button>
+        <button class="btn btn-outline" onclick="closeStudentViewCertificateModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="profilePicRequiredModal">
+    <div class="modal" style="max-width: 450px;">
+      <div class="modal-header">
+        <div class="modal-title">Profile Picture Required</div>
+        <button class="modal-close" onclick="closeProfilePicModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="font-size: 48px; margin-bottom: 16px; color: var(--gold);">🖼️</div>
+        <p style="font-size: 15px; margin-bottom: 16px; line-height: 1.6; color: var(--text-light);">
+          You have not set your profile picture yet. <br/>
+          Please set your profile picture before you can move to the next stage.
+        </p>
+        <button class="btn btn-gold btn-animated" onclick="goToProfileAndClose()" style="padding: 12px 24px; font-size: 14px;">
+          <i class="fas fa-user-circle"></i> Go to Profile
+        </button>
       </div>
     </div>
   </div>
@@ -970,7 +1189,6 @@
     collection, query, where, orderBy, getDocs, addDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // ── FIREBASE CONFIG ──
   const firebaseConfig = {
     apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
     authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
@@ -985,17 +1203,15 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Cloudinary – replace with your own values later
   const CLOUDINARY_CLOUD = "drs2xpwho";
   const CLOUDINARY_PRESET = "student_avatars";
 
-  // ── SCHOOL GEOFENCE (200m radius for students) ──
   const SCHOOL_LAT = 5.6120526;
   const SCHOOL_LNG = -0.2969936;
   const MAX_CHECKIN_DISTANCE_METERS = 200;
 
   function getDistanceMeters(lat1, lon1, lat2, lon2) {
-    const R = 6371000; // Earth radius in meters
+    const R = 6371000;
     const toRad = (deg) => deg * Math.PI / 180;
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
@@ -1012,10 +1228,6 @@
   let allLessonsFlat = [];
   let currentLessonFolderPath = null;
 
-  // ══════════════════════════════════════
-  // AUTH GUARD
-  // ══════════════════════════════════════
-    // ── AUTH GUARD (loop‑proof) ──
   let authGuardDone = false;
 
   onAuthStateChanged(auth, async (user) => {
@@ -1028,60 +1240,49 @@
         return;
       }
 
-      console.log("🔍 Student guard: fetching user doc for", user.uid);
       const snap = await getDoc(doc(db, "users", user.uid));
-      console.log("📄 User doc exists?", snap.exists(), "Role:", snap.data()?.role);
 
       if (!snap.exists() || snap.data().role !== "student") {
-        console.warn("⛔ Not a student – signing out");
         await signOut(auth);
         window.location.href = "/login";
         return;
       }
 
-      // Block pending students
       if (snap.data().status === "pending") {
-        console.warn("⛔ Pending approval – signing out");
         await signOut(auth);
         window.location.href = "/login";
         return;
       }
 
-      // ✅ Authorised
       currentUser = user;
       studentData = snap.data();
       initDashboard();
     } catch (err) {
-      console.error("❌ Student guard failed:", err);
+      console.error("Student guard failed:", err);
       await signOut(auth).catch(() => {});
       window.location.href = "/login";
     }
   });
 
-  // ══════════════════════════════════════
-  // DASHBOARD INIT
-  // ══════════════════════════════════════
   let studentPermissions = {};
 
-  // Get time range from a class object
-function getClassTimeRange(cls) {
-  if (!cls) return '';
-  const startTime = formatTime(cls.time);
-  let endTime;
-  if (cls.endTime) {
-    endTime = formatTime(cls.endTime);
-  } else if (cls.durationMinutes) {
-    // Compute end time from start + duration
-    const [h, m] = cls.time.split(':').map(Number);
-    const startDate = new Date();
-    startDate.setHours(h, m, 0, 0);
-    const endDate = new Date(startDate.getTime() + cls.durationMinutes * 60000);
-    endTime = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } else {
-    endTime = '';
+  function getClassTimeRange(cls) {
+    if (!cls) return '';
+    const startTime = formatTime(cls.time);
+    let endTime;
+    if (cls.endTime) {
+      endTime = formatTime(cls.endTime);
+    } else if (cls.durationMinutes) {
+      const [h, m] = cls.time.split(':').map(Number);
+      const startDate = new Date();
+      startDate.setHours(h, m, 0, 0);
+      const endDate = new Date(startDate.getTime() + cls.durationMinutes * 60000);
+      endTime = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+      endTime = '';
+    }
+    return endTime ? `${startTime} – ${endTime}` : startTime;
   }
-  return endTime ? `${startTime} – ${endTime}` : startTime;
-}
 
   async function loadStudentPermissions() {
     try {
@@ -1105,7 +1306,6 @@ function getClassTimeRange(cls) {
     document.getElementById("avatarInitials").textContent   = initials;
     document.getElementById("dashDateLine").textContent     = `${new Date().toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'})} · ${d.courseType || 'Manual'} course`;
 
-    // Profile page
     document.getElementById("profileFullName").textContent   = displayName;
     document.getElementById("profileEmail").textContent      = currentUser.email;
     document.getElementById("pfFirstName").value = d.firstName || '';
@@ -1113,7 +1313,6 @@ function getClassTimeRange(cls) {
     document.getElementById("pfPhone").value     = d.phone     || '';
     document.getElementById("pfEmail").value     = currentUser.email;
 
-    // Check permission: can student edit their profile?
     const canEditProfile = !studentPermissions.editProfile || studentPermissions.editProfile.enabled !== false;
     document.getElementById("pfFirstName").disabled = !canEditProfile;
     document.getElementById("pfLastName").disabled  = !canEditProfile;
@@ -1121,7 +1320,6 @@ function getClassTimeRange(cls) {
 
     document.getElementById("pfGhCardNumber").value = d.ghCardNumber || '—';
 
-    // Show or hide save button based on Edit Profile permission
     const saveBtnContainer = document.getElementById("profileSaveBtnContainer");
     const lockedMsg = document.getElementById("profileLockedMsg");
     if (canEditProfile) {
@@ -1138,19 +1336,15 @@ function getClassTimeRange(cls) {
       document.getElementById("profileAvatarBig").style.backgroundImage = `url(${d.avatarUrl})`;
       document.getElementById("profileAvatarBig").style.backgroundSize  = "cover";
       document.getElementById("avatarInitials").style.display = "none";
-      // Hide the camera badge — profile photo is locked once uploaded
       const badge = document.getElementById("avatarEditBadge");
       if (badge) badge.style.display = "none";
-      // Update hint text
       const hint = document.getElementById("profileUploadHint");
       if (hint) hint.textContent = "Your profile picture has been set and is now locked.";
-      // Update topbar avatar button with photo
       const avatarBtn = document.getElementById("avatarBtn");
       avatarBtn.style.backgroundImage = `url(${d.avatarUrl})`;
       avatarBtn.style.backgroundSize = "cover";
       avatarBtn.style.backgroundPosition = "center";
       avatarBtn.textContent = "";
-      // Also disable the file input (extra safety)
       const uploadInput = document.getElementById("avatarUpload");
       if (uploadInput) uploadInput.disabled = true;
     }
@@ -1158,35 +1352,28 @@ function getClassTimeRange(cls) {
     const stage = d.trainingStage || 1;
     document.getElementById("dashStage").textContent = stage;
 
-    await loadMyClasses();              // Load classes FIRST so class titles are available
-    const attendanceRecords = await loadAttendance(stage);   // now attendance can show class titles
-    await loadQuizzes();                // Load quizzes BEFORE lessons so sequential lesson locks are accurate on first render
+    await loadMyClasses();
+    const attendanceRecords = await loadAttendance(stage);
+    await loadQuizzes();
     loadLessons();
     loadNotifications();
     buildPipelines(stage, d);
-    renderUpcomingClasses();          // show upcoming classes on dashboard
-    checkTodaySession(attendanceRecords);   // pass the records
-    checkAndShowUnlockButton();       // Check if stage unlock button should be shown
+    renderUpcomingClasses();
+    checkTodaySession(attendanceRecords);
+    checkAndShowUnlockButton();
   }
 
-  // ══════════════════════════════════════
-  // LOAD ATTENDANCE
-  // ══════════════════════════════════════
   async function loadAttendance(stage) {
     try {
-      const q = query(collection(db, "attendance"),
-        where("studentId", "==", currentUser.uid)
-      );
-      // We'll sort after fetching (avoids needing a composite index)
+      const q = query(collection(db, "attendance"), where("studentId", "==", currentUser.uid));
       const snaps = await getDocs(q);
       const records = snaps.docs
-  .map(d => ({ id: d.id, ...d.data() }))
-  .sort((a, b) => {
-    // Sort by date descending (newest first)
-    if (!a.date) return 1;
-    if (!b.date) return -1;
-    return a.date < b.date ? 1 : -1;
-  });
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          if (!a.date) return 1;
+          if (!b.date) return -1;
+          return a.date < b.date ? 1 : -1;
+        });
       const present = records.filter(r => r.status === "present").length;
       const absent  = records.filter(r => r.status === "absent").length;
       const total   = records.length;
@@ -1198,50 +1385,43 @@ function getClassTimeRange(cls) {
       document.getElementById("attAbsent").textContent  = absent;
       document.getElementById("attRate").textContent    = `${rate}%`;
 
-            const tbody = document.getElementById("attTableBody");
+      const tbody = document.getElementById("attTableBody");
       tbody.innerHTML = records.length === 0
-        ? `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No sessions recorded yet. </div>`
+        ? `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No sessions recorded yet.</td></tr>`
         : records.map(r => {
-            // Use timestamp field if available (exact check-in time), fall back to date field
-            // Inside loadAttendance, when building the table rows:
-        let dateTimeStr = '';
-        if (r.classId) {
-          const cls = allMyClasses.find(c => c.id === r.classId);
-          if (cls) {
-            const start = new Date(`${cls.date}T${cls.time}`);
-            const dateStr = start.toLocaleDateString('en-GB');
-            const timeRange = getClassTimeRange(cls);
-            dateTimeStr = `${dateStr} at ${timeRange}`;
-          }
-        }
-        // Fallback to timestamp if no class
-        if (!dateTimeStr) {
-          if (r.timestamp?.toDate) {
-            const d = r.timestamp.toDate();
-            const dateStr = d.toLocaleDateString('en-GB');
-            let hours = d.getHours();
-            const minutes = d.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12;
-            const timeStr = `${hours}:${minutes} ${ampm}`;
-            dateTimeStr = `${dateStr} at ${timeStr}`;
-          } else if (r.date) {
-            // fallback to date field
-            const d = new Date(r.date);
-            const dateStr = d.toLocaleDateString('en-GB');
-            let hours = d.getHours();
-            const minutes = d.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12;
-            const timeStr = `${hours}:${minutes} ${ampm}`;
-            dateTimeStr = `${dateStr} at ${timeStr}`;
-          } else {
-            dateTimeStr = '—';
-          }
-        }
+            let dateTimeStr = '';
+            if (r.classId) {
+              const cls = allMyClasses.find(c => c.id === r.classId);
+              if (cls) {
+                const start = new Date(`${cls.date}T${cls.time}`);
+                const dateStr = start.toLocaleDateString('en-GB');
+                const timeRange = getClassTimeRange(cls);
+                dateTimeStr = `${dateStr} at ${timeRange}`;
+              }
+            }
+            if (!dateTimeStr) {
+              if (r.timestamp?.toDate) {
+                const d = r.timestamp.toDate();
+                const dateStr = d.toLocaleDateString('en-GB');
+                let hours = d.getHours();
+                const minutes = d.getMinutes().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                dateTimeStr = `${dateStr} at ${hours}:${minutes} ${ampm}`;
+              } else if (r.date) {
+                const d = new Date(r.date);
+                const dateStr = d.toLocaleDateString('en-GB');
+                let hours = d.getHours();
+                const minutes = d.getMinutes().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                dateTimeStr = `${dateStr} at ${hours}:${minutes} ${ampm}`;
+              } else {
+                dateTimeStr = '—';
+              }
+            }
             
             const pill = `<span class="att-pill ${r.status}">${r.status}</span>`;
-            // Get class title from classId if available
             let classTitle = '—';
             if (r.classId && allMyClasses && allMyClasses.length > 0) {
               const foundClass = allMyClasses.find(c => c.id === r.classId);
@@ -1257,16 +1437,13 @@ function getClassTimeRange(cls) {
             </tr>`;
           }).join('');
 
-      return records;   // ← NEW: return the records array
+      return records;
     } catch(e) { 
       console.error(e);
-      return [];        // ← NEW: return empty array on error
+      return [];
     }
   }
 
-  // ══════════════════════════════════════
-  // LOAD LESSONS
-  // ══════════════════════════════════════
   async function loadLessons() {
     try {
       const [lessonSnaps, folderSnaps] = await Promise.all([
@@ -1384,8 +1561,6 @@ function getClassTimeRange(cls) {
     renderLessonFolderView();
   };
 
-  // A lesson is unlocked if it's the first in its folder, or if the previous lesson has been
-  // watched to at least 70% AND (when it has an assigned quiz) that quiz has been passed.
   function isLessonUnlocked(index, sortedLessons) {
     if (index <= 0) return true;
     const prev = sortedLessons[index - 1];
@@ -1482,9 +1657,6 @@ function getClassTimeRange(cls) {
     }).join('');
   }
 
-  // ══════════════════════════════════════
-  // LOAD QUIZZES
-  // ══════════════════════════════════════
   async function loadQuizzes() {
     try {
       const snaps  = await getDocs(collection(db, "quizzes"));
@@ -1544,9 +1716,6 @@ function getClassTimeRange(cls) {
     } catch(e) { console.error(e); }
   }
 
-  // ══════════════════════════════════════
-  // LOAD NOTIFICATIONS
-  // ══════════════════════════════════════
   async function loadNotifications() {
     try {
       const q = query(
@@ -1571,8 +1740,7 @@ function getClassTimeRange(cls) {
           const minutes = date.getMinutes().toString().padStart(2, '0');
           const ampm = hours >= 12 ? 'PM' : 'AM';
           hours = hours % 12 || 12;
-          const formattedTime = `${hours}:${minutes} ${ampm}`;
-          timeStr = `${formattedDate} at ${formattedTime}`;
+          timeStr = `${formattedDate} at ${hours}:${minutes} ${ampm}`;
         }
         const iconClass = n.type === 'system' ? 'system' : '';
         return `<div class="notif-item ${!n.read ? 'notif-unread' : ''}">
@@ -1589,10 +1757,7 @@ function getClassTimeRange(cls) {
     } catch(e) { console.error(e); }
   }
 
-  // ══════════════════════════════════════
-  // BUILD PIPELINES
-  // ══════════════════════════════════════
-    function buildPipelines(stage, d) {
+  function buildPipelines(stage, d) {
     const stages = [
       { label: "Registration", desc: "Enrolled and profile set up" },
       { label: "Theory lessons", desc: "Watch all video modules" },
@@ -1602,7 +1767,6 @@ function getClassTimeRange(cls) {
       { label: "DVLA Ready", desc: "Ready for official test" }
     ];
 
-    // DVLA Ready = 95% completion
     const dvlaReady = stage >= 6;
 
     const miniHtml = stages.map((s, i) => {
@@ -1661,7 +1825,6 @@ function getClassTimeRange(cls) {
     document.getElementById("miniPipeline").innerHTML = miniHtml;
     document.getElementById("fullPipeline").innerHTML = fullHtml;
 
-    // DVLA Ready = 95% completion
     const pct = dvlaReady ? 100 : Math.round(((stage - 1) / 6) * 100);
     document.getElementById("overallPct").textContent   = dvlaReady ? '95%' : `${pct}%`;
     document.getElementById("overallBar").style.width   = dvlaReady ? '95%' : `${pct}%`;
@@ -1681,19 +1844,14 @@ function getClassTimeRange(cls) {
     }
 
     const now = new Date();
-    // Show upcoming and ongoing classes (not completed)
     const upcoming = allMyClasses
       .filter(cls => {
         const start = new Date(`${cls.date}T${cls.time}`);
         const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-        return end > now; // class hasn't ended yet
+        return end > now;
       })
-      .sort((a, b) => {
-        const da = new Date(`${a.date}T${a.time}`);
-        const db2 = new Date(`${b.date}T${b.time}`);
-        return da - db2; // closest first
-      })
-      .slice(0, 5); // Show max 5
+      .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`))
+      .slice(0, 5);
 
     if (upcoming.length === 0) {
       container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No upcoming classes.</div>';
@@ -1720,15 +1878,14 @@ function getClassTimeRange(cls) {
           </div>
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(cls.title)}</div>
-            <<div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeRange}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeRange}</div>
           </div>
           ${statusBadge}
-        </div>
-      `;
+        </div>`;
     }).join('');
   }
 
-    function checkTodaySession(records) {
+  function checkTodaySession(records) {
     const now = new Date();
     const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
@@ -1775,14 +1932,10 @@ function getClassTimeRange(cls) {
     container.style.display = "flex";
 
     function renderCard({ cls, start, end }, isCurrent) {
-    const marked = isClassMarked(cls.id);
-    const timeRange = getClassTimeRange(cls);   // <-- replace formatTime(cls.time) with this
-    const ongoing = now <= end;
-    const titleIcon = marked ? 'fa-check-circle' : (ongoing ? 'fa-map-pin' : 'fa-clock');
-    const titleColor = marked ? 'var(--success)' : 'var(--gold)';
-    const statusText = marked
-      ? "you've already checked in for this class."
-      : (ongoing ? "Your class is active — tap to mark your attendance." : "Class ended — you can still mark attendance (within 48 hours).");
+      const marked = isClassMarked(cls);
+      const timeLabel = getClassTimeRange(cls);
+      const isOngoing = now >= start && now <= end;
+      const isUpcoming = now < start;
 
       let headerText = 'Session in progress';
       let icon = 'fa-map-pin';
@@ -1826,7 +1979,7 @@ function getClassTimeRange(cls) {
       }
 
       return `
-        <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; opacity:${marked ? '0.55' : '0.9'}; width:220px;">
+        <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; opacity:${marked ? '0.55' : '0.9'}; width:100%;">
           <div style="min-width:0;">
             <div style="font-size:12px; font-weight:600; line-height:1.4;"><i class="fas ${icon}" style="color:${marked ? 'var(--success)' : 'var(--gold)'};margin-right:6px;font-size:10px;"></i>${escapeHtml(cls.title || 'Class')}</div>
             <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${timeLabel}</div>
@@ -1839,7 +1992,7 @@ function getClassTimeRange(cls) {
 
     const pastHtml = pastItems.length
       ? `<div style="font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">Past Classes</div>
-         <div style="display:flex;flex-wrap:wrap;gap:10px;">
+         <div style="display:flex;flex-direction:column;gap:8px;">
            ${pastItems.map(item => renderCard(item, false)).join('')}
          </div>`
       : '';
@@ -1847,9 +2000,6 @@ function getClassTimeRange(cls) {
     container.innerHTML = renderCard(currentItem, true) + pastHtml;
   }
 
-  // ══════════════════════════════════════
-  // ATTENDANCE CHECK‑IN
-  // ══════════════════════════════════════
   window.markAttendance = function(classId) {
     const cls = (allMyClasses || []).find(c => c.id === classId);
     if (!cls) { showToast("Class not found.", "error"); return; }
@@ -1917,9 +2067,6 @@ function getClassTimeRange(cls) {
     }
   }
 
-  // ══════════════════════════════════════
-  // PLAY LESSON
-  // ══════════════════════════════════════
   let _videoProgressSaveTimer = null;
   let _currentLessonId = null;
   let _currentLessonBestPct = 0;
@@ -1962,11 +2109,8 @@ function getClassTimeRange(cls) {
     } catch(e) { console.error("Could not save lesson progress:", e); }
   }
 
-  // Auto-advance the student from Stage 2 (Theory lessons) to Stage 3 (Theory test)
-  // the moment every lesson in their course has been watched to at least 80% —
-  // no page refresh required, updates the pipeline UI in place.
   async function checkAndAdvanceToTheoryTest() {
-    if ((studentData.trainingStage || 1) !== 2) return; // only relevant while sitting on Stage 2
+    if ((studentData.trainingStage || 1) !== 2) return;
 
     let studentCourse = (studentData.courseType || '').trim().toLowerCase();
     if (!studentCourse && Array.isArray(studentData.courseTypes) && studentData.courseTypes.length > 0) {
@@ -1975,7 +2119,7 @@ function getClassTimeRange(cls) {
     if (!studentCourse) return;
 
     const courseLessons = allLessonsFlat.filter(l => (l.folder || '').split('/')[0].trim().toLowerCase() === studentCourse);
-    if (!courseLessons.length) return; // no lessons published yet — nothing to complete
+    if (!courseLessons.length) return;
 
     const progress = window._lessonProgress || {};
     const allWatched = courseLessons.every(l => (progress[l.id] || 0) >= 80);
@@ -2016,7 +2160,6 @@ function getClassTimeRange(cls) {
         }, { merge: true });
       }
 
-      // Update local state and refresh the visible UI immediately — no reload needed
       studentData.trainingStage = 3;
       const dashStageEl = document.getElementById("dashStage");
       if (dashStageEl) dashStageEl.textContent = 3;
@@ -2047,7 +2190,6 @@ function getClassTimeRange(cls) {
     document.getElementById("lessonVideoProgBar").style.width = "100%";
     saveLessonProgress();
 
-    // Auto-launch the assigned quiz, if this lesson has one
     const finishedLesson = allLessonsFlat.find(l => l.id === _currentLessonId);
     if (finishedLesson && finishedLesson.assignedQuizId) {
       const quizIdToOpen = finishedLesson.assignedQuizId;
@@ -2059,9 +2201,6 @@ function getClassTimeRange(cls) {
     }
   });
 
-  // ══════════════════════════════════════
-  // QUIZZES
-  // ══════════════════════════════════════
   window.openQuiz = async function(quizId) {
     const quizMeta = window._quizzesData?.find(q => q.id === quizId);
     if (!quizMeta) { showToast("Quiz not found.", "error"); return; }
@@ -2074,16 +2213,12 @@ function getClassTimeRange(cls) {
 
     if (!questionDocs.length) { showToast("Quiz not available yet.", "error"); return; }
 
-
     const labelToIndex = { A:0, B:1, C:2, D:3 };
     const questions = questionDocs.map(qd => {
       const rawOptions = qd.options || [];
       const correctIdxOriginal = labelToIndex[qd.correctLabel] ?? 0;
       const correctText = rawOptions[correctIdxOriginal]?.text;
 
-      // Shuffle the display order of options for this attempt so the correct
-      // answer's position varies per student and per retake — prevents students
-      // from sharing "the answer is always option A/C/etc."
       const shuffledOptions = shuffleArray(rawOptions.map(o => o.text));
       const correctIndex = shuffledOptions.indexOf(correctText);
 
@@ -2186,15 +2321,11 @@ function getClassTimeRange(cls) {
     }
   };
 
-  // ══════════════════════════════════════
-  // PROFILE
-  // ══════════════════════════════════════
   window.saveProfile = async function() {
     const first = document.getElementById("pfFirstName").value.trim();
     const last  = document.getElementById("pfLastName").value.trim();
     const phone = document.getElementById("pfPhone").value.trim();
     
-    // Grab the button and show loading state
     const btn = document.getElementById("profileSaveBtn");
     if (btn) {
       btn.disabled = true;
@@ -2208,7 +2339,6 @@ function getClassTimeRange(cls) {
     } catch(e) { 
       showToast("Could not save. Try again.", "error"); 
     } finally {
-      // Restore button
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-save"></i> Save changes';
@@ -2216,7 +2346,7 @@ function getClassTimeRange(cls) {
     }
   };
 
-    window.uploadAvatar = async function(input) {
+  window.uploadAvatar = async function(input) {
     const file = input.files[0]; if (!file) return;
     showToast("Uploading photo…");
     const fd = new FormData();
@@ -2243,7 +2373,6 @@ function getClassTimeRange(cls) {
       avatarBtn.style.backgroundPosition = "center";
       avatarBtn.textContent = "";
 
-      // If student is on Stage 1 and uploads photo, mark Stage 1 complete
       if ((studentData.trainingStage || 1) === 1) {
         await updateDoc(doc(db, "users", currentUser.uid), { trainingStage: 2 });
         studentData.trainingStage = 2;
@@ -2278,7 +2407,6 @@ function getClassTimeRange(cls) {
         }
         
         showToast("✅ Stage 1 complete! Refreshing...", "success");
-        // Refresh everything after a short delay
         setTimeout(() => {
           initDashboard();
         }, 1500);
@@ -2290,24 +2418,23 @@ function getClassTimeRange(cls) {
     }
   };
 
-  // ══════════════════════════════════════
-  // LOGOUT
-  // ══════════════════════════════════════
-    window.handleLogout = async function() {
+  window.handleLogout = async function() {
     await signOut(auth);
-    // Replace the current history entry – the back button will not return here
     window.location.replace("/login");
   };
 
-  // ══════════════════════════════════════
-  // UI HELPERS
-  // ══════════════════════════════════════
   function showPage(name, btn) {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     document.getElementById(`page-${name}`).classList.add("active");
 
-    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".sidebar .nav-item").forEach(b => b.classList.remove("active"));
     if (btn) btn.classList.add("active");
+
+    /* Sync Mobile Bottom Navigation Tabs */
+    document.querySelectorAll(".mobile-nav-item").forEach(b => {
+      b.classList.remove("active");
+      if (b.getAttribute("data-page") === name) b.classList.add("active");
+    });
 
     const titles = {
       dashboard: "Dashboard", lessons: "Video Lessons", quizzes: "Quizzes",
@@ -2318,9 +2445,7 @@ function getClassTimeRange(cls) {
     };
     document.getElementById("topbarTitle").textContent = titles[name] || "Portal";
 
-    // ── AUTO-REFRESH DATA WHEN SWITCHING PAGES ──
     if (name === "dashboard") {
-      // Re-fetch latest data first
       getDoc(doc(db, "users", currentUser.uid)).then(snap => {
         if (snap.exists()) {
           studentData = snap.data();
@@ -2328,18 +2453,10 @@ function getClassTimeRange(cls) {
         initDashboard();
       });
     }
-    if (name === "lessons") {
-      currentLessonFolderPath = null;
-      loadLessons();
-    }
-    if (name === "quizzes") {
-      loadQuizzes();
-    }
-    if (name === "attendance") {
-      loadAttendance(studentData.trainingStage || 1);
-    }
+    if (name === "lessons") { currentLessonFolderPath = null; loadLessons(); }
+    if (name === "quizzes") { loadQuizzes(); }
+    if (name === "attendance") { loadAttendance(studentData.trainingStage || 1); }
     if (name === "progress") {
-      // Re-fetch latest student data from Firestore
       getDoc(doc(db, "users", currentUser.uid)).then(snap => {
         if (snap.exists()) {
           studentData = snap.data();
@@ -2347,28 +2464,48 @@ function getClassTimeRange(cls) {
         }
       });
     }
-    if (name === "notifications") {
-      loadNotifications();
-    }
-    if (name === "classes" && typeof loadMyClasses === "function") {
-      loadMyClasses();
-    }
-    if (name === "resources" && typeof loadResources === "function") {
-      loadResources();
-    }
-    if (name === "instructors" && typeof loadInstructors === "function") {
-      loadInstructors();
-    }
-    if (name === "certificates") {
-      loadStudentCertificates();
-    }
+    if (name === "notifications") { loadNotifications(); }
+    if (name === "classes" && typeof loadMyClasses === "function") { loadMyClasses(); }
+    if (name === "resources" && typeof loadResources === "function") { loadResources(); }
+    if (name === "instructors" && typeof loadInstructors === "function") { loadInstructors(); }
+    if (name === "certificates") { loadStudentCertificates(); }
 
-    if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
+    if (window.innerWidth < 900 && document.getElementById("sidebar").classList.contains("open")) {
+      document.getElementById("sidebar").classList.remove("open");
+    }
   }
 
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-  }
+  /* Mobile Bottom Navigation functions */
+  window.mobileSelectTab = function(pageName) {
+    closeMobileMoreSheet();
+    showPage(pageName, null);
+  };
+
+  window.toggleMobileMoreSheet = function() {
+    const sheet = document.getElementById("mobileMoreSheet");
+    const overlay = document.getElementById("mobileMoreOverlay");
+    if (sheet.classList.contains("open")) {
+      closeMobileMoreSheet();
+    } else {
+      sheet.classList.add("open");
+      overlay.classList.add("open");
+    }
+  };
+
+  window.closeMobileMoreSheet = function() {
+    const sheet = document.getElementById("mobileMoreSheet");
+    const overlay = document.getElementById("mobileMoreOverlay");
+    if (sheet) sheet.classList.remove("open");
+    if (overlay) overlay.classList.remove("open");
+  };
+
+  window.mobileMoreNavigate = function(pageName) {
+    closeMobileMoreSheet();
+    showPage(pageName, null);
+    document.querySelectorAll(".mobile-nav-item").forEach(b => b.classList.remove("active"));
+    const moreBtn = document.getElementById("mobileMoreBtn");
+    if (moreBtn) moreBtn.classList.add("active");
+  };
 
   function showToast(msg, type = "success") {
     const t = document.getElementById("toast");
@@ -2380,14 +2517,11 @@ function getClassTimeRange(cls) {
     setTimeout(() => t.classList.remove("show"), 3500);
   }
 
-  // Expose to global scope so onclick attributes work
-  window.showPage  = showPage;
-  window.toggleSidebar = toggleSidebar;
+  window.showPage = showPage;
   window.showToast = showToast;
   window.closeQuizModal = closeQuizModal;
-  window.loadQuizzes = loadQuizzes;  // needed by nextQuestion callback
+  window.loadQuizzes = loadQuizzes;
 
-  // ── LIGHTBOX FUNCTIONS ──
   window.openLightbox = function(imageUrl) {
     if (!imageUrl) return;
     const lightbox = document.getElementById('imageLightbox');
@@ -2400,7 +2534,7 @@ function getClassTimeRange(cls) {
     const lightbox = document.getElementById('imageLightbox');
     const img = document.getElementById('lightboxImage');
     lightbox.style.display = 'none';
-    img.src = ''; // clear for next time
+    img.src = '';
   };
 
   window.viewProfileImage = function() {
@@ -2411,9 +2545,6 @@ function getClassTimeRange(cls) {
     }
   };
 
-  // ══════════════════════════════════════
-  // MY CLASSES
-  // ══════════════════════════════════════
   let allMyClasses = [];
   let filteredMyClasses = [];
 
@@ -2439,7 +2570,7 @@ function getClassTimeRange(cls) {
   async function loadMyClasses() {
     const tbody = document.getElementById("studentClassesTableBody");
     if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">Loading classes…</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">Loading classes…</td></tr>`;
 
     try {
       let courseName = (studentData.courseType || '').trim();
@@ -2447,57 +2578,53 @@ function getClassTimeRange(cls) {
         courseName = (studentData.courseTypes[0] || '').trim();
       }
       if (!courseName) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">No course assigned to your account.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">No course assigned to your account.</td></tr>`;
         return;
       }
 
       const q = query(collection(db, "classes"), where("courseName", "==", courseName));
       const snaps = await getDocs(q);
       allMyClasses = snaps.docs.map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => {
-          const da = new Date(`${a.date}T${a.time}`);
-          const db2 = new Date(`${b.date}T${b.time}`);
-          return db2 - da;
-        });
+        .sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
       filteredMyClasses = [...allMyClasses];
       renderMyClassesTable(filteredMyClasses);
     } catch(e) {
       console.error("Error loading classes:", e);
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--error); padding:32px;">Could not load classes.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--error); padding:32px;">Could not load classes.</td></tr>`;
     }
   }
 
-    function renderMyClassesTable(classes) {
-  const tbody = document.getElementById("studentClassesTableBody");
-  if (!classes.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">No classes scheduled yet for your course.</td></tr>`;
-    return;
+  function renderMyClassesTable(classes) {
+    const tbody = document.getElementById("studentClassesTableBody");
+    if (!classes.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">No classes scheduled yet for your course.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = classes.map(cls => {
+      const status = computeClassStatus(cls);
+      const start  = new Date(`${cls.date}T${cls.time}`);
+      const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      const timeRange = getClassTimeRange(cls);
+      const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
+      const modeLabel = cls.mode === 'online' ? 'Online' : 'In-person';
+      const durLabel = cls.durationMinutes >= 60
+        ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
+        : `${cls.durationMinutes}m`;
+      return `<tr>
+        <td><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
+        <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(cls.instructorName || '—')}</td>
+        <td><div style="font-weight:500;">${dateStr}</div><div style="font-size:11px;color:var(--text-muted);">${timeRange}</div></td>
+        <td style="color:var(--text-muted);">${durLabel}</td>
+        <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);"><i class="fas ${modeIcon}" style="color:var(--gold);"></i>${modeLabel}</span></td>
+        <td>${classStatusPill(status)}</td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn-sm btn-sm-outline" onclick="openClassDetailsModal('${cls.id}')" style="padding:5px 10px;">
+            <i class="fas fa-eye"></i> View
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
   }
-  tbody.innerHTML = classes.map(cls => {
-    const status = computeClassStatus(cls);
-    const start  = new Date(`${cls.date}T${cls.time}`);
-    const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-    const timeRange = getClassTimeRange(cls);   // ← NEW: time range
-    const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
-    const modeLabel = cls.mode === 'online' ? 'Online' : 'In-person';
-    const durLabel = cls.durationMinutes >= 60
-      ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
-      : `${cls.durationMinutes}m`;
-    return `<tr>
-      <td><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
-      <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(cls.instructorName || '—')}</td>
-      <td><div style="font-weight:500;">${dateStr}</div><div style="font-size:11px;color:var(--text-muted);">${timeRange}</div></td>
-      <td style="color:var(--text-muted);">${durLabel}</td>
-      <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);"><i class="fas ${modeIcon}" style="color:var(--gold);"></i>${modeLabel}</span></td>
-      <td>${classStatusPill(status)}</td>
-      <td style="display:flex;gap:6px;">
-        <button class="btn-sm btn-sm-outline" onclick="openClassDetailsModal('${cls.id}')" style="padding:5px 10px;">
-          <i class="fas fa-eye"></i> View
-        </button>
-      </td>
-    </tr>`;
-  }).join('');
-}
 
   window.filterMyClasses = function() {
     const search = document.getElementById("classSearch")?.value.toLowerCase() || '';
@@ -2524,7 +2651,6 @@ function getClassTimeRange(cls) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  // Fisher-Yates shuffle — returns a new shuffled copy, doesn't mutate the original
   function shuffleArray(arr) {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -2534,7 +2660,6 @@ function getClassTimeRange(cls) {
     return a;
   }
 
-  // Convert 24h time (HH:MM) to 12h AM/PM format
   function formatTime(timeStr) {
     if (!timeStr) return '';
     const [h, m] = timeStr.split(':');
@@ -2545,9 +2670,6 @@ function getClassTimeRange(cls) {
     return `${hour}:${m} ${ampm}`;
   }
 
-  // ══════════════════════════════════════
-  // RESOURCES PAGE
-  // ══════════════════════════════════════
   let allResourcesClasses = [];
 
   async function loadResources() {
@@ -2565,17 +2687,12 @@ function getClassTimeRange(cls) {
         return;
       }
 
-      // Get classes that have documents
       const q = query(collection(db, "classes"), where("courseName", "==", courseName));
       const snaps = await getDocs(q);
       allResourcesClasses = snaps.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .filter(cls => cls.documents && cls.documents.length > 0)
-        .sort((a, b) => {
-          const da = new Date(`${a.date}T${a.time}`);
-          const db2 = new Date(`${b.date}T${b.time}`);
-          return db2 - da;
-        });
+        .sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
 
       if (allResourcesClasses.length === 0) {
         grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No resources available yet for your course.</div>';
@@ -2584,114 +2701,80 @@ function getClassTimeRange(cls) {
 
       filteredResourcesClasses = [...allResourcesClasses];
       renderFilteredResources(filteredResourcesClasses);
-      return; // Skip the old rendering code below
     } catch(e) {
       console.error("Error loading resources:", e);
       grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--error); padding:40px;">Could not load resources.</div>';
     }
   }
 
-
-
   window.openResourcesModal = function(classId) {
-  const cls = allResourcesClasses.find(c => c.id === classId);
-  if (!cls) return;
+    const cls = allResourcesClasses.find(c => c.id === classId);
+    if (!cls) return;
 
-  const start = new Date(`${cls.date}T${cls.time}`);
-  const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  const timeRange = getClassTimeRange(cls);   // ← NEW: time range
-  const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const timeRange = getClassTimeRange(cls);
+    const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
 
-  document.getElementById("resourcesModalTitle").textContent = cls.title || 'Class Resources';
+    document.getElementById("resourcesModalTitle").textContent = cls.title || 'Class Resources';
 
-  const body = document.getElementById("resourcesModalBody");
-  body.innerHTML = `
-    <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
-      <div style="display:flex;gap:16px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:150px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
-          <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
-        </div>
-        <div style="flex:1;min-width:150px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
-          <div style="font-weight:600;">${dateStr}</div>
-          <div style="font-size:12px;color:var(--text-muted);">${timeRange}</div>
-        </div>
-        <div style="flex:1;min-width:100px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
-          <div style="font-weight:600;">${modeLabel}</div>
+    const body = document.getElementById("resourcesModalBody");
+    body.innerHTML = `
+      <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
+            <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
+          </div>
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
+            <div style="font-weight:600;">${dateStr}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${timeRange}</div>
+          </div>
+          <div style="flex:1;min-width:100px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
+            <div style="font-weight:600;">${modeLabel}</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
-      <i class="fas fa-paperclip" style="margin-right:6px;"></i> Documents (${cls.documents.length})
-    </div>
+      <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+        <i class="fas fa-paperclip" style="margin-right:6px;"></i> Documents (${cls.documents.length})
+      </div>
 
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      ${cls.documents.map((doc, i) => {
-        // Determine file type from extension
-        const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
-        let icon = 'fa-file';
-        let iconColor = 'var(--text-muted)';
-        let bgColor = 'rgba(139,154,176,0.08)';
-        
-        if (ext === 'pdf') {
-          icon = 'fa-file-pdf';
-          iconColor = '#EF5350';
-          bgColor = 'rgba(239,83,80,0.1)';
-        } else if (ext === 'doc' || ext === 'docx') {
-          icon = 'fa-file-word';
-          iconColor = '#42A5F5';
-          bgColor = 'rgba(66,165,245,0.1)';
-        } else if (ext === 'xls' || ext === 'xlsx') {
-          icon = 'fa-file-excel';
-          iconColor = '#66BB6A';
-          bgColor = 'rgba(102,187,106,0.1)';
-        } else if (ext === 'ppt' || ext === 'pptx') {
-          icon = 'fa-file-powerpoint';
-          iconColor = '#FFA726';
-          bgColor = 'rgba(255,167,38,0.1)';
-        } else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
-          icon = 'fa-file-image';
-          iconColor = '#42A5F5';
-          bgColor = 'rgba(66,165,245,0.1)';
-        } else if (ext === 'txt') {
-          icon = 'fa-file-alt';
-          iconColor = 'var(--text-muted)';
-          bgColor = 'rgba(139,154,176,0.08)';
-        } else if (ext === 'csv') {
-          icon = 'fa-file-csv';
-          iconColor = '#66BB6A';
-          bgColor = 'rgba(102,187,106,0.1)';
-        } else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
-          icon = 'fa-file-archive';
-          iconColor = '#8D6E63';
-          bgColor = 'rgba(141,110,99,0.1)';
-        }
-        const safeDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
-        return `
-          <div onclick="forceDownloadDocument('${doc.url}', '${safeDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
-            <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
-            <div style="flex:1;">
-              <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
-              <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
-            </div>
-            <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${cls.documents.map((doc, i) => {
+          const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
+          let icon = 'fa-file';
+          let iconColor = 'var(--text-muted)';
+          let bgColor = 'rgba(139,154,176,0.08)';
+          
+          if (ext === 'pdf') { icon = 'fa-file-pdf'; iconColor = '#EF5350'; bgColor = 'rgba(239,83,80,0.1)'; }
+          else if (ext === 'doc' || ext === 'docx') { icon = 'fa-file-word'; iconColor = '#42A5F5'; bgColor = 'rgba(66,165,245,0.1)'; }
+          else if (ext === 'xls' || ext === 'xlsx') { icon = 'fa-file-excel'; iconColor = '#66BB6A'; bgColor = 'rgba(102,187,106,0.1)'; }
+          else if (ext === 'ppt' || ext === 'pptx') { icon = 'fa-file-powerpoint'; iconColor = '#FFA726'; bgColor = 'rgba(255,167,38,0.1)'; }
+          else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) { icon = 'fa-file-image'; iconColor = '#42A5F5'; bgColor = 'rgba(66,165,245,0.1)'; }
+          
+          const safeDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
+          return `
+            <div onclick="forceDownloadDocument('${doc.url}', '${safeDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
+              <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
+                <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
+              </div>
+              <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+            </div>`;
+        }).join('')}
+      </div>`;
 
-  document.getElementById("resourcesModal").classList.add("open");
-};
+    document.getElementById("resourcesModal").classList.add("open");
+  };
 
   window.closeResourcesModal = function() {
     document.getElementById("resourcesModal").classList.remove("open");
   };
 
-  // ── RESOURCE FILTERS ──
   let filteredResourcesClasses = [];
 
   window.filterMyResources = function() {
@@ -2713,59 +2796,57 @@ function getClassTimeRange(cls) {
   };
 
   function renderFilteredResources(classes) {
-  const grid = document.getElementById("resourcesCourseGrid");
-  if (!grid) return;
+    const grid = document.getElementById("resourcesCourseGrid");
+    if (!grid) return;
 
-  if (!classes || classes.length === 0) {
-    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No matching resources found.</div>';
-    return;
+    if (!classes || classes.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No matching resources found.</div>';
+      return;
+    }
+
+    grid.innerHTML = classes.map(cls => {
+      const start = new Date(`${cls.date}T${cls.time}`);
+      const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      const timeRange = getClassTimeRange(cls);
+      const docCount = cls.documents.length;
+
+      return `
+        <div class="video-item" onclick="openResourcesModal('${cls.id}')" style="cursor:pointer;">
+          <div style="padding:18px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px;">
+                <i class="fas fa-folder"></i>
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:14px;">${escapeHtml(cls.title)}</div>
+                <div style="font-size:11px;color:var(--text-muted);">${docCount} document${docCount > 1 ? 's' : ''}</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+              <i class="fas fa-user" style="margin-right:4px;"></i>${escapeHtml(cls.instructorName || '—')}
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+              <i class="fas fa-calendar" style="margin-right:4px;"></i>${dateStr} · ${timeRange}
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              ${cls.documents.map(d => {
+                const ext = (d.name || '').split('.').pop()?.toLowerCase() || '';
+                let icon = 'fa-file';
+                let color = 'var(--text-muted)';
+                if (ext === 'pdf') { icon = 'fa-file-pdf'; color = '#EF5350'; }
+                else if (ext === 'doc' || ext === 'docx') { icon = 'fa-file-word'; color = '#42A5F5'; }
+                else if (ext === 'xls' || ext === 'xlsx') { icon = 'fa-file-excel'; color = '#66BB6A'; }
+                else if (ext === 'ppt' || ext === 'pptx') { icon = 'fa-file-powerpoint'; color = '#FFA726'; }
+                else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) { icon = 'fa-file-image'; color = '#42A5F5'; }
+                return `<span style="font-size:10px;background:rgba(245,166,35,0.08);padding:3px 8px;border-radius:4px;color:${color};"><i class="fas ${icon}"></i></span>`;
+              }).join('')}
+              ${docCount > 3 ? `<span style="font-size:10px;color:var(--text-muted);">+${docCount - 3} more</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
   }
 
-  grid.innerHTML = classes.map(cls => {
-    const start = new Date(`${cls.date}T${cls.time}`);
-    const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-    const timeRange = getClassTimeRange(cls);   // ← NEW: time range
-    const docCount = cls.documents.length;
-
-    return `
-      <div class="video-item" onclick="openResourcesModal('${cls.id}')" style="cursor:pointer;">
-        <div style="padding:18px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-            <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:18px;">
-              <i class="fas fa-folder"></i>
-            </div>
-            <div>
-              <div style="font-weight:600;font-size:14px;">${escapeHtml(cls.title)}</div>
-              <div style="font-size:11px;color:var(--text-muted);">${docCount} document${docCount > 1 ? 's' : ''}</div>
-            </div>
-          </div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">
-            <i class="fas fa-user" style="margin-right:4px;"></i>${escapeHtml(cls.instructorName || '—')}
-          </div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
-            <i class="fas fa-calendar" style="margin-right:4px;"></i>${dateStr} · ${timeRange}
-          </div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;">
-            ${cls.documents.map(d => {
-              const ext = (d.name || '').split('.').pop()?.toLowerCase() || '';
-              let icon = 'fa-file';
-              let color = 'var(--text-muted)';
-              if (ext === 'pdf') { icon = 'fa-file-pdf'; color = '#EF5350'; }
-              else if (ext === 'doc' || ext === 'docx') { icon = 'fa-file-word'; color = '#42A5F5'; }
-              else if (ext === 'xls' || ext === 'xlsx') { icon = 'fa-file-excel'; color = '#66BB6A'; }
-              else if (ext === 'ppt' || ext === 'pptx') { icon = 'fa-file-powerpoint'; color = '#FFA726'; }
-              else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) { icon = 'fa-file-image'; color = '#42A5F5'; }
-              return `<span style="font-size:10px;background:rgba(245,166,35,0.08);padding:3px 8px;border-radius:4px;color:${color};"><i class="fas ${icon}"></i></span>`;
-            }).join('')}
-            ${docCount > 3 ? `<span style="font-size:10px;color:var(--text-muted);">+${docCount - 3} more</span>` : ''}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-  // ── MY INSTRUCTORS PAGE FUNCTIONS ──
   let instructorsList = [];
 
   async function loadInstructors() {
@@ -2773,44 +2854,36 @@ function getClassTimeRange(cls) {
     grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading instructors...</div>';
 
     try {
-      // Get unique instructor names from multiple sources
       const instructorNames = new Set();
       const studentCourse = studentData.courseType || '';
       
-      // 1. Add instructors from attendance records
       const attSnap = await getDocs(query(collection(db, "attendance"), where("studentId", "==", currentUser.uid)));
       attSnap.forEach(doc => {
         const inst = doc.data().instructor;
         if (inst && inst !== "—") instructorNames.add(inst);
       });
       
-      // 2. Add directly assigned instructor(s)
       const assignedInstructor = studentData.instructor;
       if (assignedInstructor && assignedInstructor !== "—") {
         instructorNames.add(assignedInstructor);
       }
       
-      // 3. Add instructors from the instructors array (multi-instructor assignment)
       if (studentData.instructors && Array.isArray(studentData.instructors)) {
         studentData.instructors.forEach(inst => {
           if (inst && inst !== "—") instructorNames.add(inst);
         });
       }
 
-      // 4. Fetch all instructors and add those who teach the student's course
       let allInstructors = [];
       try {
         const instrSnap = await getDocs(collection(db, "instructors"));
         allInstructors = instrSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       } catch (permError) {
         console.error("Firestore permission error:", permError);
-        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--error); padding:40px;">
-          Cannot load instructor details due to security rules.
-        </div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--error); padding:40px;">Cannot load instructor details due to security rules.</div>`;
         return;
       }
 
-      // Add instructors whose assignedCourses include the student's course
       if (studentCourse) {
         allInstructors.forEach(inst => {
           let courses = inst.assignedCourses || [];
@@ -2829,9 +2902,6 @@ function getClassTimeRange(cls) {
         return;
       }
 
-      // Filter instructors whose full name is in the set
-
-      // Filter instructors whose full name is in the set
       let matchedInstructors = allInstructors.filter(inst => {
         const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim();
         return instructorNames.has(fullName);
@@ -2842,20 +2912,16 @@ function getClassTimeRange(cls) {
         return;
       }
 
-      // Build a set of actively assigned instructor names (for "Current Instructor" badge)
       const activelyAssignedNames = new Set();
-      // From old single instructor field
       if (assignedInstructor && assignedInstructor !== "—") {
         activelyAssignedNames.add(assignedInstructor);
       }
-      // From new multi-instructor array
       if (studentData.instructors && Array.isArray(studentData.instructors)) {
         studentData.instructors.forEach(inst => {
           if (inst && inst !== "—") activelyAssignedNames.add(inst);
         });
       }
 
-      // Sort: actively assigned instructors first
       matchedInstructors.sort((a, b) => {
         const aFull = `${a.firstName || ''} ${a.lastName || ''}`.trim();
         const bFull = `${b.firstName || ''} ${b.lastName || ''}`.trim();
@@ -2868,7 +2934,6 @@ function getClassTimeRange(cls) {
 
       instructorsList = matchedInstructors;
 
-      // Generate cards
       grid.innerHTML = matchedInstructors.map(inst => {
         const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim() || "Instructor";
         const initials = (inst.firstName?.[0] || '') + (inst.lastName?.[0] || '') || 'I';
@@ -2876,11 +2941,8 @@ function getClassTimeRange(cls) {
         const avatarHtml = photoUrl
           ? `<div style="width: 80px; height: 80px; border-radius: 50%; background: url(${photoUrl}) center/cover; margin: 0 auto 12px;"></div>`
           : `<div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--gold); margin: 0 auto 12px;">${initials}</div>`;
-        // Show "Current Instructor" badge ONLY if actively assigned to this student
         const isCurrent = activelyAssignedNames.has(fullName);
         const currentBadge = isCurrent ? `<div style="display: inline-block; background: var(--gold); color: var(--navy); font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 20px; margin-bottom: 6px;">Current Instructor</div>` : '';
-        // Show a different label for instructors from course/attendance history
-        const instructorLabel = isCurrent ? 'Current Instructor' : 'Course Instructor';
         return `
           <div class="video-item" onclick='openInstructorInfo(${JSON.stringify(inst).replace(/'/g, "&#39;")})' style="cursor:pointer; text-align:center;">
             ${avatarHtml}
@@ -2889,8 +2951,7 @@ function getClassTimeRange(cls) {
               <div style="font-weight:600; margin-bottom:4px;">${fullName}</div>
               <div style="font-size:12px; color:var(--text-muted);">Driving Instructor</div>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
     } catch (err) {
       console.error("Unexpected error loading instructors:", err);
@@ -2903,7 +2964,6 @@ function getClassTimeRange(cls) {
     const initials = (instructor.firstName?.[0] || '') + (instructor.lastName?.[0] || '') || 'I';
     const photoUrl = instructor.profilePhoto || instructor.avatarUrl;
     
-    // Build avatar with click-to-enlarge
     const avatarHtml = photoUrl
       ? `<div style="width: 100px; height: 100px; border-radius: 50%; background: url(${photoUrl}) center/cover; border: 3px solid var(--gold); margin: 0 auto 16px; cursor: pointer;" onclick="event.stopPropagation(); openLightbox('${photoUrl}')"></div>`
       : `<div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 700; color: var(--gold); border: 3px solid var(--gold); margin: 0 auto 16px;">${initials}</div>`;
@@ -2958,8 +3018,7 @@ function getClassTimeRange(cls) {
 
       <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 8px;">
         <i class="fas fa-id-card"></i> Verified Instructor
-      </div>
-    `;
+      </div>`;
     
     document.getElementById("instructorModalTitle").textContent = `Instructor Profile`;
     document.getElementById("instructorModalBody").innerHTML = html;
@@ -2970,13 +3029,10 @@ function getClassTimeRange(cls) {
     document.getElementById("instructorInfoModal").classList.remove("open");
   };
 
-  // Close modals on overlay click
   document.querySelectorAll(".modal-overlay").forEach(overlay => {
     overlay.addEventListener("click", e => {
       if (e.target !== overlay) return;
       if (overlay.id === "lessonVideoModal") {
-        // Route through the proper close handler so the video is paused
-        // (and progress saved) instead of just hiding the modal visually.
         closeLessonVideoModal();
       } else {
         overlay.classList.remove("open");
@@ -2984,176 +3040,143 @@ function getClassTimeRange(cls) {
     });
   });
 
-        // ══════════════════════════════════════
-  // CLASS DETAILS MODAL (Student View)
-  // ══════════════════════════════════════
   window.openClassDetailsModal = function(classId) {
-  const cls = allMyClasses.find(c => c.id === classId);
-  if (!cls) {
-    showToast("Class details not found.", "error");
-    return;
-  }
+    const cls = allMyClasses.find(c => c.id === classId);
+    if (!cls) {
+      showToast("Class details not found.", "error");
+      return;
+    }
 
-  const start = new Date(`${cls.date}T${cls.time}`);
-  const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  const timeRange = getClassTimeRange(cls);   // ← NEW: time range
-  const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
-  const status = computeClassStatus(cls);
-  let statusBadge = '';
-  if (status === 'ongoing') {
-    statusBadge = '<span class="att-pill present" style="font-size:11px;">Live Now</span>';
-  } else if (status === 'upcoming') {
-    statusBadge = '<span class="att-pill excused" style="font-size:11px;">Upcoming</span>';
-  } else {
-    statusBadge = '<span class="att-pill absent" style="font-size:11px;">Completed</span>';
-  }
+    const start = new Date(`${cls.date}T${cls.time}`);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const timeRange = getClassTimeRange(cls);
+    const modeLabel = cls.mode === 'online' ? 'Online Class' : 'In-person Class';
+    const status = computeClassStatus(cls);
+    let statusBadge = '';
+    if (status === 'ongoing') {
+      statusBadge = '<span class="att-pill present" style="font-size:11px;">Live Now</span>';
+    } else if (status === 'upcoming') {
+      statusBadge = '<span class="att-pill excused" style="font-size:11px;">Upcoming</span>';
+    } else {
+      statusBadge = '<span class="att-pill absent" style="font-size:11px;">Completed</span>';
+    }
 
-  const durLabel = cls.durationMinutes >= 60
-    ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
-    : `${cls.durationMinutes}m`;
+    const durLabel = cls.durationMinutes >= 60
+      ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
+      : `${cls.durationMinutes}m`;
 
-  // Determine if join button should be shown (online mode and meeting link exists)
-  const showJoinButton = cls.mode === 'online' && cls.meetingLink && cls.meetingLink.trim() !== '';
-  const joinButtonHtml = showJoinButton 
-    ? `<button class="btn btn-gold" onclick="window.open('${cls.meetingLink}', '_blank')" style="margin-top:10px; width:100%; justify-content:center;">
-         <i class="fas fa-video"></i> Join Online Class
-       </button>`
-    : '';
+    const showJoinButton = cls.mode === 'online' && cls.meetingLink && cls.meetingLink.trim() !== '';
+    const joinButtonHtml = showJoinButton 
+      ? `<button class="btn btn-gold" onclick="window.open('${cls.meetingLink}', '_blank')" style="margin-top:10px; width:100%; justify-content:center;">
+           <i class="fas fa-video"></i> Join Online Class
+         </button>`
+      : '';
 
-  // Build documents HTML
-  let documentsHtml = '';
-  if (cls.documents && cls.documents.length > 0) {
-    documentsHtml = `
-      <div style="margin-top:20px;">
-        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
-          <i class="fas fa-paperclip" style="margin-right:6px;"></i> Class Materials (${cls.documents.length})
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          ${cls.documents.map((doc, i) => {
-            const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
-            let icon = 'fa-file';
-            let iconColor = 'var(--text-muted)';
-            let bgColor = 'rgba(139,154,176,0.08)';
-            
-            if (ext === 'pdf') {
-              icon = 'fa-file-pdf';
-              iconColor = '#EF5350';
-              bgColor = 'rgba(239,83,80,0.1)';
-            } else if (ext === 'doc' || ext === 'docx') {
-              icon = 'fa-file-word';
-              iconColor = '#42A5F5';
-              bgColor = 'rgba(66,165,245,0.1)';
-            } else if (ext === 'xls' || ext === 'xlsx') {
-              icon = 'fa-file-excel';
-              iconColor = '#66BB6A';
-              bgColor = 'rgba(102,187,106,0.1)';
-            } else if (ext === 'ppt' || ext === 'pptx') {
-              icon = 'fa-file-powerpoint';
-              iconColor = '#FFA726';
-              bgColor = 'rgba(255,167,38,0.1)';
-            } else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
-              icon = 'fa-file-image';
-              iconColor = '#42A5F5';
-              bgColor = 'rgba(66,165,245,0.1)';
-            }
-            const safeClassDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
-            return `
-              <div onclick="forceDownloadDocument('${doc.url}', '${safeClassDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
-                <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
-                <div style="flex:1;">
-                  <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
-                  <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
-                </div>
-                <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }
+    let documentsHtml = '';
+    if (cls.documents && cls.documents.length > 0) {
+      documentsHtml = `
+        <div style="margin-top:20px;">
+          <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+            <i class="fas fa-paperclip" style="margin-right:6px;"></i> Class Materials (${cls.documents.length})
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${cls.documents.map((doc, i) => {
+              const ext = (doc.name || '').split('.').pop()?.toLowerCase() || '';
+              let icon = 'fa-file';
+              let iconColor = 'var(--text-muted)';
+              let bgColor = 'rgba(139,154,176,0.08)';
+              
+              if (ext === 'pdf') { icon = 'fa-file-pdf'; iconColor = '#EF5350'; bgColor = 'rgba(239,83,80,0.1)'; }
+              else if (ext === 'doc' || ext === 'docx') { icon = 'fa-file-word'; iconColor = '#42A5F5'; bgColor = 'rgba(66,165,245,0.1)'; }
+              else if (ext === 'xls' || ext === 'xlsx') { icon = 'fa-file-excel'; iconColor = '#66BB6A'; bgColor = 'rgba(102,187,106,0.1)'; }
+              else if (ext === 'ppt' || ext === 'pptx') { icon = 'fa-file-powerpoint'; iconColor = '#FFA726'; bgColor = 'rgba(255,167,38,0.1)'; }
+              else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) { icon = 'fa-file-image'; iconColor = '#42A5F5'; bgColor = 'rgba(66,165,245,0.1)'; }
+              
+              const safeClassDocName = (doc.name || `Document ${i + 1}`).replace(/'/g, "\\'");
+              return `
+                <div onclick="forceDownloadDocument('${doc.url}', '${safeClassDocName}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:${bgColor};border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;transition:all var(--transition);cursor:pointer;">
+                  <i class="fas ${icon}" style="font-size:22px;color:${iconColor};"></i>
+                  <div style="flex:1;">
+                    <div style="font-weight:600;font-size:13px;color:var(--white);">${escapeHtml(doc.name || `Document ${i + 1}`)}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">Click to download</div>
+                  </div>
+                  <i class="fas fa-download" style="color:var(--text-muted);font-size:12px;"></i>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
 
-  // Build platform info HTML for online classes
-  let platformHtml = '';
-  if (cls.mode === 'online' && cls.platform) {
-    platformHtml = `
-      <div style="flex:1;min-width:150px;">
-        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Platform</div>
-        <div style="font-weight:600;">${escapeHtml(cls.platform)}</div>
-      </div>
-    `;
-  }
-
-  const html = `
-    <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-        <h2 style="font-size:18px;font-weight:700;color:var(--gold);">${escapeHtml(cls.title)}</h2>
-        ${statusBadge}
-      </div>
-      ${cls.description ? `<p style="font-size:13px;color:var(--text-light);margin-bottom:16px;line-height:1.5;">${escapeHtml(cls.description)}</p>` : ''}
-      
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+    let platformHtml = '';
+    if (cls.mode === 'online' && cls.platform) {
+      platformHtml = `
         <div style="flex:1;min-width:150px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
-          <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
-        </div>
-        <div style="flex:1;min-width:150px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
-          <div style="font-weight:600;">${dateStr}</div>
-          <div style="font-size:12px;color:var(--text-muted);">${timeRange}</div>
-        </div>
-        <div style="flex:1;min-width:100px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Duration</div>
-          <div style="font-weight:600;">${durLabel}</div>
-        </div>
-      </div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Platform</div>
+          <div style="font-weight:600;">${escapeHtml(cls.platform)}</div>
+        </div>`;
+    }
 
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
-        <div style="flex:1;min-width:150px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
-          <div style="font-weight:600;">
-            <i class="fas ${cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt'}" style="color:var(--gold);margin-right:6px;"></i>
-            ${modeLabel}
+    const html = `
+      <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+          <h2 style="font-size:18px;font-weight:700;color:var(--gold);">${escapeHtml(cls.title)}</h2>
+          ${statusBadge}
+        </div>
+        ${cls.description ? `<p style="font-size:13px;color:var(--text-light);margin-bottom:16px;line-height:1.5;">${escapeHtml(cls.description)}</p>` : ''}
+        
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Instructor</div>
+            <div style="font-weight:600;">${escapeHtml(cls.instructorName || '—')}</div>
+          </div>
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Date & Time</div>
+            <div style="font-weight:600;">${dateStr}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${timeRange}</div>
+          </div>
+          <div style="flex:1;min-width:100px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Duration</div>
+            <div style="font-weight:600;">${durLabel}</div>
           </div>
         </div>
-        ${platformHtml}
-        ${cls.mode === 'online' && cls.meetingLink ? `
-        <div style="flex:2;min-width:200px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Meeting Link</div>
-          <div style="font-size:12px;word-break:break-all;">
-            <a href="${cls.meetingLink}" target="_blank" style="color:var(--gold);text-decoration:none;">${escapeHtml(cls.meetingLink.length > 50 ? cls.meetingLink.substring(0, 50) + '...' : cls.meetingLink)}</a>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
+          <div style="flex:1;min-width:150px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mode</div>
+            <div style="font-weight:600;">
+              <i class="fas ${cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt'}" style="color:var(--gold);margin-right:6px;"></i>
+              ${modeLabel}
+            </div>
           </div>
+          ${platformHtml}
+          ${cls.mode === 'online' && cls.meetingLink ? `
+          <div style="flex:2;min-width:200px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Meeting Link</div>
+            <div style="font-size:12px;word-break:break-all;">
+              <a href="${cls.meetingLink}" target="_blank" style="color:var(--gold);text-decoration:none;">${escapeHtml(cls.meetingLink.length > 50 ? cls.meetingLink.substring(0, 50) + '...' : cls.meetingLink)}</a>
+            </div>
+          </div>` : ''}
         </div>
-        ` : ''}
       </div>
-    </div>
+      ${documentsHtml}
+      ${joinButtonHtml}`;
 
-    ${documentsHtml}
-    ${joinButtonHtml}
-  `;
-
-  document.getElementById("classDetailsModalTitle").textContent = `Class: ${cls.title}`;
-  document.getElementById("classDetailsModalBody").innerHTML = html;
-  document.getElementById("classDetailsModal").classList.add("open");
-};
+    document.getElementById("classDetailsModalTitle").textContent = `Class: ${cls.title}`;
+    document.getElementById("classDetailsModalBody").innerHTML = html;
+    document.getElementById("classDetailsModal").classList.add("open");
+  };
 
   window.closeClassDetailsModal = function() {
-    // Use the student dashboard's modal method (remove 'open' class)
     document.getElementById("classDetailsModal").classList.remove("open");
   };
 
-
-  // ══════════════════════════════════════
-  // STAGE UNLOCK FUNCTION
-  // ══════════════════════════════════════
   window.unlockNextStage = async function() {
-    // Check if profile picture is set BEFORE proceeding
     if (!studentData.avatarUrl) {
       document.getElementById("profilePicRequiredModal").classList.add("open");
       return;
     }
 
-    const btn = event.target.closest('button'); // Safely grab the button
+    const btn = event.target.closest('button');
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Unlocking…';
@@ -3162,15 +3185,9 @@ function getClassTimeRange(cls) {
       const currentStage = studentData.trainingStage || 1;
       const nextStage = Math.min(currentStage + 1, 6);
       
-      // Update the student's training stage
-      await updateDoc(doc(db, "users", currentUser.uid), {
-        trainingStage: nextStage
-      });
-      
-      // Update local data
+      await updateDoc(doc(db, "users", currentUser.uid), { trainingStage: nextStage });
       studentData.trainingStage = nextStage;
       
-      // Update UI
       const stage = nextStage;
       const stages = [
         { label: "Registration", desc: "Enrolled and profile set up" },
@@ -3181,16 +3198,10 @@ function getClassTimeRange(cls) {
         { label: "DVLA ready", desc: "Test day escort included" }
       ];
       
-      // Rebuild pipelines with updated stage
       buildPipelines(stage, studentData);
-      
-      // Update dashboard stage display
       document.getElementById("dashStage").textContent = stage;
-      
-      // Hide the unlock button after successful unlock
       document.getElementById("stageUnlockContainer").style.display = "none";
       
-      // Update overall progress
       const pct = Math.round(((stage - 1) / 6) * 100);
       document.getElementById("overallPct").textContent = `${pct}%`;
       document.getElementById("overallBar").style.width = `${pct}%`;
@@ -3199,21 +3210,16 @@ function getClassTimeRange(cls) {
       
       showToast(`🎉 Stage ${stage}: ${stages[stage-1]?.label || 'Complete'} unlocked!`, "success");
       
-      // Reload to refresh all data
-      setTimeout(() => {
-        initDashboard();
-      }, 500);
-      
+      setTimeout(() => { initDashboard(); }, 500);
     } catch(e) {
       console.error("Error unlocking stage:", e);
-      showToast("Could not unlock the next stage. Please try again.", "error");
+      showToast("Could not unlock the next stage.", "error");
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalHTML;
     }
   };
   
-  // ── CHECK IF STAGE 1 IS COMPLETE AND SHOW UNLOCK BUTTON ──
   function checkAndShowUnlockButton() {
     const container = document.getElementById("stageUnlockContainer");
     if (!container) return;
@@ -3221,10 +3227,6 @@ function getClassTimeRange(cls) {
     const currentStage = studentData.trainingStage || 1;
     const status = studentData.status || 'pending';
     
-    // Show button only if:
-    // 1. Student is active (approved)
-    // 2. Current stage is 1 (Registration)
-    // 3. Stage 1 is complete (status is active means approved)
     if (status === 'active' && currentStage === 1) {
       container.style.display = "block";
     } else {
@@ -3232,11 +3234,6 @@ function getClassTimeRange(cls) {
     }
   }
 
-  // ══════════════════════════════════════
-  // STUDENT CERTIFICATES
-  // ══════════════════════════════════════
-  
-  // ── LOAD STUDENT CERTIFICATES ──
   async function loadStudentCertificates() {
     const container = document.getElementById("studentCertificatesList");
     if (!container) return;
@@ -3258,8 +3255,7 @@ function getClassTimeRange(cls) {
             <i class="fas fa-certificate" style="font-size:48px;display:block;margin-bottom:16px;opacity:0.3;"></i>
             <p>You haven't received any certificates yet.</p>
             <p style="font-size:12px;margin-top:8px;">Complete your training to earn a certificate!</p>
-          </div>
-        `;
+          </div>`;
         return;
       }
       
@@ -3286,18 +3282,14 @@ function getClassTimeRange(cls) {
               <i class="fas fa-download"></i> Download
             </button>
           </div>
-        </div>
-      `).join('');
-      
+        </div>`).join('');
     } catch(e) {
       console.error("Error loading student certificates:", e);
       container.innerHTML = '<div style="text-align:center;color:var(--error);padding:32px;">Could not load certificates.</div>';
     }
   }
 
-  // ── VIEW STUDENT CERTIFICATE ──
   window.viewStudentCertificate = function(imageUrl) {
-    console.log("viewStudentCertificate called with:", imageUrl);
     if (!imageUrl) {
       showToast("Certificate image not available.", "error");
       return;
@@ -3305,43 +3297,20 @@ function getClassTimeRange(cls) {
     const img = document.getElementById("studentViewCertificateImage");
     if (img) {
       img.src = imageUrl;
-      img.onerror = function() {
-        console.error("Failed to load certificate image:", imageUrl);
-        showToast("Failed to load certificate image. Try downloading instead.", "error");
-      };
-      img.onload = function() {
-        console.log("Certificate image loaded successfully");
-      };
     }
     window._studentViewImageUrl = imageUrl;
-    
-    // ✅ Directly manipulate the DOM to open modal (bypasses scope issues)
     const modal = document.getElementById("studentViewCertificateModal");
-    if (modal) {
-      modal.classList.add("open");
-      console.log("Modal opened via DOM manipulation");
-    } else {
-      console.error("Modal element not found!");
-      showToast("Could not open certificate view.", "error");
-    }
+    if (modal) modal.classList.add("open");
   };
 
-    // ── CLOSE STUDENT VIEW CERTIFICATE MODAL ──
   window.closeStudentViewCertificateModal = function() {
     const modal = document.getElementById("studentViewCertificateModal");
-    if (modal) {
-      modal.classList.remove("open");
-      console.log("Modal closed via DOM manipulation");
-    }
+    if (modal) modal.classList.remove("open");
   };
 
-  // ── DOWNLOAD STUDENT CERTIFICATE (from modal) ──
   window.downloadStudentCertificate = async function() {
     const imageUrl = window._studentViewImageUrl;
-    if (!imageUrl) {
-      showToast("Certificate not available.", "error");
-      return;
-    }
+    if (!imageUrl) { showToast("Certificate not available.", "error"); return; }
     
     try {
       const response = await fetch(imageUrl);
@@ -3356,10 +3325,8 @@ function getClassTimeRange(cls) {
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 5000);
-      
       showToast("Certificate downloaded ✓", "success");
     } catch(e) {
-      console.error("Download error:", e);
       const link = document.createElement('a');
       link.download = `certificate_${new Date().getTime()}.png`;
       link.href = imageUrl;
@@ -3369,12 +3336,8 @@ function getClassTimeRange(cls) {
     }
   };
 
-  // ── FORCE DOWNLOAD ANY CLASS/RESOURCE DOCUMENT (bypasses Cloudinary inline preview) ──
   window.forceDownloadDocument = async function(fileUrl, fileName) {
-    if (!fileUrl) {
-      showToast("File not available.", "error");
-      return;
-    }
+    if (!fileUrl) { showToast("File not available.", "error"); return; }
     showToast("Downloading…", "success");
     try {
       const response = await fetch(fileUrl);
@@ -3390,28 +3353,19 @@ function getClassTimeRange(cls) {
       setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
       showToast("Download started ✓", "success");
     } catch(e) {
-      console.error("Force download failed:", e);
-      // Fallback: open in new tab if fetch fails (e.g. CORS)
       window.open(fileUrl, '_blank');
       showToast("Opened in new tab — use browser's save option.", "error");
     }
   };
 
-  // ── DOWNLOAD STUDENT CERTIFICATE (from list) ──
   window.downloadStudentCertificateUrl = async function(imageUrl, serialNumber) {
-    if (!imageUrl) {
-      showToast("Certificate not available.", "error");
-      return;
-    }
-    
+    if (!imageUrl) { showToast("Certificate not available.", "error"); return; }
     showToast("Downloading certificate…", "success");
-    
     try {
       const response = await fetch(imageUrl);
       if (!response.ok) throw new Error("Failed to fetch image");
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      
       const link = document.createElement('a');
       link.download = `certificate_${serialNumber || 'download'}.png`;
       link.href = url;
@@ -3419,10 +3373,8 @@ function getClassTimeRange(cls) {
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 5000);
-      
       showToast("Certificate downloaded ✓", "success");
     } catch(e) {
-      console.error("Download error:", e);
       const link = document.createElement('a');
       link.download = `certificate_${serialNumber || 'download'}.png`;
       link.href = imageUrl;
@@ -3434,45 +3386,15 @@ function getClassTimeRange(cls) {
     }
   };
 
-  // ── INIT CERTIFICATES PAGE ──
-  async function loadStudentCertificatesPage() {
-    if (document.getElementById("page-certificates")?.classList.contains("active")) {
-      await loadStudentCertificates();
-    }
-  }
-
-    // ── PROFILE PICTURE REQUIRED MODAL CONTROLS ──
   window.closeProfilePicModal = function() {
     document.getElementById("profilePicRequiredModal").classList.remove("open");
   };
 
   window.goToProfileAndClose = function() {
     closeProfilePicModal();
-    // Find the profile nav item and trigger it
     const profileBtn = document.querySelector('[onclick*="showPage(\'profile\'"]');
     if (profileBtn) showPage('profile', profileBtn);
   };
 </script>
-
-  <!-- ── PROFILE PICTURE REQUIRED MODAL ── -->
-  <div class="modal-overlay" id="profilePicRequiredModal">
-    <div class="modal" style="max-width: 450px;">
-      <div class="modal-header">
-        <div class="modal-title">Profile Picture Required</div>
-        <button class="modal-close" onclick="closeProfilePicModal()"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body" style="text-align:center;">
-        <div style="font-size: 48px; margin-bottom: 16px; color: var(--gold);">🖼️</div>
-        <p style="font-size: 15px; margin-bottom: 16px; line-height: 1.6; color: var(--text-light);">
-          You have not set your profile picture yet. <br/>
-          Please set your profile picture before you can move to the next stage.
-        </p>
-        <button class="btn btn-gold btn-animated" onclick="goToProfileAndClose()" style="padding: 12px 24px; font-size: 14px;">
-          <i class="fas fa-user-circle"></i> Go to Profile
-        </button>
-      </div>
-    </div>
-  </div>
-
 </body>
 </html>

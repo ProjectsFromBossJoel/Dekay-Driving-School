@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Instructor Portal | Dekay Driving School</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,7 +25,7 @@
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-    /* Sidebar */
+    /* Sidebar (Desktop View) */
     .sidebar { width: var(--sidebar); background: var(--navy-mid); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform var(--transition); }
     .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 18px 18px 14px; border-bottom: 1px solid var(--border); text-decoration: none; }
     .sidebar-brand-icon { width: 44px; height: 44px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -120,7 +120,7 @@
     .form-input:focus { border-color: var(--gold); }
     .form-input:disabled { opacity: 0.5; }
 
-    /* ── PROFILE / SETTINGS LAYOUT (was missing entirely) ── */
+    /* PROFILE / SETTINGS LAYOUT */
     .profile-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
     .profile-avatar-card {
       background: var(--navy-mid);
@@ -183,8 +183,7 @@
     .toast.success i { color: var(--success); }
     .toast.error i { color: var(--error); }
 
-
-        .file-upload-area {
+    .file-upload-area {
       display: flex; align-items: center; gap: 12px;
       padding: 12px 16px; background: var(--navy-mid);
       border: 1.5px dashed var(--border); border-radius: var(--radius);
@@ -199,7 +198,7 @@
       border: 1px solid var(--border);
     }
 
-    /* ── MODAL ── */
+    /* MODAL */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.7);
@@ -223,7 +222,7 @@
     .modal-body { padding: 24px; }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
 
-    /* ── STAGE PIPELINE ── */
+    /* STAGE PIPELINE */
     .pipeline-step-item { display: flex; gap: 16px; align-items: flex-start; position: relative; }
     .pipeline-step-item:not(:last-child) .ps-dot-wrap::after { content: ''; position: absolute; left: 50%; top: 32px; bottom: -16px; width: 2px; background: var(--border); transform: translateX(-50%); }
     .ps-dot-wrap { position: relative; width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; z-index: 1; }
@@ -239,20 +238,195 @@
     .tag-current-c { background: rgba(245,166,35,0.12); color: var(--gold); }
     .tag-pending-c { background: rgba(255,255,255,0.05); color: var(--text-muted); }
 
+    /* ========================================================= */
+    /* MOBILE NAVIGATION & APP-LIKE RESPONSIVE UI               */
+    /* ========================================================= */
+    .mobile-bottom-nav { display: none; }
+    .mobile-more-overlay { display: none; }
+    .mobile-more-sheet { display: none; }
+
     @media (max-width: 900px) {
-        
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      .main { margin-left: 0; }
-      .hamburger-btn { display: flex; }
-      .stat-grid { grid-template-columns: 1fr 1fr; }
+      /* Hide desktop sidebar on mobile */
+      .sidebar { display: none !important; }
+      .main { margin-left: 0 !important; padding-bottom: 75px !important; }
+
+      /* Topbar Mobile Optimizations */
+      .topbar { padding: 0 16px; height: 58px; }
+      .instructor-chip { display: none; } /* Saved space for mobile title */
+
+      /* Stat cards responsive vertical stacking */
+      .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       .profile-grid { grid-template-columns: 1fr; }
+      .pf-row { grid-template-columns: 1fr; }
+      .page { padding: 18px 16px; }
+
+      /* Mobile App Bottom Navigation Bar */
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 62px;
+        background: rgba(18, 34, 63, 0.95);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid var(--border);
+        justify-content: space-around;
+        align-items: center;
+        z-index: 990;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 20%;
+        height: 100%;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .mobile-nav-item i {
+        font-size: 18px;
+        transition: transform 0.2s ease, color 0.2s ease;
+      }
+
+      .mobile-nav-item.active {
+        color: var(--gold);
+        font-weight: 700;
+      }
+
+      .mobile-nav-item.active i {
+        transform: translateY(-2px);
+        color: var(--gold);
+      }
+
+      /* Slide-up Bottom Sheet for "More" Menu */
+      .mobile-more-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .mobile-more-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .mobile-more-sheet {
+        display: block;
+        position: fixed;
+        bottom: -100%;
+        left: 0;
+        right: 0;
+        background: var(--navy-mid);
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        border-top: 1px solid var(--border);
+        padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+        z-index: 1001;
+        transition: bottom 0.35s cubic-bezier(0.1, 0.9, 0.2, 1);
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
+      }
+
+      .mobile-more-sheet.open {
+        bottom: 0;
+      }
+
+      .sheet-handle {
+        width: 40px;
+        height: 5px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 3px;
+        margin: 0 auto 18px;
+      }
+
+      .sheet-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+        text-align: center;
+      }
+
+      .sheet-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .sheet-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px 8px;
+        background: var(--navy);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        color: var(--white);
+        font-size: 11px;
+        font-weight: 500;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .sheet-item i {
+        font-size: 20px;
+        color: var(--gold);
+      }
+
+      .sheet-item:active {
+        background: rgba(245, 166, 35, 0.15);
+        border-color: var(--gold);
+        transform: scale(0.97);
+      }
+
+      .sheet-item.logout {
+        border-color: rgba(239, 83, 80, 0.3);
+      }
+      .sheet-item.logout i {
+        color: var(--error);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .stat-card-value { font-size: 22px; }
+      .stat-card { padding: 14px; }
+      .sheet-grid { grid-template-columns: repeat(2, 1fr); }
+      .toast { left: 16px; right: 16px; max-width: none; bottom: 80px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- SIDEBAR -->
+  <!-- SIDEBAR (DESKTOP) -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="sidebar-brand-icon">
@@ -287,7 +461,6 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
         <div class="topbar-title" id="topbarTitle">Dashboard</div>
       </div>
       <div class="topbar-right">
@@ -304,7 +477,7 @@
         <div class="page-sub" id="dashDateLine">Manage your students and track progress</div>
       </div>
 
-      <!-- Check-in container for instructor's own class attendance (current + past sessions) -->
+      <!-- Check-in container for instructor's own class attendance -->
       <div id="instructorCheckinContainer" style="display:none; margin-bottom:24px;"></div>
 
       <div class="stat-grid">
@@ -330,7 +503,7 @@
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 320px; gap:20px;">
+      <div style="display:grid; grid-template-columns:1fr; gap:20px;">
         <div class="card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-bell"></i> Recent notifications</div>
@@ -364,7 +537,7 @@
       </div>
     </div>
 
-    <!-- ═══ LESSONS (Instructor — read only) ═══ -->
+    <!-- ═══ LESSONS ═══ -->
     <div class="page" id="page-lessons">
       <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
@@ -376,7 +549,7 @@
 
       <div id="instrLessonBreadcrumb" style="font-size:12px;color:var(--text-muted);margin-bottom:16px;display:none;"></div>
 
-      <div class="stat-grid" id="instrLessonFoldersGrid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+      <div class="stat-grid" id="instrLessonFoldersGrid" style="grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));margin-bottom:24px;">
         <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading folders…</div>
       </div>
 
@@ -424,7 +597,7 @@
       </div>
     </div>
 
-    <!-- ═══ MY ATTENDANCE (Instructor self check-in) ═══ -->
+    <!-- ═══ MY ATTENDANCE ═══ -->
     <div class="page" id="page-myAttendance">
       <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div>
@@ -470,40 +643,7 @@
       </div>
     </div>
 
-    <!-- ═══ MARK MY ATTENDANCE MODAL ═══ -->
-    <div class="modal-overlay" id="myAttendanceModal">
-      <div class="modal" style="max-width:480px">
-        <div class="modal-header">
-          <div class="modal-title">Mark My Attendance</div>
-          <button class="modal-close" onclick="closeModal('myAttendanceModal')"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label">Date <span style="color:var(--gold)">*</span></label>
-            <input type="date" id="myAttDate" class="form-input" onchange="handleMyAttDateChange()" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Course</label>
-            <select id="myAttCourse" class="form-input" onchange="handleMyAttCourseChange()" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
-              <option value="">Select date first…</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Class <span style="color:var(--gold)">*</span></label>
-            <select id="myAttClass" class="form-input" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
-              <option value="">Select date first…</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline" onclick="closeModal('myAttendanceModal')">Cancel</button>
-          <button class="btn btn-gold" onclick="submitMyAttendance()"><i class="fas fa-check"></i> Submit</button>
-        </div>
-      </div>
-    </div>
-
-    
-        <!-- ═══ NOTIFICATIONS PAGE ═══ -->
+    <!-- ═══ NOTIFICATIONS PAGE ═══ -->
     <div class="page" id="page-notifications">
       <div class="page-header">
         <div class="page-title">Notifications</div>
@@ -516,15 +656,14 @@
       </div>
     </div>
 
-        <!-- ═══ SETTINGS (read‑only except profile picture) ═══ -->
+    <!-- ═══ SETTINGS ═══ -->
     <div class="page" id="page-settings">
       <div class="page-header">
         <div class="page-title">Account Settings</div>
         <div class="page-sub">View your personal and professional details – only your profile picture can be changed</div>
       </div>
 
-      <div class="profile-grid" style="grid-template-columns: 280px 1fr; gap: 24px;">
-        <!-- LEFT: Avatar card (upload still works) -->
+      <div class="profile-grid">
         <div class="profile-avatar-card">
           <div class="profile-avatar-big" id="profileAvatarBig" onclick="viewProfileImage()">
             <span id="avatarInitials">--</span>
@@ -533,9 +672,8 @@
           <input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="uploadInstructorAvatar(this)" />
           <div class="profile-name" id="instructorFullName">Loading…</div>
           <div class="profile-email" id="instructorEmail">—</div>
-                    <div style="margin-top:20px; font-size:12px; color:var(--text-muted); line-height:1.6;" id="instructorProfileHint">Tap the camera icon to upload your profile picture. You can only set it once.</div>
+          <div style="margin-top:20px; font-size:12px; color:var(--text-muted); line-height:1.6;" id="instructorProfileHint">Tap the camera icon to upload your profile picture. You can only set it once.</div>
 
-          <!-- Assigned Courses -->
           <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
             <div style="font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">
               <i class="fas fa-book" style="margin-right: 6px;"></i> Assigned Courses
@@ -548,56 +686,50 @@
           </div>
         </div>
 
-        <!-- RIGHT: Read‑only details -->
         <div class="profile-form-card">
           <div class="card-header"><div class="card-title"><i class="fas fa-user"></i> Personal & Professional Details</div></div>
           <div class="card-body">
-            <!-- Basic Info -->
             <div class="profile-section-title">Basic info</div>
             <div class="pf-row">
-              <div class="pf-group"><label>First name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewFirstName">—</div></div>
-              <div class="pf-group"><label>Last name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewLastName">—</div></div>
+              <div class="pf-group"><label>First name</label><div class="pf-input" id="viewFirstName">—</div></div>
+              <div class="pf-group"><label>Last name</label><div class="pf-input" id="viewLastName">—</div></div>
             </div>
             <div class="pf-row">
-              <div class="pf-group"><label>Phone number</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewPhone">—</div></div>
-              <div class="pf-group"><label>Date of birth</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewDob">—</div></div>
+              <div class="pf-group"><label>Phone number</label><div class="pf-input" id="viewPhone">—</div></div>
+              <div class="pf-group"><label>Date of birth</label><div class="pf-input" id="viewDob">—</div></div>
             </div>
-            <div class="pf-group"><label>Email address</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewEmail">—</div></div>
+            <div class="pf-group"><label>Email address</label><div class="pf-input" id="viewEmail">—</div></div>
 
-            <!-- Professional Details -->
             <div class="profile-section-title" style="margin-top:24px;">Professional details</div>
-            <div class="pf-group"><label>Qualifications</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius); white-space: pre-wrap;" id="viewQualifications">—</div></div>
-            <div class="pf-group"><label>Certifications</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius); white-space: pre-wrap;" id="viewCertifications">—</div></div>
-            <div class="pf-group"><label>Years of experience</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewExperience">—</div></div>
+            <div class="pf-group"><label>Qualifications</label><div class="pf-input" style="white-space: pre-wrap;" id="viewQualifications">—</div></div>
+            <div class="pf-group"><label>Certifications</label><div class="pf-input" style="white-space: pre-wrap;" id="viewCertifications">—</div></div>
+            <div class="pf-group"><label>Years of experience</label><div class="pf-input" id="viewExperience">—</div></div>
 
-            <!-- Ghana Card Number -->
             <div class="profile-section-title" style="margin-top:24px;">Ghana Card</div>
             <div class="pf-group">
               <label>Ghana Card Number</label>
-              <div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewGhCardNumber">—</div>
+              <div class="pf-input" id="viewGhCardNumber">—</div>
             </div>
 
-            <!-- Guarantor -->
             <div class="profile-section-title" style="margin-top:24px;">Guarantor</div>
             <div class="pf-row">
-              <div class="pf-group"><label>Full name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewGuarantorName">—</div></div>
-              <div class="pf-group"><label>Email</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewGuarantorEmail">—</div></div>
+              <div class="pf-group"><label>Full name</label><div class="pf-input" id="viewGuarantorName">—</div></div>
+              <div class="pf-group"><label>Email</label><div class="pf-input" id="viewGuarantorEmail">—</div></div>
             </div>
-            <div class="pf-group"><label>Phone number</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewGuarantorPhone">—</div></div>
+            <div class="pf-group"><label>Phone number</label><div class="pf-input" id="viewGuarantorPhone">—</div></div>
 
-            <!-- References -->
             <div class="profile-section-title" style="margin-top:24px;">References</div>
             <div class="pf-row">
-              <div class="pf-group"><label>Reference 1 – Name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef1Name">—</div></div>
-              <div class="pf-group"><label>Email</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef1Email">—</div></div>
+              <div class="pf-group"><label>Reference 1 – Name</label><div class="pf-input" id="viewRef1Name">—</div></div>
+              <div class="pf-group"><label>Email</label><div class="pf-input" id="viewRef1Email">—</div></div>
             </div>
-            <div class="pf-group"><label>Phone</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef1Phone">—</div></div>
+            <div class="pf-group"><label>Phone</label><div class="pf-input" id="viewRef1Phone">—</div></div>
 
             <div class="pf-row" style="margin-top:12px;">
-              <div class="pf-group"><label>Reference 2 – Name</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef2Name">—</div></div>
-              <div class="pf-group"><label>Email</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef2Email">—</div></div>
+              <div class="pf-group"><label>Reference 2 – Name</label><div class="pf-input" id="viewRef2Name">—</div></div>
+              <div class="pf-group"><label>Email</label><div class="pf-input" id="viewRef2Email">—</div></div>
             </div>
-            <div class="pf-group"><label>Phone</label><div class="pf-input" style="background: var(--navy); padding: 10px 14px; border-radius: var(--radius);" id="viewRef2Phone">—</div></div>
+            <div class="pf-group"><label>Phone</label><div class="pf-input" id="viewRef2Phone">—</div></div>
 
             <div style="margin-top:20px; font-size:12px; color:var(--gold); text-align:center;">
               <i class="fas fa-lock"></i> Your profile information is managed by the school administration
@@ -608,10 +740,94 @@
     </div>
   </div>
 
+  <!-- MOBILE APP BOTTOM NAVIGATION BAR -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-item active" data-page="dashboard" onclick="mobileSelectTab('dashboard')">
+      <i class="fas fa-th-large"></i>
+      <span>Dashboard</span>
+    </button>
+    <button class="mobile-nav-item" data-page="students" onclick="mobileSelectTab('students')">
+      <i class="fas fa-users"></i>
+      <span>Students</span>
+    </button>
+    <button class="mobile-nav-item" data-page="lessons" onclick="mobileSelectTab('lessons')">
+      <i class="fas fa-play-circle"></i>
+      <span>Lessons</span>
+    </button>
+    <button class="mobile-nav-item" data-page="myAttendance" onclick="mobileSelectTab('myAttendance')">
+      <i class="fas fa-user-check"></i>
+      <span>My Att.</span>
+    </button>
+    <button class="mobile-nav-item" id="mobileMoreBtn" onclick="toggleMobileMoreSheet()">
+      <i class="fas fa-ellipsis-h"></i>
+      <span>More</span>
+    </button>
+  </nav>
+
+  <!-- MOBILE "MORE" SLIDE-UP SHEET -->
+  <div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="closeMobileMoreSheet()"></div>
+  <div class="mobile-more-sheet" id="mobileMoreSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">More Options</div>
+    <div class="sheet-grid">
+      <div class="sheet-item" onclick="mobileMoreNavigate('attendance')">
+        <i class="fas fa-calendar-check"></i>
+        <span>Student Att.</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('quizzes')">
+        <i class="fas fa-tasks"></i>
+        <span>Quizzes</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('notifications')">
+        <i class="fas fa-bell"></i>
+        <span>Notifs</span>
+      </div>
+      <div class="sheet-item" onclick="mobileMoreNavigate('settings')">
+        <i class="fas fa-user-cog"></i>
+        <span>Settings</span>
+      </div>
+      <div class="sheet-item logout" onclick="closeMobileMoreSheet(); handleLogout();">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Sign Out</span>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
 
-  <!-- LOCATION CHECK MODAL -->
+  <!-- MODALS -->
+  <div class="modal-overlay" id="myAttendanceModal">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header">
+        <div class="modal-title">Mark My Attendance</div>
+        <button class="modal-close" onclick="closeModal('myAttendanceModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Date <span style="color:var(--gold)">*</span></label>
+          <input type="date" id="myAttDate" class="form-input" onchange="handleMyAttDateChange()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course</label>
+          <select id="myAttCourse" class="form-input" onchange="handleMyAttCourseChange()" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
+            <option value="">Select date first…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Class <span style="color:var(--gold)">*</span></label>
+          <select id="myAttClass" class="form-input" style="appearance:auto; background:var(--navy); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--white); padding:10px 14px; width:100%;">
+            <option value="">Select date first…</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('myAttendanceModal')">Cancel</button>
+        <button class="btn btn-gold" onclick="submitMyAttendance()"><i class="fas fa-check"></i> Submit</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="locationCheckModal">
     <div class="modal" style="max-width:360px;">
       <div class="modal-body" style="padding:36px 24px;text-align:center;">
@@ -621,13 +837,11 @@
     </div>
   </div>
 
-  <!-- LIGHTBOX -->
   <div id="imageLightbox" style="position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; cursor:pointer;" onclick="closeLightbox()">
     <button style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:1px solid var(--border); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:var(--white); font-size:16px; cursor:pointer; z-index:1;" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
     <img id="lightboxImage" src="" style="max-width:90vw; max-height:90vh; border-radius:var(--radius-lg); border:2px solid var(--gold); cursor:default;" onclick="event.stopPropagation()" />
   </div>
 
-  <!-- LESSON WATCH PROGRESS MODAL (Instructor — view only) -->
   <div id="instrLessonProgressModal" class="modal-overlay">
     <div class="modal" style="max-width:550px;">
       <div class="modal-header">
@@ -644,32 +858,26 @@
     </div>
   </div>
 
-  <!-- STUDENT BIO MODAL -->
   <div id="studentBioModal" class="modal-overlay">
     <div class="modal" style="max-width: 650px;">
       <div class="modal-header">
         <div class="modal-title" id="studentBioTitle">Student Profile</div>
         <button class="modal-close" onclick="closeStudentBioModal()"><i class="fas fa-times"></i></button>
       </div>
-      <div class="modal-body" id="studentBioBody">
-        <!-- Content will be injected dynamically -->
-      </div>
+      <div class="modal-body" id="studentBioBody"></div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeStudentBioModal()">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- INSTRUCTOR STUDENT STAGE MODAL -->
   <div id="instrStageModal" class="modal-overlay">
     <div class="modal" style="max-width:600px;">
       <div class="modal-header">
         <div class="modal-title" id="instrStageModalTitle">Update Training Stage</div>
         <button class="modal-close" onclick="closeModal('instrStageModal')"><i class="fas fa-times"></i></button>
       </div>
-      <div class="modal-body" id="instrStageModalBody">
-        <!-- Pipeline injected here -->
-      </div>
+      <div class="modal-body" id="instrStageModalBody"></div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('instrStageModal')">Cancel</button>
         <button class="btn btn-gold" onclick="saveInstructorStudentStage()"><i class="fas fa-save"></i> Save stage</button>
@@ -677,10 +885,26 @@
     </div>
   </div>
 
+  <div id="attendanceConfirmModal" class="modal-overlay">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <div class="modal-title" id="confirmModalTitle">Confirm Status Change</div>
+        <button class="modal-close" onclick="closeAttendanceConfirmModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="confirmModalBody">
+        <p id="confirmMessage">Are you sure you want to mark yourself as present?</p>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button class="btn btn-outline" onclick="closeAttendanceConfirmModal()">Cancel</button>
+        <button class="btn btn-gold" id="confirmActionBtn" onclick="executeAttendanceToggle()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, orderBy, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
@@ -695,12 +919,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Cloudinary configuration (same as student portal)
     const CLOUDINARY_CLOUD = "drs2xpwho";
-    const CLOUDINARY_PRESET = "instructor_avatars";   // create this unsigned preset in Cloudinary
-
-    // ----- Toast helper (defined FIRST to avoid ReferenceError) -----
-
+    const CLOUDINARY_PRESET = "instructor_avatars";
 
     function showToast(msg, type = "success") {
       const t = document.getElementById("toast");
@@ -714,7 +934,6 @@
       setTimeout(() => t.classList.remove("show"), 3500);
     }
 
-    // Convert 24h time (HH:MM) to 12h AM/PM format
     function formatTime(timeStr) {
       if (!timeStr) return '';
       const [h, m] = timeStr.split(':');
@@ -725,33 +944,31 @@
       return `${hour}:${m} ${ampm}`;
     }
 
-    // Get time range from a class object
-function getClassTimeRange(cls) {
-  if (!cls) return '';
-  const startTime = formatTime(cls.time);
-  let endTime;
-  if (cls.endTime) {
-    endTime = formatTime(cls.endTime);
-  } else if (cls.durationMinutes) {
-    // Compute end time from start + duration
-    const [h, m] = cls.time.split(':').map(Number);
-    const startDate = new Date();
-    startDate.setHours(h, m, 0, 0);
-    const endDate = new Date(startDate.getTime() + cls.durationMinutes * 60000);
-    endTime = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } else {
-    endTime = '';
-  }
-  return endTime ? `${startTime} – ${endTime}` : startTime;
-}
+    function getClassTimeRange(cls) {
+      if (!cls) return '';
+      const startTime = formatTime(cls.time);
+      let endTime;
+      if (cls.endTime) {
+        endTime = formatTime(cls.endTime);
+      } else if (cls.durationMinutes) {
+        const [h, m] = cls.time.split(':').map(Number);
+        const startDate = new Date();
+        startDate.setHours(h, m, 0, 0);
+        const endDate = new Date(startDate.getTime() + cls.durationMinutes * 60000);
+        endTime = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } else {
+        endTime = '';
+      }
+      return endTime ? `${startTime} – ${endTime}` : startTime;
+    }
 
     let currentUser = null;
     let instructorData = null;
     let myStudents = [];
     let attendanceRecords = [];
     let dashboardLoaded = false;
-
     let authGuardDone = false;
+
     onAuthStateChanged(auth, async (user) => {
       if (authGuardDone) return;
       authGuardDone = true;
@@ -782,14 +999,14 @@ function getClassTimeRange(cls) {
         document.getElementById("instructorName").textContent = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim() || "Instructor";
         document.getElementById("dashInstructorName").textContent = instructorData.firstName || "Instructor";
         document.getElementById("dashDateLine").textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-        // Populate read‑only view
+        
         document.getElementById("viewFirstName").textContent = instructorData.firstName || '—';
         document.getElementById("viewLastName").textContent = instructorData.lastName || '—';
         document.getElementById("viewEmail").textContent = currentUser.email;
         document.getElementById("viewPhone").textContent = instructorData.phone || '—';
         document.getElementById("viewDob").textContent = instructorData.dob || '—';
         document.getElementById("viewQualifications").textContent = instructorData.qualifications || '—';
-        // Format certifications: if it's an array, show only the names joined by comma
+        
         let certDisplay = '—';
         const certs = instructorData.certifications;
         if (certs) {
@@ -803,13 +1020,11 @@ function getClassTimeRange(cls) {
         document.getElementById("viewCertifications").textContent = certDisplay;
         document.getElementById("viewExperience").textContent = instructorData.experience ? `${instructorData.experience} years` : '—';
 
-        // Load guarantor
         if (instructorData.guarantor) {
           document.getElementById("viewGuarantorName").textContent = instructorData.guarantor.name || '—';
           document.getElementById("viewGuarantorEmail").textContent = instructorData.guarantor.email || '—';
           document.getElementById("viewGuarantorPhone").textContent = instructorData.guarantor.phone || '—';
         }
-        // Load references
         if (instructorData.references && instructorData.references.length >= 2) {
           document.getElementById("viewRef1Name").textContent = instructorData.references[0].name || '—';
           document.getElementById("viewRef1Email").textContent = instructorData.references[0].email || '—';
@@ -818,7 +1033,6 @@ function getClassTimeRange(cls) {
           document.getElementById("viewRef2Email").textContent = instructorData.references[1].email || '—';
           document.getElementById("viewRef2Phone").textContent = instructorData.references[1].phone || '—';
         }
-        // Load Ghana Card Number (read‑only)
         document.getElementById("viewGhCardNumber").textContent = instructorData.ghCardNumber || '—';
 
         const initials = (instructorData.firstName?.[0] || '') + (instructorData.lastName?.[0] || '') || '--';
@@ -826,7 +1040,6 @@ function getClassTimeRange(cls) {
         document.getElementById("instructorFullName").textContent = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim() || "Instructor";
         document.getElementById("instructorEmail").textContent = currentUser.email;
 
-        // Set up the topbar avatar button
         const avatarBtn = document.getElementById("instructorAvatarBtn");
         if (avatarBtn) {
           avatarBtn.textContent = initials;
@@ -842,14 +1055,10 @@ function getClassTimeRange(cls) {
           document.getElementById("profileAvatarBig").style.backgroundImage = `url(${instructorData.profilePhoto})`;
           document.getElementById("profileAvatarBig").style.backgroundSize = "cover";
           document.getElementById("avatarInitials").style.display = "none";
-          // Hide the camera badge — photo is locked once uploaded
           const badge = document.querySelector(".avatar-edit-badge");
           if (badge) badge.style.display = "none";
-          // Disable the file input
           const uploadInput = document.getElementById("avatarUpload");
           if (uploadInput) uploadInput.disabled = true;
-          // Update hint text
-          const hint = document.querySelector(".profile-avatar-card div[style]");
           window.currentInstructorAvatarUrl = instructorData.profilePhoto;
         } else {
           window.currentInstructorAvatarUrl = null;
@@ -857,44 +1066,36 @@ function getClassTimeRange(cls) {
 
         try {
           await loadMyStudents();
-          await loadInstructorClasses();   // load classes FIRST so attendance can show class titles
+          await loadInstructorClasses();
           await loadAttendanceRecords();
           await loadQuizStats();
           await loadNotifications();
           await loadAssignedCourses();
           await loadMyAttendance();
-          await loadInstructorLessons();   // needs myStudents loaded first, for progress scoping
-          // loadInstructorClasses already called above — skip duplicate
+          await loadInstructorLessons();
           updateDashboardStats();
-          checkInstructorClassSession();   // show check-in card if eligible
+          checkInstructorClassSession();
         } catch (err) {
           console.error("Error loading dashboard data:", err);
-          showToast("Could not load all data. Some features may be unavailable. Please refresh.", "error");
+          showToast("Could not load all data. Some features may be unavailable.", "error");
         } finally {
           dashboardLoaded = true;
         }
       } catch (err) {
         console.error("Critical error in auth guard:", err);
-        showToast("An error occurred. Please refresh the page.", "error");
+        showToast("An error occurred. Please refresh.", "error");
       }
     });
 
-        async function loadMyStudents() {
+    async function loadMyStudents() {
       try {
         const instructorFullName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
-        
-        // First try the new "instructors" array field
         let q;
         try {
           q = query(collection(db, "users"), where("role", "==", "student"), where("instructors", "array-contains", instructorFullName));
           const snaps = await getDocs(q);
           myStudents = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
         } catch(e) {
-          // If array-contains index doesn't exist, fall back to old query
-          console.warn("array-contains query failed, falling back:", e.message);
-          myStudents = [];
-          
-          // Fallback: query by old instructor field first, then merge with array-contains if available
           const oldQ = query(collection(db, "users"), where("role", "==", "student"), where("instructor", "==", instructorFullName));
           const oldSnaps = await getDocs(oldQ);
           myStudents = oldSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -924,7 +1125,7 @@ function getClassTimeRange(cls) {
         }).join('');
       } catch (err) {
         console.error("Error loading students:", err);
-        document.getElementById("studentsTableBody").innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;">Could not load students due to permission error.</td></tr>`;
+        document.getElementById("studentsTableBody").innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;">Could not load students.</td></tr>`;
         myStudents = [];
       }
     }
@@ -940,62 +1141,58 @@ function getClassTimeRange(cls) {
     }
 
     function renderAttendanceTable(records) {
-  const tbody = document.getElementById("attendanceTableBody");
-  if (!records.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records found.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = records.map(rec => {
-    const student = myStudents.find(s => s.id === rec.studentId);
-    const sName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown';
-    let dateTimeStr = '';
-    if (rec.classId) {
-      const cls = allInstructorClasses.find(c => c.id === rec.classId);
-      if (cls) {
-        const start = new Date(`${cls.date}T${cls.time}`);
-        const dateStr = start.toLocaleDateString('en-GB');
-        const timeRange = getClassTimeRange(cls);
-        dateTimeStr = `${dateStr} at ${timeRange}`;
+      const tbody = document.getElementById("attendanceTableBody");
+      if (!records.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records found.</td></tr>`;
+        return;
       }
+      tbody.innerHTML = records.map(rec => {
+        const student = myStudents.find(s => s.id === rec.studentId);
+        const sName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown';
+        let dateTimeStr = '';
+        if (rec.classId) {
+          const cls = allInstructorClasses.find(c => c.id === rec.classId);
+          if (cls) {
+            const start = new Date(`${cls.date}T${cls.time}`);
+            const dateStr = start.toLocaleDateString('en-GB');
+            const timeRange = getClassTimeRange(cls);
+            dateTimeStr = `${dateStr} at ${timeRange}`;
+          }
+        }
+        if (!dateTimeStr) {
+          if (rec.date?.toDate) {
+            const d = rec.date.toDate();
+            const dateStr = d.toLocaleDateString('en-GB');
+            let hours = d.getHours();
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            dateTimeStr = `${dateStr} at ${hours}:${minutes} ${ampm}`;
+          } else {
+            dateTimeStr = rec.date || '—';
+          }
+        }
+        const pillClass = rec.status === 'present' ? 'pill-active' : rec.status === 'excused' ? 'pill-pending' : '';
+        const courseName = student ? (student.courseType || '—') : '—';
+        let classTitle = '—';
+        if (rec.classId && allInstructorClasses && allInstructorClasses.length > 0) {
+          const foundClass = allInstructorClasses.find(c => c.id === rec.classId);
+          if (foundClass) classTitle = foundClass.title || '—';
+        }
+        return `<tr>
+          <td><div style="font-weight:600">${sName}</div></td>
+          <td>${dateTimeStr}</td>
+          <td style="font-size:12px;">${escapeHtml(courseName)}</td>
+          <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
+          <td><span class="pill ${pillClass}">${rec.status}</span></td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn btn-icon toggle-present" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${rec.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="instructorToggleAttendance('${rec.id}', 'present')"><i class="fas fa-check"></i></button>
+            <button class="btn btn-icon toggle-absent" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${rec.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="instructorToggleAttendance('${rec.id}', 'absent')"><i class="fas fa-times"></i></button>
+          </td>
+        </tr>`;
+      }).join('');
     }
-    // Fallback to timestamp if no class
-    if (!dateTimeStr) {
-      if (rec.date?.toDate) {
-        const d = rec.date.toDate();
-        const dateStr = d.toLocaleDateString('en-GB');
-        let hours = d.getHours();
-        const minutes = d.getMinutes().toString().padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12 || 12;
-        const timeStr = `${hours}:${minutes} ${ampm}`;
-        dateTimeStr = `${dateStr} at ${timeStr}`;
-      } else {
-        dateTimeStr = rec.date || '—';
-      }
-    }
-    const date = dateTimeStr;
-    const pillClass = rec.status === 'present' ? 'pill-active' : rec.status === 'excused' ? 'pill-pending' : '';
-    const courseName = student ? (student.courseType || '—') : '—';
-    let classTitle = '—';
-    if (rec.classId && allInstructorClasses && allInstructorClasses.length > 0) {
-      const foundClass = allInstructorClasses.find(c => c.id === rec.classId);
-      if (foundClass) classTitle = foundClass.title || '—';
-    }
-    return `<tr>
-      <td><div style="font-weight:600">${sName}</div></td>
-      <td>${date}</td>
-      <td style="font-size:12px;">${escapeHtml(courseName)}</td>
-      <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
-      <td><span class="pill ${pillClass}">${rec.status}</span></td>
-      <td style="display:flex;gap:4px;">
-        <button class="btn btn-icon toggle-present" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${rec.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="instructorToggleAttendance('${rec.id}', 'present')"><i class="fas fa-check"></i></button>
-        <button class="btn btn-icon toggle-absent" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${rec.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="instructorToggleAttendance('${rec.id}', 'absent')"><i class="fas fa-times"></i></button>
-      </td>
-    </tr>`;
-  }).join('');
-}
 
-    // ── TOGGLE STUDENT ATTENDANCE STATUS ──
     window.instructorToggleAttendance = async function(recordId, newStatus) {
       const record = attendanceRecords.find(r => r.id === recordId);
       if (!record) return showToast("Record not found.", "error");
@@ -1007,10 +1204,8 @@ function getClassTimeRange(cls) {
       
       try {
         await updateDoc(doc(db, "attendance", recordId), { status: newStatus });
-        // Update local data
         const localRecord = attendanceRecords.find(r => r.id === recordId);
         if (localRecord) localRecord.status = newStatus;
-        // Re-render the table
         renderAttendanceTable(attendanceRecords);
         showToast(`${sName} marked as ${statusLabel} ✓`, "success");
       } catch(e) {
@@ -1049,14 +1244,11 @@ function getClassTimeRange(cls) {
       tbody.innerHTML = quizStats.map(q => `<tr><td>${q.title}</td><td>${q.taken}</td><td>${q.avgScore}%</td><td>${q.passRate}%</td></tr>`).join('');
     }
 
-    // ── LOAD ASSIGNED COURSES ──
-        // ── LOAD ASSIGNED COURSES ──
     async function loadAssignedCourses() {
       const container = document.getElementById("assignedCoursesContainer");
       if (!container) return;
 
       try {
-        // Normalize assignedCourses — handle array or plain object from Firestore
         let assignedCourses = instructorData.assignedCourses || [];
         if (assignedCourses && typeof assignedCourses === 'object' && !Array.isArray(assignedCourses)) {
           assignedCourses = Object.values(assignedCourses);
@@ -1065,17 +1257,11 @@ function getClassTimeRange(cls) {
         assignedCourses = assignedCourses.filter(c => c && typeof c === 'string' && c.trim().length > 0);
 
         if (assignedCourses.length === 0) {
-          container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:12px; font-size:12px;">No courses assigned yet.<br>Contact admin.</div>';
+          container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:12px; font-size:12px;">No courses assigned yet.</div>';
           return;
         }
 
-        // Icon map by course name keywords — no Firestore read needed
-        const iconMap = {
-          'manual': 'fa-car', 'automatic': 'fa-car',
-          'motorcycle': 'fa-motorcycle', 'bus': 'fa-bus',
-          'truck': 'fa-truck', 'hgv': 'fa-truck'
-        };
-
+        const iconMap = { 'manual': 'fa-car', 'automatic': 'fa-car', 'motorcycle': 'fa-motorcycle', 'bus': 'fa-bus', 'truck': 'fa-truck', 'hgv': 'fa-truck' };
         const getIcon = (name) => {
           const lower = name.toLowerCase();
           for (const [key, icon] of Object.entries(iconMap)) {
@@ -1095,26 +1281,21 @@ function getClassTimeRange(cls) {
               </div>
             </div>`;
         }).join('');
-
       } catch(e) {
-        console.error("❌ Error loading assigned courses:", e);
+        console.error("Error loading assigned courses:", e);
         container.innerHTML = '<div style="text-align:center; color: var(--error); padding:12px; font-size:12px;">Error loading courses.</div>';
       }
     }
 
-    // ── HTML ESCAPE HELPER ──
     function escapeHtml(str) {
       if (!str) return '';
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ══════════════════════════════════════════
-    // LESSONS (Instructor — read only, scoped to assigned courses + own students)
-    // ══════════════════════════════════════════
     let allInstrLessonFolders = [];
     let allInstrLessonsFlat = [];
     let currentInstrLessonFolderPath = null;
-    let instrLessonProgressMap = {}; // studentId -> { lessonId: pctWatched }
+    let instrLessonProgressMap = {};
 
     function getInstrAssignedCourseNames() {
       let assignedCourses = instructorData?.assignedCourses || [];
@@ -1135,7 +1316,6 @@ function getClassTimeRange(cls) {
           getDocs(collection(db, "lessonProgress"))
         ]);
 
-        // Only pull progress for this instructor's own students — not the whole school
         const studentIds = new Set(myStudents.map(s => s.id));
         instrLessonProgressMap = {};
         progressSnaps.docs.forEach(d => {
@@ -1211,9 +1391,7 @@ function getClassTimeRange(cls) {
         if (!path) {
           const noCourses = getInstrAssignedCourseNames().length === 0;
           foldersGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">
-            ${noCourses
-              ? 'No courses assigned to you yet — ask the admin to assign a course so lessons appear here.'
-              : 'No lesson folders published for your assigned courses yet.'}
+            ${noCourses ? 'No courses assigned to you yet.' : 'No lesson folders published for your assigned courses yet.'}
           </div>`;
           foldersGrid.style.display = "grid";
         } else {
@@ -1321,8 +1499,7 @@ function getClassTimeRange(cls) {
             const minutes = date.getMinutes().toString().padStart(2, '0');
             const ampm = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12 || 12;
-            const formattedTime = `${hours}:${minutes} ${ampm}`;
-            timeStr = `${formattedDate} at ${formattedTime}`;
+            timeStr = `${formattedDate} at ${hours}:${minutes} ${ampm}`;
           }
           return `<div class="notif-item"><div class="notif-dot-outer"><i class="fas ${n.icon || 'fa-bell'}"></i></div><div><div class="notif-text">${n.message}</div><div class="notif-time">${timeStr}</div></div></div>`;
         };
@@ -1339,49 +1516,25 @@ function getClassTimeRange(cls) {
         if (fullContainer) fullContainer.innerHTML = notifs.map(renderNotif).join('');
       } catch(e) {
         console.error("Error loading notifications:", e);
-        const errMsg = `<div style="padding:20px; text-align:center; color:var(--text-muted);">Could not load notifications.</div>`;
-        const dashContainer = document.getElementById("dashNotifList");
-        const fullContainer = document.getElementById("fullNotifList");
-        if (dashContainer) dashContainer.innerHTML = errMsg;
-        if (fullContainer) fullContainer.innerHTML = errMsg;
       }
     }
 
-    // ══════════════════════════════════════════
-    // INSTRUCTOR SELF-ATTENDANCE FUNCTIONS
-    // ══════════════════════════════════════════
     let myAttendanceRecords = [];
 
     async function loadMyAttendance() {
       try {
-        // Try with composite index first
-        const q = query(
-          collection(db, "instructorAttendance"),
-          where("instructorId", "==", currentUser.uid),
-          orderBy("date", "desc")
-        );
+        const q = query(collection(db, "instructorAttendance"), where("instructorId", "==", currentUser.uid), orderBy("date", "desc"));
         const snaps = await getDocs(q);
         myAttendanceRecords = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
       } catch(e) {
-        // If index doesn't exist yet, fall back to query without ordering
-        console.warn("⚠️ Missing index, falling back to unordered query:", e.message);
         try {
-          const fallbackQ = query(
-            collection(db, "instructorAttendance"),
-            where("instructorId", "==", currentUser.uid)
-          );
+          const fallbackQ = query(collection(db, "instructorAttendance"), where("instructorId", "==", currentUser.uid));
           const snaps = await getDocs(fallbackQ);
           myAttendanceRecords = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
-          // Sort manually in memory
-          myAttendanceRecords.sort((a, b) => {
-            const da = a.date?.toDate ? a.date.toDate() : new Date(a.date || 0);
-            const db2 = b.date?.toDate ? b.date.toDate() : new Date(b.date || 0);
-            return db2 - da;
-          });
+          myAttendanceRecords.sort((a, b) => (b.date?.toDate?.() || 0) - (a.date?.toDate?.() || 0));
         } catch(e2) {
           console.error("Error loading my attendance:", e2);
-          document.getElementById("myAttendanceTableBody").innerHTML = 
-            `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--error);">Could not load attendance. Check console.</td></tr>`;
+          document.getElementById("myAttendanceTableBody").innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--error);">Could not load attendance.</td></tr>`;
           return;
         }
       }
@@ -1390,73 +1543,54 @@ function getClassTimeRange(cls) {
     }
 
     function renderMyAttendanceTable() {
-  const tbody = document.getElementById("myAttendanceTableBody");
-  if (!myAttendanceRecords.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records yet. Click "Mark Attendance" to add one.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = myAttendanceRecords.map(r => {
-    let dateTimeStr = '';
-    if (r.classId) {
-      const cls = allInstructorClasses.find(c => c.id === r.classId);
-      if (cls) {
-        const start = new Date(`${cls.date}T${cls.time}`);
-        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-        const timeRange = getClassTimeRange(cls);
-        dateTimeStr = `${dateStr} at ${timeRange}`;
+      const tbody = document.getElementById("myAttendanceTableBody");
+      if (!myAttendanceRecords.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;">No attendance records yet. Click "Mark Attendance" to add one.</td></tr>`;
+        return;
       }
+      tbody.innerHTML = myAttendanceRecords.map(r => {
+        let dateTimeStr = '';
+        if (r.classId) {
+          const cls = allInstructorClasses.find(c => c.id === r.classId);
+          if (cls) {
+            const start = new Date(`${cls.date}T${cls.time}`);
+            const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+            dateTimeStr = `${dateStr} at ${getClassTimeRange(cls)}`;
+          }
+        }
+        if (!dateTimeStr) {
+          if (r.date?.toDate) {
+            const d = r.date.toDate();
+            const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+            let hours = d.getHours();
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            dateTimeStr = `${dateStr} at ${hours}:${minutes} ${ampm}`;
+          } else {
+            dateTimeStr = '—';
+          }
+        }
+        const pillClass = r.status === 'present' ? 'pill-active' : 'pill-pending';
+        return `<tr>
+          <td style="font-weight:500;">${dateTimeStr}</td>
+          <td><span class="stage-pill">${r.sessionType || '—'}</span></td>
+          <td style="color:var(--text-muted);">${r.course || '—'}</td>
+          <td style="color:var(--text-muted);font-size:12px;">${r.notes || '—'}</td>
+          <td><span class="pill ${pillClass}">${r.status || 'present'}</span></td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleMyAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
+            <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleMyAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
+          </td>
+        </tr>`;
+      }).join('');
     }
-    // Fallback to timestamp if no class or class not found
-    if (!dateTimeStr) {
-      if (r.date?.toDate) {
-        const d = r.date.toDate();
-        const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-        let hours = d.getHours();
-        const minutes = d.getMinutes().toString().padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12 || 12;
-        const timeStr = `${hours}:${minutes} ${ampm}`;
-        dateTimeStr = `${dateStr} at ${timeStr}`;
-      } else if (r.timestamp?.toDate) {
-        const d = r.timestamp.toDate();
-        const dateStr = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-        let hours = d.getHours();
-        const minutes = d.getMinutes().toString().padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12 || 12;
-        const timeStr = `${hours}:${minutes} ${ampm}`;
-        dateTimeStr = `${dateStr} at ${timeStr}`;
-      } else if (typeof r.date === 'string') {
-        dateTimeStr = r.date;
-      } else {
-        dateTimeStr = '—';
-      }
-    }
-    const date = dateTimeStr;
-    const pillClass = r.status === 'present' ? 'pill-active' : 'pill-pending';
-    return `<tr>
-      <td style="font-weight:500;">${date}</td>
-      <td><span class="stage-pill">${r.sessionType || '—'}</span></td>
-      <td style="color:var(--text-muted);">${r.course || '—'}</td>
-      <td style="color:var(--text-muted);font-size:12px;">${r.notes || '—'}</td>
-      <td><span class="pill ${pillClass}">${r.status || 'present'}</span></td>
-      <td style="display:flex;gap:4px;">
-        <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleMyAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
-        <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleMyAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
-      </td>
-    </tr>`;
-  }).join('');
-}
 
-    // ── TOGGLE MY ATTENDANCE STATUS ──
     window.toggleMyAttendanceStatus = async function(recordId, newStatus) {
-  const record = myAttendanceRecords.find(r => r.id === recordId);
-  if (!record) return showToast("Record not found.", "error");
-  const statusLabel = newStatus === 'present' ? 'present' : 'absent';
-  
-  // Open modal instead of confirm()
-  openAttendanceConfirmModal(recordId, newStatus, record);
-};
+      const record = myAttendanceRecords.find(r => r.id === recordId);
+      if (!record) return showToast("Record not found.", "error");
+      openAttendanceConfirmModal(recordId, newStatus, record);
+    };
 
     function updateMyAttendanceStats() {
       const total = myAttendanceRecords.length;
@@ -1471,17 +1605,14 @@ function getClassTimeRange(cls) {
     }
 
     window.openMyAttendanceModal = function() {
-      // Set today's date
       document.getElementById("myAttDate").value = new Date().toISOString().split('T')[0];
       handleMyAttDateChange();
       openModal("myAttendanceModal");
     };
 
-    // ── DATE CHANGE: populate Course + Class dropdowns from classes scheduled on that date ──
     window.handleMyAttDateChange = function() {
       const dateVal = document.getElementById("myAttDate").value;
       const courseSelect = document.getElementById("myAttCourse");
-
       const classesOnDate = (allInstructorClasses || []).filter(c => c.date === dateVal);
 
       if (!dateVal || !classesOnDate.length) {
@@ -1491,13 +1622,10 @@ function getClassTimeRange(cls) {
       }
 
       const uniqueCourses = [...new Set(classesOnDate.map(c => c.courseName).filter(Boolean))];
-      courseSelect.innerHTML = '<option value="">All courses</option>' +
-        uniqueCourses.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-
+      courseSelect.innerHTML = '<option value="">All courses</option>' + uniqueCourses.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
       renderMyAttClassOptions(classesOnDate);
     };
 
-    // ── COURSE CHANGE: filter Class dropdown to classes on the selected date + course ──
     window.handleMyAttCourseChange = function() {
       const dateVal = document.getElementById("myAttDate").value;
       const courseVal = document.getElementById("myAttCourse").value;
@@ -1515,85 +1643,58 @@ function getClassTimeRange(cls) {
     }
 
     window.submitMyAttendance = async function() {
-  const date = document.getElementById("myAttDate").value;
-  const course = document.getElementById("myAttCourse").value;
-  const classId = document.getElementById("myAttClass").value;
+      const date = document.getElementById("myAttDate").value;
+      const course = document.getElementById("myAttCourse").value;
+      const classId = document.getElementById("myAttClass").value;
 
-  if (!date || !classId) {
-    showToast("Date and class are required.", "error");
-    return;
-  }
+      if (!date || !classId) {
+        showToast("Date and class are required.", "error");
+        return;
+      }
 
-  const selectedClass = (allInstructorClasses || []).find(c => c.id === classId);
-  const sessionType = selectedClass ? (selectedClass.mode === 'online' ? 'Online Class' : 'In-person Class') : 'Class';
-  const notes = selectedClass ? `Class: ${selectedClass.title || 'Untitled'}` : null;
+      const selectedClass = (allInstructorClasses || []).find(c => c.id === classId);
+      const sessionType = selectedClass ? (selectedClass.mode === 'online' ? 'Online Class' : 'In-person Class') : 'Class';
+      const notes = selectedClass ? `Class: ${selectedClass.title || 'Untitled'}` : null;
 
-  try {
-    const instructorName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
-    const currentTime = new Date(); // Use a different variable name
-    // Parse the date input as local time (not UTC) by splitting manually
-    const [yr, mo, dy] = date.split('-').map(Number);
-    // Use full current time with the selected date
-    const fullDateTime = new Date(yr, mo - 1, dy, currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds());
-    await addDoc(collection(db, "instructorAttendance"), {
-      instructorId: currentUser.uid,
-      instructorName: instructorName,
-      date: fullDateTime,
-      timestamp: serverTimestamp(),
-      sessionType: sessionType,
-      course: course || (selectedClass ? selectedClass.courseName : null) || null,
-      classId: classId || null,
-      notes: notes,
-      status: "present",
-      createdAt: serverTimestamp()
-    });
+      try {
+        const instructorName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
+        const currentTime = new Date();
+        const [yr, mo, dy] = date.split('-').map(Number);
+        const fullDateTime = new Date(yr, mo - 1, dy, currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds());
+        await addDoc(collection(db, "instructorAttendance"), {
+          instructorId: currentUser.uid,
+          instructorName: instructorName,
+          date: fullDateTime,
+          timestamp: serverTimestamp(),
+          sessionType: sessionType,
+          course: course || (selectedClass ? selectedClass.courseName : null) || null,
+          classId: classId || null,
+          notes: notes,
+          status: "present",
+          createdAt: serverTimestamp()
+        });
 
-    closeModal("myAttendanceModal");
-    showToast("Attendance marked ✓", "success");
-    await loadMyAttendance();
-  } catch(e) {
-    console.error("Error submitting attendance:", e);
-    showToast("Failed to save. Try again.", "error");
-  }
-};
+        closeModal("myAttendanceModal");
+        showToast("Attendance marked ✓", "success");
+        await loadMyAttendance();
+      } catch(e) {
+        console.error("Error submitting attendance:", e);
+        showToast("Failed to save. Try again.", "error");
+      }
+    };
 
-      // ── MODAL HELPERS (exposed globally) ──
-  function openModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.add("open");
-  }
-  
-  function closeModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove("open");
-    // Hide instructor dropdown when closing student detail modal
-    if (id === "studentDetailModal") {
-      const panel = document.getElementById("instructorDropdown");
-      if (panel) panel.style.display = "none";
-      const coursePanel = document.getElementById("courseDropdown");
-      if (coursePanel) coursePanel.style.display = "none";
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("open");
     }
-  }
-  
-  // ✅ Expose both functions globally
-  window.openModal = openModal;
-  window.closeModal = closeModal;
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("open");
+    }
     window.openModal = openModal;
     window.closeModal = closeModal;
 
-    // ══════════════════════════════════════════
-    // INSTRUCTOR CLASS CHECK-IN
-    // ══════════════════════════════════════════
     let allInstructorClasses = [];
-
-    function computeClassStatus(cls) {
-      const start = new Date(`${cls.date}T${cls.time}`);
-      const end   = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-      const now   = new Date();
-      if (now < start) return 'upcoming';
-      if (now >= start && now <= end) return 'ongoing';
-      return 'completed';
-    }
 
     async function loadInstructorClasses() {
       try {
@@ -1609,130 +1710,124 @@ function getClassTimeRange(cls) {
     }
 
     function renderUpcomingSessions() {
-  const container = document.getElementById("upcomingSessions");
-  if (!container) return;
-  
-  const now = new Date();
-  const upcoming = allInstructorClasses
-    .filter(cls => {
-      const start = new Date(`${cls.date}T${cls.time}`);
-      const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-      return end > now;
-    })
-    .sort((a, b) => {
-      const da = new Date(`${a.date}T${a.time}`);
-      const db = new Date(`${b.date}T${b.time}`);
-      return da - db;
-    })
-    .slice(0, 5);
-  
-  if (upcoming.length === 0) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No upcoming sessions scheduled.</div>';
-    return;
-  }
-  
-  container.innerHTML = upcoming.map(cls => {
-    const start = new Date(`${cls.date}T${cls.time}`);
-    const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
-    const timeRange = getClassTimeRange(cls);
-    const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
-    return `
-      <div style="padding:8px 0;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px;">
-        <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:12px;flex-shrink:0;">
-          <i class="fas ${modeIcon}"></i>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(cls.title)}</div>
-          <div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeRange}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
+      const container = document.getElementById("upcomingSessions");
+      if (!container) return;
+      
+      const now = new Date();
+      const upcoming = allInstructorClasses
+        .filter(cls => {
+          const start = new Date(`${cls.date}T${cls.time}`);
+          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+          return end > now;
+        })
+        .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`))
+        .slice(0, 5);
+      
+      if (upcoming.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No upcoming sessions scheduled.</div>';
+        return;
+      }
+      
+      container.innerHTML = upcoming.map(cls => {
+        const start = new Date(`${cls.date}T${cls.time}`);
+        const dateStr = start.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+        const timeRange = getClassTimeRange(cls);
+        const modeIcon = cls.mode === 'online' ? 'fa-video' : 'fa-map-marker-alt';
+        return `
+          <div style="padding:8px 0;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:12px;flex-shrink:0;">
+              <i class="fas ${modeIcon}"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(cls.title)}</div>
+              <div style="font-size:11px;color:var(--text-muted);">${dateStr} · ${timeRange}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
 
     function checkInstructorClassSession() {
-  const container = document.getElementById("instructorCheckinContainer");
-  if (!container) return;
+      const container = document.getElementById("instructorCheckinContainer");
+      if (!container) return;
 
-  const now = new Date();
-  const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+      const now = new Date();
+      const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
-  function isClassMarked(classId) {
-    return myAttendanceRecords.some(r => r.classId === classId && r.status === 'present');
-  }
+      function isClassMarked(classId) {
+        return myAttendanceRecords.some(r => r.classId === classId && r.status === 'present');
+      }
 
-  const eligible = allInstructorClasses
-    .map(cls => {
-      const start = new Date(`${cls.date}T${cls.time}`);
-      const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
-      return { cls, start, end };
-    })
-    .filter(({ start, end }) => now >= start && (now <= end || (now - end) < FORTY_EIGHT_HOURS))
-    .sort((a, b) => b.start - a.start);
+      const eligible = allInstructorClasses
+        .map(cls => {
+          const start = new Date(`${cls.date}T${cls.time}`);
+          const end = new Date(start.getTime() + (cls.durationMinutes || 60) * 60000);
+          return { cls, start, end };
+        })
+        .filter(({ start, end }) => now >= start && (now <= end || (now - end) < FORTY_EIGHT_HOURS))
+        .sort((a, b) => b.start - a.start);
 
-  if (!eligible.length) {
-    container.style.display = "none";
-    container.innerHTML = "";
-    return;
-  }
+      if (!eligible.length) {
+        container.style.display = "none";
+        container.innerHTML = "";
+        return;
+      }
 
-  container.style.display = "flex";
-  container.style.flexDirection = "column";
-  container.style.gap = "10px";
+      container.style.display = "flex";
+      container.style.flexDirection = "column";
+      container.style.gap = "10px";
 
-  const [currentItem, ...pastItems] = eligible;
+      const [currentItem, ...pastItems] = eligible;
 
-  function renderCard({ cls, start, end }, isCurrent) {
-    const marked = isClassMarked(cls.id);
-    const timeRange = getClassTimeRange(cls);   // ← USING TIME RANGE
-    const ongoing = now <= end;
-    const titleIcon = marked ? 'fa-check-circle' : (ongoing ? 'fa-map-pin' : 'fa-clock');
-    const titleColor = marked ? 'var(--success)' : 'var(--gold)';
-    const statusText = marked
-      ? "you've already checked in for this class."
-      : (ongoing ? "Your class is active — tap to mark your attendance." : "Class ended — you can still mark attendance (within 48 hours).");
+      function renderCard({ cls, start, end }, isCurrent) {
+        const marked = isClassMarked(cls.id);
+        const timeRange = getClassTimeRange(cls);
+        const ongoing = now <= end;
+        const titleIcon = marked ? 'fa-check-circle' : (ongoing ? 'fa-map-pin' : 'fa-clock');
+        const titleColor = marked ? 'var(--success)' : 'var(--gold)';
+        const statusText = marked
+          ? "you've already checked in for this class."
+          : (ongoing ? "Your class is active — tap to mark attendance." : "Class ended — you can still mark attendance.");
 
-    const btnHtml = marked
-      ? `<button disabled style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:rgba(76,175,80,0.15); color:var(--success); border:1px solid var(--success); border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:default; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; opacity:0.75; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Attendance marked</button>`
-      : `<button onclick="markInstructorAttendance('${cls.id}')" style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:var(--gold); color:var(--navy); border:none; border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; transition:all var(--transition); white-space:nowrap; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Mark attendance</button>`;
+        const btnHtml = marked
+          ? `<button disabled style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:rgba(76,175,80,0.15); color:var(--success); border:1px solid var(--success); border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:default; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; opacity:0.75; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Attendance marked</button>`
+          : `<button onclick="markInstructorAttendance('${cls.id}')" style="padding:${isCurrent ? '12px 24px' : '8px 12px'}; background:var(--gold); color:var(--navy); border:none; border-radius:var(--radius); font-size:${isCurrent ? '14px' : '12px'}; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; transition:all var(--transition); white-space:nowrap; ${isCurrent ? '' : 'width:100%;'}"><i class="fas fa-check-circle"></i> Mark attendance</button>`;
 
-    if (isCurrent) {
-      return `
-        <div style="background: linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%); border: 1px solid var(--gold); border-radius: var(--radius-lg); padding: 24px; display:flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; opacity:${marked ? '0.6' : '1'};">
-          <div>
-            <h3 style="font-size:17px; font-weight:700; margin-bottom:4px;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px"></i> ${escapeHtml(cls.title || 'Class')}</h3>
-            <p style="font-size:13px; color:var(--text-muted);">${timeRange} — ${statusText}</p>
-          </div>
-          ${btnHtml}
-        </div>`;
+        if (isCurrent) {
+          return `
+            <div style="background: linear-gradient(135deg, rgba(245,166,35,0.1) 0%, rgba(245,166,35,0.05) 100%); border: 1px solid var(--gold); border-radius: var(--radius-lg); padding: 20px; display:flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; opacity:${marked ? '0.6' : '1'};">
+              <div>
+                <h3 style="font-size:16px; font-weight:700; margin-bottom:4px;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px"></i> ${escapeHtml(cls.title || 'Class')}</h3>
+                <p style="font-size:12px; color:var(--text-muted);">${timeRange} — ${statusText}</p>
+              </div>
+              ${btnHtml}
+            </div>`;
+        }
+        return `
+          <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; opacity:${marked ? '0.55' : '0.9'}; width:100%;">
+            <div style="min-width:0;">
+              <div style="font-size:12px; font-weight:600; line-height:1.4;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px;font-size:10px;"></i> ${escapeHtml(cls.title || 'Class')}</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${timeRange}</div>
+            </div>
+            ${btnHtml}
+          </div>`;
+      }
+
+      const pastHtml = pastItems.length
+        ? `<div style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-top:4px;">Past Classes</div>
+           <div style="display:flex; flex-direction:column; gap:8px;">
+             ${pastItems.map(item => renderCard(item, false)).join('')}
+           </div>`
+        : '';
+
+      container.innerHTML = renderCard(currentItem, true) + pastHtml;
     }
-    return `
-      <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; opacity:${marked ? '0.55' : '0.9'}; width:220px;">
-        <div style="min-width:0;">
-          <div style="font-size:12px; font-weight:600; line-height:1.4;"><i class="fas ${titleIcon}" style="color:${titleColor};margin-right:6px;font-size:10px;"></i> ${escapeHtml(cls.title || 'Class')}</div>
-          <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${timeRange}</div>
-        </div>
-        ${btnHtml}
-      </div>`;
-  }
 
-  const pastHtml = pastItems.length
-    ? `<div style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin-top:4px;">Past Classes</div>
-       <div style="display:flex; flex-wrap:wrap; gap:10px;">
-         ${pastItems.map(item => renderCard(item, false)).join('')}
-       </div>`
-    : '';
-
-  container.innerHTML = renderCard(currentItem, true) + pastHtml;
-}
-
-    // ── SCHOOL GEOFENCE (30m radius) ──
     const SCHOOL_LAT = 5.6120526;
     const SCHOOL_LNG = -0.2969936;
     const MAX_CHECKIN_DISTANCE_METERS = 30;
 
     function getDistanceMeters(lat1, lon1, lat2, lon2) {
-      const R = 6371000; // Earth radius in meters
+      const R = 6371000;
       const toRad = (deg) => deg * Math.PI / 180;
       const dLat = toRad(lat2 - lat1);
       const dLon = toRad(lon2 - lon1);
@@ -1753,7 +1848,6 @@ function getClassTimeRange(cls) {
       closeModal("locationCheckModal");
     }
 
-    // ── INSTRUCTOR CHECK-IN BUTTON (with 30m school geofence, in-person classes only) ──
     window.markInstructorAttendance = async function(classId) {
       const eligibleClassForCheck = allInstructorClasses.find(c => c.id === classId);
       if (eligibleClassForCheck && eligibleClassForCheck.mode === 'online') {
@@ -1771,14 +1865,14 @@ function getClassTimeRange(cls) {
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          showLocationCheckModal("Checking your distance from the school…");
+          showLocationCheckModal("Checking distance from school…");
           const { latitude, longitude } = position.coords;
           const distance = getDistanceMeters(latitude, longitude, SCHOOL_LAT, SCHOOL_LNG);
 
           setTimeout(() => {
             hideLocationCheckModal();
             if (distance > MAX_CHECKIN_DISTANCE_METERS) {
-              showToast(`You're about ${Math.round(distance)}m from the school. Get within ${MAX_CHECKIN_DISTANCE_METERS}m to mark attendance.`, "error");
+              showToast(`You are about ${Math.round(distance)}m away. Get within ${MAX_CHECKIN_DISTANCE_METERS}m to check in.`, "error");
               return;
             }
             doMarkInstructorAttendance(classId);
@@ -1786,9 +1880,7 @@ function getClassTimeRange(cls) {
         },
         (error) => {
           hideLocationCheckModal();
-          let msg = "Could not get your location. Please enable location services and try again.";
-          if (error.code === error.PERMISSION_DENIED) msg = "Location access denied. Please allow location access to mark attendance.";
-          showToast(msg, "error");
+          showToast("Location access denied or unavailable.", "error");
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
@@ -1825,7 +1917,7 @@ function getClassTimeRange(cls) {
         checkInstructorClassSession();
       } catch(e) {
         console.error(e);
-        showToast("Could not mark attendance. Try again.", "error");
+        showToast("Could not mark attendance.", "error");
       }
     }
 
@@ -1843,8 +1935,6 @@ function getClassTimeRange(cls) {
       document.getElementById("statStageProgress").textContent = `Stage ${avgStage}`;
     }
 
-       // Profile is read‑only – no update function needed
-
     window.uploadInstructorAvatar = async function(input) {
       const file = input.files[0]; if (!file) return;
       showToast("Uploading photo…", "success");
@@ -1861,13 +1951,10 @@ function getClassTimeRange(cls) {
         document.getElementById("profileAvatarBig").style.backgroundImage = `url(${url})`;
         document.getElementById("profileAvatarBig").style.backgroundSize = "cover";
         document.getElementById("avatarInitials").style.display = "none";
-        // Hide the camera badge — photo is now locked
         const badge = document.querySelector(".avatar-edit-badge");
         if (badge) badge.style.display = "none";
-        // Disable the file input
         const uploadInput = document.getElementById("avatarUpload");
         if (uploadInput) uploadInput.disabled = true;
-        // Also update topbar avatar
         const avatarBtn = document.getElementById("instructorAvatarBtn");
         if (avatarBtn) {
           avatarBtn.style.backgroundImage = `url(${url})`;
@@ -1878,14 +1965,11 @@ function getClassTimeRange(cls) {
         showToast("Profile photo updated ✓", "success");
       } catch(e) {
         console.error(e);
-        showToast("Upload failed. Try again.", "error");
+        showToast("Upload failed.", "error");
       }
     };
 
-             // ── ATTENDANCE CONFIRMATION MODAL ──
     let pendingToggleData = null;
-
-
 
     window.openAttendanceConfirmModal = function(recordId, newStatus, record) {
       pendingToggleData = { recordId, newStatus, record };
@@ -1897,8 +1981,7 @@ function getClassTimeRange(cls) {
       document.getElementById("confirmMessage").innerHTML = `
         <div style="text-align: center; padding: 8px 0;">
           <div style="font-size: 32px; margin-bottom: 12px;">
-            <i class="fas ${newStatus === 'present' ? 'fa-check-circle' : 'fa-times-circle'}" 
-               style="color: ${newStatus === 'present' ? 'var(--success)' : 'var(--error)'}"></i>
+            <i class="fas ${newStatus === 'present' ? 'fa-check-circle' : 'fa-times-circle'}" style="color: ${newStatus === 'present' ? 'var(--success)' : 'var(--error)'}"></i>
           </div>
           <p style="margin-bottom: 8px;">Mark your attendance for</p>
           <p style="font-weight: 700; color: var(--gold); margin-bottom: 12px;">${dateStr}</p>
@@ -1917,50 +2000,22 @@ function getClassTimeRange(cls) {
 
     window.executeAttendanceToggle = async function() {
       if (!pendingToggleData) return;
-      
       const { recordId, newStatus } = pendingToggleData;
       closeAttendanceConfirmModal();
       
       try {
         await updateDoc(doc(db, "instructorAttendance", recordId), { status: newStatus });
-        // Update local data
         const localRecord = myAttendanceRecords.find(r => r.id === recordId);
         if (localRecord) localRecord.status = newStatus;
-        // Re-render
         renderMyAttendanceTable();
         updateMyAttendanceStats();
-        showToast(`Marked as ${newStatus === 'present' ? 'present' : 'absent'} ✓`, "success");
+        showToast(`Marked as ${newStatus} ✓`, "success");
       } catch(e) {
         console.error("Toggle error:", e);
-        showToast("Failed to update status. Insufficient permissions.", "error");
+        showToast("Failed to update status.", "error");
       } finally {
         pendingToggleData = null;
       }
-    };
-
-    // Upload Ghana Card back
-    window.uploadGhCardBack = async function(input) {
-      const file = input.files[0];
-      if (!file) return;
-      showToast("Uploading back side…", "success");
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", "ghcard_uploads");   // your existing unsigned preset
-      try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
-        if (!res.ok) throw new Error("Upload failed");
-        const data = await res.json();
-        const url = data.secure_url;
-        await updateDoc(doc(db, "instructors", currentUser.uid), { ghCardBack: url });
-        instructorData.ghCardBack = url;
-        document.getElementById("currentBackImg").src = url;
-        document.getElementById("currentBackImage").style.display = "block";
-        showToast("Back side updated ✓", "success");
-      } catch(e) {
-        console.error(e);
-        showToast("Upload failed. Try again.", "error");
-      }
-      input.value = '';
     };
 
     window.openLightbox = function(imageUrl) {
@@ -1980,135 +2035,45 @@ function getClassTimeRange(cls) {
       if (window.currentInstructorAvatarUrl) {
         openLightbox(window.currentInstructorAvatarUrl);
       } else {
-        showToast("No profile picture yet. Upload one using the camera icon.", "error");
+        showToast("No profile picture yet. Tap camera to upload.", "error");
       }
     };
 
-    // ── INSTRUCTOR STAGE PIPELINE ──
     let instrStageStudentId = null;
     let instrCurrentStage = 1;
 
-      // ── BUILD STAGE PIPELINE FOR INSTRUCTOR ──
-  function buildInstrStagePipeline(stage, progressData, studentId) {
-    const stages = [
-      { label: "Registration", desc: "Enrolled and profile set up", stage: 1 },
-      { label: "Theory lessons", desc: "Watch all video modules", stage: 2 },
-      { label: "Theory test", desc: "Pass the online quiz (75%+)", stage: 3 },
-      { label: "Practical lessons", desc: "Behind-the-wheel training", stage: 4 },
-      { label: "Assessment", desc: "Mock DVLA test (80%+)", stage: 5 },
-      { label: "DVLA Ready", desc: "Ready for official test", stage: 6 }
-    ];
+    function buildInstrStagePipeline(stage, stageOneDone) {
+      const stages = [
+        { label: "Registration", desc: "Enrolled and profile set up", stage: 1 },
+        { label: "Theory lessons", desc: "Watch all video modules", stage: 2 },
+        { label: "Theory test", desc: "Pass online quiz", stage: 3 },
+        { label: "Practical lessons", desc: "Behind-the-wheel training", stage: 4 },
+        { label: "Assessment", desc: "Mock DVLA test", stage: 5 },
+        { label: "DVLA Ready", desc: "Ready for official test", stage: 6 }
+      ];
 
-    const dvlaReady = stage >= 6 || progressData?.dvlaReady === true;
-
-    return stages.map(s => {
-      const st = s.stage;
-      const status = getStageStatus(st, progressData, stage);
-      
-      let dotClass = 'pending';
-      let tagClass = 'pending-c';
-      let label = 'Locked';
-      
-      if (status.status === 'done') {
-        dotClass = 'done';
-        tagClass = 'done-c';
-        label = '✓ Complete';
-      } else if (status.status === 'current') {
-        dotClass = 'current';
-        tagClass = 'current-c';
-        label = '▶ In Progress';
-      }
-      
-      // Instructors can only update stages 2-5
-      const isClickable = st >= 2 && st <= 5;
-      const clickAttr = isClickable ? `onclick="setInstrStudentStage('${studentId}', ${st})"` : '';
-      
-      // Stage 6 is read-only for instructors
-      if (st === 6) {
-        const dotClass = dvlaReady ? 'done' : 'pending';
-        const tagClass = dvlaReady ? 'done-c' : 'pending-c';
-        const label = dvlaReady ? '✓ DVLA Ready 🏆' : 'Admin Only';
+      return stages.map(s => {
+        const st = s.stage;
+        let dotClass = st <= stage ? 'done' : (st === stage + 1 ? 'current' : 'pending');
+        let tagClass = st <= stage ? 'done-c' : (st === stage + 1 ? 'current-c' : 'pending-c');
+        let label = st <= stage ? '✓ Complete' : (st === stage + 1 ? '▶ In Progress' : 'Locked');
         
         return `
-          <div class="pipeline-step-item" style="cursor:default;">
+          <div class="pipeline-step-item" style="cursor:pointer;" onclick="instrSetStage(${st})">
             <div class="ps-dot-wrap">
-              <div class="ps-dot ${dotClass}">${dvlaReady ? '<i class="fas fa-check"></i>' : st}</div>
+              <div class="ps-dot ${dotClass}">
+                ${dotClass === 'done' ? '<i class="fas fa-check"></i>' : st}
+              </div>
             </div>
             <div class="ps-info">
-              <div class="ps-title">${s.label} ${dvlaReady ? '🏆' : ''}</div>
+              <div class="ps-title">${s.label}</div>
               <div class="ps-desc">${s.desc}</div>
               <span class="ps-tag tag-${tagClass}">${label}</span>
-              ${dvlaReady ? `<div style="font-size:9px;color:var(--text-muted);margin-top:2px;">Approved by Admin</div>` : ''}
             </div>
           </div>
         `;
-      }
-
-      return `
-        <div class="pipeline-step-item" style="cursor:${isClickable ? 'pointer' : 'default'};">
-          <div class="ps-dot-wrap">
-            <div class="ps-dot ${dotClass}" ${clickAttr}>
-              ${dotClass === 'done' ? '<i class="fas fa-check"></i>' : st}
-            </div>
-          </div>
-          <div class="ps-info">
-            <div class="ps-title">${s.label}</div>
-            <div class="ps-desc">${s.desc}</div>
-            <span class="ps-tag tag-${tagClass}">${label}</span>
-            ${status.approvedBy ? `<div style="font-size:9px;color:var(--text-muted);margin-top:2px;">by ${status.approvedBy}</div>` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-    // ── SET STUDENT STAGE (Instructor – Stages 2-5 only) ──
-  window.setInstrStudentStage = async function(studentId, targetStage) {
-    if (!studentId || targetStage < 2 || targetStage > 5) {
-      showToast("Instructors can only set stages 2-5.", "error");
-      return;
+      }).join('');
     }
-    
-    // Confirm with instructor
-    if (!confirm(`Mark Stage ${targetStage} as complete for this student?`)) return;
-    
-    try {
-      const userRef = doc(db, "users", studentId);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) return;
-      
-      const user = userSnap.data();
-      const currentStage = user.trainingStage || 1;
-      
-      // Don't allow going backwards
-      if (targetStage <= currentStage) {
-        showToast(`Student is already at Stage ${currentStage} or beyond.`, "error");
-        return;
-      }
-      
-      // Update user
-      await updateDoc(userRef, { trainingStage: targetStage });
-      
-      // Update stageProgress
-      const instructorName = document.getElementById("instructorName").textContent;
-      await updateStageCompletion(
-        studentId, 
-        targetStage, 
-        true, 
-        currentUser.uid, 
-        "instructor", 
-        instructorName
-      );
-      
-      showToast(`Stage ${targetStage} completed ✓`, "success");
-      
-      await loadMyStudents();
-      updateDashboardStats();
-    } catch(e) {
-      console.error(e);
-      showToast("Could not update stage.", "error");
-    }
-  };
 
     window.instrSetStage = function(stageNum) {
       instrCurrentStage = stageNum;
@@ -2132,11 +2097,9 @@ function getClassTimeRange(cls) {
 
     window.saveInstructorStudentStage = async function() {
       if (!instrStageStudentId) return;
-      // Clamp to 2–5 max for instructor
       const stageToSave = Math.min(Math.max(instrCurrentStage, 1), 5);
       try {
         await updateDoc(doc(db, "users", instrStageStudentId), { trainingStage: stageToSave });
-        // Update local data
         const localStudent = myStudents.find(s => s.id === instrStageStudentId);
         if (localStudent) localStudent.trainingStage = stageToSave;
         closeModal("instrStageModal");
@@ -2144,7 +2107,7 @@ function getClassTimeRange(cls) {
         showToast(`Stage updated to Stage ${stageToSave} ✓`, "success");
       } catch(e) {
         console.error(e);
-        showToast("Could not update stage. Try again.", "error");
+        showToast("Could not update stage.", "error");
       }
     };
 
@@ -2156,28 +2119,33 @@ function getClassTimeRange(cls) {
     function showPage(name, btn) {
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       document.getElementById(`page-${name}`).classList.add("active");
-      document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+      
+      document.querySelectorAll(".sidebar .nav-item").forEach(b => b.classList.remove("active"));
       if (btn) btn.classList.add("active");
-      const titles = { dashboard: "Dashboard", students: "My Students", lessons: "Lessons", attendance: "Attendance", myAttendance: "My Attendance", quizzes: "Quizzes", notifications: "Notifications", settings: "Settings" };
+
+      /* Update Mobile Bottom Nav state */
+      document.querySelectorAll(".mobile-nav-item").forEach(b => {
+        b.classList.remove("active");
+        if (b.getAttribute("data-page") === name) b.classList.add("active");
+      });
+
+      const titles = { 
+        dashboard: "Dashboard", 
+        students: "My Students", 
+        lessons: "Lessons", 
+        attendance: "Attendance", 
+        myAttendance: "My Attendance", 
+        quizzes: "Quizzes", 
+        notifications: "Notifications", 
+        settings: "Settings" 
+      };
       document.getElementById("topbarTitle").textContent = titles[name] || "Dashboard";
       
-      // Auto-refresh data when switching pages
-      if (name === "students") {
-        loadMyStudents().then(() => updateDashboardStats());
-      }
-      if (name === "lessons") {
-        currentInstrLessonFolderPath = null;
-        loadInstructorLessons();
-      }
-      if (name === "attendance") {
-        loadAttendanceRecords();
-      }
-      if (name === "myAttendance") {
-        loadMyAttendance();
-      }
-      if (name === "notifications") {
-        loadNotifications();
-      }
+      if (name === "students") loadMyStudents().then(() => updateDashboardStats());
+      if (name === "lessons") { currentInstrLessonFolderPath = null; loadInstructorLessons(); }
+      if (name === "attendance") loadAttendanceRecords();
+      if (name === "myAttendance") loadMyAttendance();
+      if (name === "notifications") loadNotifications();
       if (name === "dashboard") {
         loadMyStudents().then(() => {
           loadAttendanceRecords();
@@ -2186,175 +2154,49 @@ function getClassTimeRange(cls) {
         });
       }
       
-      if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
+      if (window.innerWidth < 900 && document.getElementById("sidebar").classList.contains("open")) {
+        document.getElementById("sidebar").classList.remove("open");
+      }
     }
-    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
+
+    /* Mobile Bottom Navigation functions */
+    window.mobileSelectTab = function(pageName) {
+      closeMobileMoreSheet();
+      showPage(pageName, null);
+    };
+
+    window.toggleMobileMoreSheet = function() {
+      const sheet = document.getElementById("mobileMoreSheet");
+      const overlay = document.getElementById("mobileMoreOverlay");
+      if (sheet.classList.contains("open")) {
+        closeMobileMoreSheet();
+      } else {
+        sheet.classList.add("open");
+        overlay.classList.add("open");
+      }
+    };
+
+    window.closeMobileMoreSheet = function() {
+      const sheet = document.getElementById("mobileMoreSheet");
+      const overlay = document.getElementById("mobileMoreOverlay");
+      if (sheet) sheet.classList.remove("open");
+      if (overlay) overlay.classList.remove("open");
+    };
+
+    window.mobileMoreNavigate = function(pageName) {
+      closeMobileMoreSheet();
+      showPage(pageName, null);
+      /* Highlight the "More" tab icon if navigating to hidden sub-pages */
+      document.querySelectorAll(".mobile-nav-item").forEach(b => b.classList.remove("active"));
+      document.getElementById("mobileMoreBtn").classList.add("active");
+    };
 
     window.closeStudentBioModal = function() {
       document.getElementById("studentBioModal").classList.remove("open");
     };
 
     window.showPage = showPage;
-    window.toggleSidebar = toggleSidebar;
     window.showToast = showToast;
-
-
-      // ══════════════════════════════════════
-  // STAGE PROGRESS HELPER FUNCTIONS
-  // ══════════════════════════════════════
-  
-  // ── GET STAGE PROGRESS ──
-  async function getStageProgress(studentId) {
-    try {
-      const snap = await getDoc(doc(db, "stageProgress", studentId));
-      if (snap.exists()) {
-        return snap.data();
-      }
-      // Create default if doesn't exist
-      const defaultProgress = {
-        studentId: studentId,
-        currentStage: 1,
-        stages: {},
-        dvlaReady: false,
-        dvlaReadyAt: null,
-        updatedAt: serverTimestamp()
-      };
-      for (let i = 1; i <= 6; i++) {
-        defaultProgress.stages[i] = {
-          completed: false,
-          completedAt: null,
-          approvedBy: null,
-          approverRole: null,
-          approverName: null
-        };
-      }
-      await setDoc(doc(db, "stageProgress", studentId), defaultProgress);
-      return defaultProgress;
-    } catch(e) {
-      console.error("Error getting stage progress:", e);
-      return null;
-    }
-  }
-
-  // ── UPDATE STAGE COMPLETION ──
-  async function updateStageCompletion(studentId, stageNumber, completed, approverId, approverRole, approverName, extraData = {}) {
-    try {
-      const progressRef = doc(db, "stageProgress", studentId);
-      const progressSnap = await getDoc(progressRef);
-      const data = progressSnap.exists() ? progressSnap.data() : null;
-      
-      // Calculate new current stage
-      let currentStage = stageNumber;
-      if (completed) {
-        // If completing a stage, advance to next stage
-        const allCompleted = [];
-        for (let i = 1; i <= 6; i++) {
-          const isCompleted = data ? data.stages?.[i]?.completed : false;
-          if (i === stageNumber) {
-            allCompleted.push(true);
-          } else {
-            allCompleted.push(isCompleted);
-          }
-        }
-        // Find first incomplete stage
-        let nextStage = 1;
-        for (let i = 1; i <= 6; i++) {
-          if (!allCompleted[i-1]) {
-            nextStage = i;
-            break;
-          }
-          if (i === 6 && allCompleted[5]) {
-            nextStage = 7; // All stages complete
-          }
-        }
-        currentStage = nextStage > 6 ? 6 : nextStage;
-      }
-      
-      const updates = {
-        [`stages.${stageNumber}.completed`]: completed,
-        [`stages.${stageNumber}.completedAt`]: completed ? serverTimestamp() : null,
-        [`stages.${stageNumber}.approvedBy`]: completed ? approverId : null,
-        [`stages.${stageNumber}.approverRole`]: completed ? approverRole : null,
-        [`stages.${stageNumber}.approverName`]: completed ? approverName : null,
-        currentStage: Math.min(currentStage, 6),
-        updatedAt: serverTimestamp()
-      };
-      
-      // Add extra data if provided
-      if (extraData.lessonsWatched !== undefined) {
-        updates[`stages.${stageNumber}.lessonsWatched`] = extraData.lessonsWatched;
-      }
-      if (extraData.totalLessons !== undefined) {
-        updates[`stages.${stageNumber}.totalLessons`] = extraData.totalLessons;
-      }
-      if (extraData.quizScore !== undefined) {
-        updates[`stages.${stageNumber}.quizScore`] = extraData.quizScore;
-      }
-      if (extraData.practicalHours !== undefined) {
-        updates[`stages.${stageNumber}.practicalHours`] = extraData.practicalHours;
-      }
-      if (extraData.assessmentScore !== undefined) {
-        updates[`stages.${stageNumber}.assessmentScore`] = extraData.assessmentScore;
-      }
-      
-      // If Stage 6 completed, set DVLA Ready
-      if (stageNumber === 6 && completed) {
-        updates.dvlaReady = true;
-        updates.dvlaReadyAt = serverTimestamp();
-      }
-      
-      await updateDoc(progressRef, updates);
-      return true;
-    } catch(e) {
-      console.error("Error updating stage completion:", e);
-      return false;
-    }
-  }
-
-  // ── GET STAGE STATUS (for display) ──
-  function getStageStatus(stageNumber, progressData, trainingStage) {
-    const stage = progressData?.stages?.[stageNumber];
-    const currentStage = progressData?.currentStage || trainingStage || 1;
-    
-    if (stage?.completed) {
-      return {
-        status: 'done',
-        label: '✓ Complete',
-        completedAt: stage.completedAt,
-        approvedBy: stage.approverName,
-        approverRole: stage.approverRole
-      };
-    }
-    
-    if (stageNumber === currentStage) {
-      return { status: 'current', label: '▶ In Progress' };
-    }
-    
-    if (stageNumber < currentStage) {
-      return { status: 'done', label: '✓ Complete' };
-    }
-    
-    return { status: 'pending', label: 'Locked' };
-  }
-
   </script>
-
-    <!-- CONFIRM ATTENDANCE STATUS MODAL -->
-  <div id="attendanceConfirmModal" class="modal-overlay">
-    <div class="modal" style="max-width: 400px;">
-      <div class="modal-header">
-        <div class="modal-title" id="confirmModalTitle">Confirm Status Change</div>
-        <button class="modal-close" onclick="closeAttendanceConfirmModal()"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body" id="confirmModalBody">
-        <p id="confirmMessage">Are you sure you want to mark yourself as present?</p>
-      </div>
-      <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button class="btn btn-outline" onclick="closeAttendanceConfirmModal()">Cancel</button>
-        <button class="btn btn-gold" id="confirmActionBtn" onclick="executeAttendanceToggle()">Confirm</button>
-      </div>
-    </div>
-  </div>
-
 </body>
 </html>
