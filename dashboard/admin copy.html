@@ -1937,6 +1937,15 @@
         <div class="page-sub">View all course documents and materials uploaded with classes.</div>
       </div>
 
+      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+        <button class="btn btn-gold" id="tabResourceClasses" onclick="switchResourceTab('classes')" style="min-width:160px; justify-content:center;">
+          <i class="fas fa-paperclip"></i> Class Attachments
+        </button>
+        <button class="btn btn-outline" id="tabResourceLessons" onclick="switchResourceTab('lessons')" style="min-width:160px; justify-content:center;">
+          <i class="fas fa-video"></i> Lesson Videos
+        </button>
+      </div>
+
       <div class="filter-bar">
         <div class="search-input-wrap">
           <i class="fas fa-search search-icon"></i>
@@ -2546,6 +2555,22 @@
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeEditLessonModal()">Cancel</button>
         <button class="btn btn-gold" onclick="updateLesson()"><i class="fas fa-save"></i> Save changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIEW LESSON RESOURCE MODAL (read-only) ── -->
+  <div class="modal-overlay" id="viewLessonResourceModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="viewLessonResourceTitle">Lesson details</div>
+        <button class="modal-close" onclick="closeModal('viewLessonResourceModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="viewLessonResourceBody">
+        <!-- Injected by JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('viewLessonResourceModal')">Close</button>
       </div>
     </div>
   </div>
@@ -5667,6 +5692,46 @@ window.approveStudent = async function(uid) {
     openModal("editLessonModal");
   };
 
+  window.openViewLessonResourceModal = function(lessonId) {
+    const lesson = (window._allLessons || []).find(l => l.id === lessonId);
+    if (!lesson) return showToast("Lesson not found.", "error");
+
+    document.getElementById("viewLessonResourceTitle").textContent = lesson.title || 'Lesson details';
+
+    const watchers = lesson.watchers || [];
+    const watchersHtml = watchers.length
+      ? [...watchers].sort((a,b) => b.pct - a.pct).map(w => {
+          const student = allStudents.find(s => s.id === w.studentId);
+          const name = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : w.studentId;
+          const pct = Math.round(w.pct);
+          const color = pct >= 80 ? 'var(--success)' : 'var(--gold)';
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">
+            <span style="font-size:12px;">${escapeHtml(name)}</span>
+            <span style="font-size:12px;font-weight:700;color:${color};">${pct}%</span>
+          </div>`;
+        }).join('')
+      : '<div style="color:var(--text-muted);font-size:12px;">No students have started this lesson yet.</div>';
+
+    const assignedQuiz = (window._allQuizzes || []).find(q => q.id === lesson.assignedQuizId);
+    const uploaded = lesson.createdAt?.toDate ? lesson.createdAt.toDate().toLocaleDateString('en-GB') : '—';
+
+    document.getElementById("viewLessonResourceBody").innerHTML = `
+      ${lesson.videoUrl ? `<video controls style="width:100%;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;" src="${lesson.videoUrl}" poster="${lesson.thumbnailUrl || ''}"></video>` : ''}
+      <div class="detail-grid">
+        <div class="detail-label">Folder</div><div class="detail-value">${escapeHtml(lesson.folder || '—')}</div>
+        <div class="detail-label">Category</div><div class="detail-value">${escapeHtml(lesson.category || '—')}</div>
+        <div class="detail-label">Duration</div><div class="detail-value">${escapeHtml(lesson.duration || '—')}</div>
+        <div class="detail-label">Uploaded</div><div class="detail-value">${uploaded}</div>
+        <div class="detail-label">Assigned quiz</div><div class="detail-value">${assignedQuiz ? escapeHtml(assignedQuiz.title) : '—'}</div>
+        <div class="detail-label">Avg. completion</div><div class="detail-value">${lesson.avgCompletion != null ? lesson.avgCompletion + '%' : '—'}</div>
+      </div>
+      <div class="bio-section"><div class="bio-section-title">Watch Progress</div></div>
+      <div style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">${watchersHtml}</div>
+    `;
+
+    openModal("viewLessonResourceModal");
+  };
+
   window.updateLesson = async function() {
     const id       = document.getElementById("editLessonId").value;
     const title    = document.getElementById("editLessonTitle").value.trim();
@@ -7069,6 +7134,32 @@ window.filterRecipientStudents = function() {
   let allVehicles = [];
   const VEHICLE_IMAGE_PRESET = "vehicle_images_upload"; // create this unsigned Cloudinary preset
 
+  // ── CHECK IF VEHICLE IS CURRENTLY BUSY (based on live class time) ──
+  function isVehicleCurrentlyBusy(vehicleId) {
+    const now = new Date();
+    return (allClasses || []).some(c => {
+      if (c.vehicleId !== vehicleId) return false;
+      const { start, end } = getClassDateTimeRange(c);
+      return now >= start && now <= end;
+    });
+  }
+
+  // ── LIVE-UPDATE VEHICLE BUSY/AVAILABLE BADGES WITHOUT RELOADING ──
+  let _vehicleBusyWatcherStarted = false;
+  function refreshVehicleBusyBadges() {
+    (allVehicles || []).forEach(v => {
+      const badgeWrap = document.getElementById(`vehicleBusyBadge_${v.id}`);
+      if (!badgeWrap) return;
+      const isBusy = isVehicleCurrentlyBusy(v.id);
+      badgeWrap.innerHTML = `<span class="pill" style="font-size:10px; background:${isBusy ? 'rgba(239,83,80,0.15)' : 'rgba(76,175,80,0.15)'}; color:${isBusy ? 'var(--error)' : 'var(--success)'};">${isBusy ? 'Busy' : 'Available'}</span>`;
+    });
+  }
+  function startVehicleBusyWatcher() {
+    if (_vehicleBusyWatcherStarted) return;
+    _vehicleBusyWatcherStarted = true;
+    setInterval(refreshVehicleBusyBadges, 15000);
+  }
+
   async function loadVehicles() {
     const grid = document.getElementById("vehiclesGrid");
     if (!grid) return;
@@ -7082,12 +7173,10 @@ window.filterRecipientStudents = function() {
         return;
       }
       grid.innerHTML = allVehicles.map(v => {
-        // Check if this vehicle is assigned to any class
-        const busyClasses = (allClasses || []).filter(c => c.vehicleId === v.id);
-        const isBusy = busyClasses.length > 0;
+        const isBusy = isVehicleCurrentlyBusy(v.id);
         return `
         <div class="stat-card" style="padding:0;overflow:hidden;position:relative;">
-          ${isBusy ? `<div style="position:absolute;top:10px;right:10px;z-index:10;"><span class="pill" style="font-size:10px; background:rgba(239,83,80,0.15); color:var(--error);">Busy</span></div>` : ''}
+          <div id="vehicleBusyBadge_${v.id}" style="position:absolute;top:10px;right:10px;z-index:10;"><span class="pill" style="font-size:10px; background:${isBusy ? 'rgba(239,83,80,0.15)' : 'rgba(76,175,80,0.15)'}; color:${isBusy ? 'var(--error)' : 'var(--success)'};">${isBusy ? 'Busy' : 'Available'}</span></div>
           <div style="width:100%;aspect-ratio:16/9;background:var(--navy);${v.imageUrl ? `background-image:url(${v.imageUrl});background-size:cover;background-position:center;` : 'display:flex;align-items:center;justify-content:center;'}">
             ${v.imageUrl ? '' : '<i class="fas fa-car" style="font-size:32px;color:var(--border);"></i>'}
           </div>
@@ -7102,6 +7191,7 @@ window.filterRecipientStudents = function() {
           </div>
         </div>`;
       }).join('');
+      startVehicleBusyWatcher();
     } catch(e) {
       console.error(e);
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load vehicles.</div>';
@@ -8579,6 +8669,9 @@ window.showBusyResources = showBusyResources;
   // ══════════════════════════════════════
   let allAdminResources = [];
   let filteredAdminResources = [];
+  let allAdminLessonResources = [];
+  let filteredAdminLessonResources = [];
+  let currentResourceTab = 'classes';
 
   function getFileIcon(ext) {
     if (ext === 'pdf') return { icon: 'fa-file-pdf', color: '#EF5350', bg: 'rgba(239,83,80,0.1)' };
@@ -8609,16 +8702,25 @@ window.showBusyResources = showBusyResources;
           return db2 - da;
         });
 
-      // Populate course filter
+      // Get all lesson videos (Cloudinary-hosted)
+      if (!window._allLessons || !window._allLessons.length) { await loadLessons(); }
+      allAdminLessonResources = [...(window._allLessons || [])].sort((a, b) => {
+        return (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0);
+      });
+
+      // Populate course filter (from both class documents and lesson folders)
       const courseFilter = document.getElementById("resourceCourseFilter");
       if (courseFilter) {
-        const courses = [...new Set(allAdminResources.map(c => c.courseName).filter(Boolean))];
+        const classCourses = allAdminResources.map(c => c.courseName).filter(Boolean);
+        const lessonCourses = allAdminLessonResources.map(l => courseFromFolderPath(l.folder || '')).filter(Boolean);
+        const courses = [...new Set([...classCourses, ...lessonCourses])];
         const currentVal = courseFilter.value;
         courseFilter.innerHTML = '<option value="">All courses</option>' +
           courses.map(c => `<option value="${escapeHtml(c)}" ${currentVal === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('');
       }
 
       filteredAdminResources = [...allAdminResources];
+      filteredAdminLessonResources = [...allAdminLessonResources];
       renderAdminResources(filteredAdminResources);
     } catch(e) {
       console.error("Error loading resources:", e);
@@ -8628,8 +8730,9 @@ window.showBusyResources = showBusyResources;
 
   function renderAdminResources(resources) {
   const container = document.getElementById("adminResourcesContainer");
-  if (!resources.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No class documents found.</div>';
+  const lessonsCheck = filteredAdminLessonResources || [];
+  if (!resources.length && !lessonsCheck.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No resources found.</div>';
     return;
   }
 
@@ -8641,7 +8744,7 @@ window.showBusyResources = showBusyResources;
     grouped[course].push(cls);
   });
 
-  container.innerHTML = Object.entries(grouped).map(([course, classes]) => {
+  const classesHtml = Object.entries(grouped).map(([course, classes]) => {
     const totalDocs = classes.reduce((sum, cls) => sum + cls.documents.length, 0);
     return `
       <div class="card" style="margin-bottom:20px;">
@@ -8694,7 +8797,69 @@ window.showBusyResources = showBusyResources;
       </div>
     `;
   }).join('');
+
+  const lessonsForRender = filteredAdminLessonResources || [];
+  const lessonsByFolder = {};
+  lessonsForRender.forEach(l => {
+    const folder = l.folder || 'Uncategorized';
+    if (!lessonsByFolder[folder]) lessonsByFolder[folder] = [];
+    lessonsByFolder[folder].push(l);
+  });
+  const lessonsHtml = lessonsForRender.length ? `
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="fas fa-video" style="color:var(--gold);"></i>
+          Lesson Videos
+          <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;">${lessonsForRender.length} video${lessonsForRender.length > 1 ? 's' : ''}</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr><th>Thumbnail</th><th>Title</th><th>Folder</th><th>Category</th><th>Duration</th><th>Uploaded</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            ${Object.entries(lessonsByFolder).map(([folder, vids]) => vids.map(l => {
+              const uploaded = l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString('en-GB') : '—';
+              const thumb = l.thumbnailUrl
+                ? `<img src="${l.thumbnailUrl}" style="width:56px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);" />`
+                : `<div style="width:56px;height:36px;border-radius:6px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);"><i class="fas fa-play" style="font-size:12px;"></i></div>`;
+              return `<tr>
+                <td>${thumb}</td>
+                <td><div style="font-weight:600;">${escapeHtml(l.title || 'Untitled')}</div></td>
+                <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(folder)}</td>
+                <td><span class="stage-pill">${escapeHtml(l.category || 'Theory')}</span></td>
+                <td style="color:var(--text-muted);">${escapeHtml(l.duration || '—')}</td>
+                <td style="color:var(--text-muted);font-size:12px;">${uploaded}</td>
+                <td>
+                  ${l.videoUrl ? `<button class="btn btn-icon btn-outline" title="Open video" onclick="window.open('${l.videoUrl}', '_blank')"><i class="fas fa-play"></i></button>` : ''}
+                  <button class="btn btn-icon btn-outline" title="View details" onclick="openViewLessonResourceModal('${l.id}')"><i class="fas fa-eye"></i></button>
+                </td>
+              </tr>`;
+            }).join('')).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ` : '';
+
+  container.innerHTML =
+    `<div id="resourceClassesSection" style="display:${currentResourceTab === 'classes' ? 'block' : 'none'};">${classesHtml || '<div style="text-align:center;color:var(--text-muted);padding:40px;">No class attachments found.</div>'}</div>` +
+    `<div id="resourceLessonsSection" style="display:${currentResourceTab === 'lessons' ? 'block' : 'none'};">${lessonsHtml || '<div style="text-align:center;color:var(--text-muted);padding:40px;">No lesson videos found.</div>'}</div>`;
 }
+
+window.switchResourceTab = function(tab) {
+  currentResourceTab = tab;
+  const classesBtn = document.getElementById("tabResourceClasses");
+  const lessonsBtn = document.getElementById("tabResourceLessons");
+  if (classesBtn) classesBtn.className = tab === 'classes' ? 'btn btn-gold' : 'btn btn-outline';
+  if (lessonsBtn) lessonsBtn.className = tab === 'lessons' ? 'btn btn-gold' : 'btn btn-outline';
+  const classesSection = document.getElementById("resourceClassesSection");
+  const lessonsSection = document.getElementById("resourceLessonsSection");
+  if (classesSection) classesSection.style.display = tab === 'classes' ? 'block' : 'none';
+  if (lessonsSection) lessonsSection.style.display = tab === 'lessons' ? 'block' : 'none';
+};
 
   window.filterResources = function() {
     const search = document.getElementById("resourceSearch")?.value.toLowerCase() || '';
@@ -8702,6 +8867,12 @@ window.showBusyResources = showBusyResources;
     filteredAdminResources = allAdminResources.filter(cls => {
       const matchSearch = !search || cls.title?.toLowerCase().includes(search) || cls.courseName?.toLowerCase().includes(search) || cls.instructorName?.toLowerCase().includes(search);
       const matchCourse = !course || cls.courseName === course;
+      return matchSearch && matchCourse;
+    });
+    filteredAdminLessonResources = allAdminLessonResources.filter(l => {
+      const folderCourse = courseFromFolderPath(l.folder || '');
+      const matchSearch = !search || (l.title || '').toLowerCase().includes(search) || (l.folder || '').toLowerCase().includes(search) || (l.category || '').toLowerCase().includes(search);
+      const matchCourse = !course || folderCourse === course;
       return matchSearch && matchCourse;
     });
     renderAdminResources(filteredAdminResources);
