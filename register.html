@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register | Dekay Driving School</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="img/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="img/favicon_io/favicon-16x16.png">
+  <link rel="manifest" href="img/favicon_io/site.webmanifest">
+
   <meta name="description" content="Create a new student account at Dekay Driving School." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -248,6 +253,50 @@
     .toast.success i { color: var(--success); }
     .toast.error i { color: var(--error); }
 
+    /* Google signup modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,22,40,0.75);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      width: 100%; max-width: 420px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+    .modal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .modal-header i { color: var(--gold); font-size: 18px; }
+    .modal-header h3 { font-size: 18px; font-weight: 700; }
+    .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
+    .modal-cancel-btn {
+      flex: 1; padding: 12px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-light);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+    }
+    .modal-cancel-btn:hover { border-color: var(--text-muted); }
+    .modal-continue-btn {
+      flex: 2; padding: 12px;
+      background: var(--gold); color: var(--navy);
+      border: none; border-radius: var(--radius);
+      font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+    }
+    .modal-continue-btn:hover { background: var(--gold-light); }
+
     @media (max-width: 900px) {
       .left-panel { display: none; }
       .right-panel { padding: 40px 24px; }
@@ -347,6 +396,20 @@
       </div>
 
       <div class="form-group">
+        <label class="form-label">Branch <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-map-marker-alt input-icon"></i>
+          <select id="branch" class="form-select">
+            <option value="">Select branch…</option>
+            <option value="Ablekuma">Ablekuma</option>
+            <option value="Adenta">Adenta</option>
+            <option value="Amasaman">Amasaman</option>
+            <option value="Dansoman">Dansoman</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
         <label class="form-label">GH Card Number <span>*</span></label>
         <div class="input-wrap">
           <i class="fas fa-id-card input-icon"></i>
@@ -414,6 +477,46 @@
   <div class="toast" id="toast">
     <i class="fas fa-check-circle"></i>
     <span id="toastMsg"></span>
+  </div>
+
+  <!-- GOOGLE SIGNUP MODAL -->
+  <div class="modal-overlay" id="googleSignupModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <i class="fas fa-id-card"></i>
+        <h3>A few more details</h3>
+      </div>
+      <p class="modal-sub">We need this to complete your registration.</p>
+
+      <div class="form-group">
+        <label class="form-label">GH Card Number <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-id-card input-icon"></i>
+          <input type="text" id="modalGhCard" class="form-input" placeholder="e.g., GHA-123456789" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Branch <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-map-marker-alt input-icon"></i>
+          <select id="modalBranch" class="form-select">
+            <option value="">Select branch…</option>
+            <option value="Ablekuma">Ablekuma</option>
+            <option value="Adenta">Adenta</option>
+            <option value="Amasaman">Amasaman</option>
+            <option value="Dansoman">Dansoman</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="error-msg" id="modalError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+
+      <div class="modal-actions">
+        <button class="modal-cancel-btn" id="modalCancelBtn" type="button">Cancel</button>
+        <button class="modal-continue-btn" id="modalContinueBtn" type="button">Continue with Google</button>
+      </div>
+    </div>
   </div>
 
 <script type="module">
@@ -536,13 +639,14 @@
       const email     = document.getElementById("email").value.trim();
       const phone     = document.getElementById("phone").value.trim();
       const course    = document.getElementById("courseType").value;
+      const branch    = document.getElementById("branch").value;
       const ghCardNumber = document.getElementById("ghCardNumber").value.trim();
       const password  = document.getElementById("password").value;
       const confirm   = document.getElementById("confirmPassword").value;
 
       setError("");
 
-      if (!firstName || !lastName || !email || !phone || !course || !ghCardNumber || !password) {
+      if (!firstName || !lastName || !email || !phone || !course || !branch || !ghCardNumber || !password) {
         setError("All fields are required.");
         return;
       }
@@ -598,6 +702,7 @@
           email,
           phone,
           courseType: course,
+          branch: branch,
           ghCardNumber: ghCardNumber,
           role: "student",
           status: "pending",
@@ -611,6 +716,7 @@
         showToast("Account created! You'll receive an admission email once approved. Please check your inbox regularly, including spam.", "success");
         document.querySelectorAll(".form-input, .form-select").forEach(el => el.value = "");
         document.getElementById("courseType").value = "";
+        document.getElementById("branch").value = "";
         document.getElementById("ghCardNumber").value = "";
       } catch (e) {
         console.error(e);
@@ -621,21 +727,58 @@
       }
     };
 
-    // ── Google registration (with GH Card Number prompt) ──
+    // ── Google signup modal helpers ──
+    let googleModalResolve = null;
+
+    function openGoogleModal() {
+      document.getElementById("modalGhCard").value = "";
+      document.getElementById("modalBranch").value = "";
+      document.getElementById("modalError").classList.remove("show");
+      document.getElementById("googleSignupModal").classList.add("show");
+      return new Promise(resolve => { googleModalResolve = resolve; });
+    }
+
+    function closeGoogleModal(result) {
+      document.getElementById("googleSignupModal").classList.remove("show");
+      if (googleModalResolve) googleModalResolve(result);
+      googleModalResolve = null;
+    }
+
+    document.getElementById("modalCancelBtn").addEventListener("click", () => closeGoogleModal(null));
+
+    document.getElementById("modalContinueBtn").addEventListener("click", () => {
+      const ghCardNumber = document.getElementById("modalGhCard").value.trim();
+      const branch = document.getElementById("modalBranch").value;
+      const errEl = document.getElementById("modalError");
+
+      if (!ghCardNumber || ghCardNumber.length < 5) {
+        errEl.querySelector("span").textContent = "Please enter a valid GH Card number.";
+        errEl.classList.add("show");
+        return;
+      }
+      if (!branch) {
+        errEl.querySelector("span").textContent = "Please select your branch.";
+        errEl.classList.add("show");
+        return;
+      }
+      errEl.classList.remove("show");
+      closeGoogleModal({ ghCardNumber, branch });
+    });
+
+    // ── Google registration (with GH Card Number + Branch modal) ──
     window.handleGoogleRegister = async function() {
       const btn = document.getElementById("googleRegBtn");
       btn.disabled = true;
       btn.style.opacity = "0.7";
-      
-      // Prompt for GH Card Number before Google sign-up
-      const ghCardNumber = prompt("Please enter your GH Card Number (for DVLA registration):");
-      if (!ghCardNumber || ghCardNumber.trim().length < 5) {
-        showToast("GH Card Number is required to register.", "error");
+
+      const details = await openGoogleModal();
+      if (!details) {
         btn.disabled = false;
         btn.style.opacity = "1";
         return;
       }
-      
+      const { ghCardNumber, branch } = details;
+
       try {
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
@@ -661,7 +804,8 @@
           email: user.email,
           phone: user.phoneNumber || "",
           courseType: "Manual",   // default, can be changed later
-          ghCardNumber: ghCardNumber.trim(),
+          branch: branch,
+          ghCardNumber: ghCardNumber,
           role: "student",
           status: "pending",
           trainingStage: 1,

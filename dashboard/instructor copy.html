@@ -291,6 +291,7 @@
         <div class="topbar-title" id="topbarTitle">Dashboard</div>
       </div>
       <div class="topbar-right">
+        <div class="instructor-chip" id="instructorBranchChip" style="display:none;"><i class="fas fa-map-marker-alt"></i> <span id="instructorBranchText">—</span></div>
         <div class="instructor-chip"><i class="fas fa-chalkboard-teacher"></i> <span id="instructorName">Instructor</span></div>
         <button class="icon-btn" onclick="showPage('notifications', null)"><i class="fas fa-bell"></i></button>
         <div class="avatar-btn" id="instructorAvatarBtn" onclick="showPage('settings', null)"></div>
@@ -762,6 +763,12 @@
         document.getElementById("instructorName").textContent = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim() || "Instructor";
         document.getElementById("dashInstructorName").textContent = instructorData.firstName || "Instructor";
         document.getElementById("dashDateLine").textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+        if (instructorData.branch) {
+          document.getElementById("instructorBranchText").textContent = instructorData.branch;
+          document.getElementById("instructorBranchChip").style.display = "flex";
+          document.getElementById("instructorProfileBranchText").textContent = instructorData.branch;
+          document.getElementById("instructorProfileBranchBadge").style.display = "inline-flex";
+        }
         // Populate read‑only view
         document.getElementById("viewFirstName").textContent = instructorData.firstName || '—';
         document.getElementById("viewLastName").textContent = instructorData.lastName || '—';
@@ -800,6 +807,7 @@
         }
         // Load Ghana Card Number (read‑only)
         document.getElementById("viewGhCardNumber").textContent = instructorData.ghCardNumber || '—';
+        document.getElementById("viewBranch").textContent = instructorData.branch || '—';
 
         const initials = (instructorData.firstName?.[0] || '') + (instructorData.lastName?.[0] || '') || '--';
         document.getElementById("avatarInitials").textContent = initials;

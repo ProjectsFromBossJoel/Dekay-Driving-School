@@ -1,3 +1,4 @@
+<!-- Admin Portal -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +10,11 @@
   <meta http-equiv="Expires" content="0" />
 
   <title>Admin Dashboard | Dekay Driving School</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon_io/favicon-16x16.png">
+  <link rel="manifest" href="../img/favicon_io/site.webmanifest">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -542,9 +548,128 @@
       .main { margin-left: 0; }
       .hamburger-btn { display: flex; }
     }
+    @media (max-width: 900px) {
+      .main { padding: 16px; padding-bottom: 84px; }
+      div[style*="grid-template-columns:1fr 320px"] { grid-template-columns: 1fr !important; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .search-input-wrap { min-width: 0; width: 100%; }
+      .filter-select, .search-input { width: 100%; }
+      .data-table { font-size: 12px; }
+      .modal { max-width: 100% !important; margin: 0 8px; }
+      .page-header { flex-direction: column; align-items: stretch !important; }
+    }
     @media (max-width: 640px) {
       .stat-grid { grid-template-columns: 1fr 1fr; }
       .form-row { grid-template-columns: 1fr; }
+      .detail-grid { grid-template-columns: 1fr; }
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    }
+    html, body { max-width: 100vw; overflow-x: hidden; }
+    .card, table, .modal { max-width: 100%; }
+
+    /* ── MOBILE BOTTOM NAV (Bolt-app style) ── */
+    .mobile-bottom-nav, .mobile-more-sheet, .mobile-more-overlay { display: none; }
+    @media (max-width: 900px) {
+      .mobile-bottom-nav {
+        display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+        background: rgba(18,34,63,0.96); backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(245,166,35,0.25); z-index: 450;
+        align-items: center; justify-content: space-around; padding: 0 4px;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.35);
+      }
+      .mobile-nav-btn {
+        flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; gap: 3px; background: transparent; border: none;
+        color: var(--text-muted); font-size: 10px; font-weight: 600; font-family: inherit;
+        cursor: pointer; position: relative;
+      }
+      .mobile-nav-btn i { font-size: 18px; }
+      .mobile-nav-btn.active { color: var(--gold); }
+      .mobile-nav-btn.active::before {
+        content:''; position:absolute; top:0; left:20%; right:20%; height:3px;
+        background: var(--gold); border-radius:0 0 4px 4px;
+      }
+      .mob-badge {
+        position:absolute; top:6px; right:calc(50% - 16px); background: var(--error); color:#fff;
+        font-size:9px; font-weight:800; height:15px; min-width:15px; border-radius:10px;
+        display:flex; align-items:center; justify-content:center; padding:0 3px;
+        border:1.5px solid var(--navy-mid);
+      }
+      .mobile-more-overlay {
+        display:block; position:fixed; inset:0; background:rgba(10,22,40,0.7); backdrop-filter:blur(4px);
+        z-index:500; opacity:0; pointer-events:none; transition:opacity 0.3s ease;
+      }
+      .mobile-more-overlay.open { opacity:1; pointer-events:auto; }
+      .mobile-more-sheet {
+        display:block; position:fixed; left:0; right:0; bottom:0; background:var(--navy-mid);
+        border-top:1px solid var(--border); border-radius:20px 20px 0 0; z-index:550;
+        padding:16px 16px 84px; transform:translateY(100%);
+        transition:transform 0.3s cubic-bezier(0.1,0.9,0.2,1); max-height:80vh; overflow-y:auto;
+        box-shadow:0 -10px 30px rgba(0,0,0,0.5);
+      }
+      .mobile-more-sheet.open { transform:translateY(0); }
+      .sheet-drag-handle { width:36px; height:4px; background:rgba(255,255,255,0.2); border-radius:2px; margin:0 auto 12px; }
+      .sheet-header { display:flex; align-items:center; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid var(--border-subtle); margin-bottom:16px; }
+      .sheet-title { font-size:15px; font-weight:700; color:var(--white); }
+      .sheet-close { background:transparent; border:none; color:var(--text-muted); font-size:18px; cursor:pointer; }
+      .sheet-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+      .sheet-item {
+        display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+        padding:14px 8px; background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle);
+        border-radius:var(--radius); color:var(--text-light); font-size:11px; font-weight:600;
+        cursor:pointer; position:relative;
+      }
+      .sheet-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+    }
+
+    /* ── MOBILE: SHRINK CARDS TO FIT ── */
+    @media (max-width: 900px) {
+      .topbar { padding: 0 12px; gap: 8px; }
+      .topbar-left { min-width: 0; overflow: hidden; }
+      .topbar-title { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .topbar-right { gap: 6px; flex-shrink: 0; }
+      .admin-chip { padding: 5px 10px; max-width: 110px; overflow: hidden; }
+      .admin-chip span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; max-width: 80px; vertical-align: middle; }
+      .icon-btn, .avatar-btn { flex-shrink: 0; }
+      .stat-card { padding: 12px; }
+      .stat-card-icon { width: 32px; height: 32px; font-size: 14px; margin-bottom: 8px; }
+      .stat-card-value { font-size: 20px; }
+      .stat-card-label { font-size: 10px; }
+      .stat-card-delta { font-size: 10px; }
+      .card-body { padding: 14px; }
+      .card-header { flex-wrap: wrap; gap: 8px; padding: 12px 14px; }
+      .card-header .btn { font-size: 11px; padding: 5px 10px; }
+      .prog-bar-label { font-size: 11px; }
+
+      /* Recent enrolments: hide the Enrolled column, keep it tight */
+      .recent-enroll-table th:last-child,
+      .recent-enroll-table td:last-child { display: none; }
+      .recent-enroll-table { table-layout: fixed; width: 100%; }
+      .recent-enroll-table th, .recent-enroll-table td { padding: 8px 10px; font-size: 12px; overflow: hidden; }
+      .recent-enroll-table th:first-child, .recent-enroll-table td:first-child { width: 65%; }
+      .recent-enroll-table th:nth-child(2), .recent-enroll-table td:nth-child(2) { width: 35%; }
+      .recent-enroll-table td:first-child > div { min-width: 0; }
+      .recent-enroll-table td:first-child > div > div:last-child { min-width: 0; overflow: hidden; }
+      .recent-enroll-table td:first-child > div > div:last-child > div {
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;
+      }
+      .recent-enroll-table .stage-pill {
+        font-size: 10px; padding: 2px 7px; white-space: nowrap;
+        max-width: 110px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;
+      }
+
+      /* Recent activity: single-line truncation with ellipsis */
+      .activity-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
+        min-width: 0;
+      }
+      .activity-item { gap: 8px; padding: 10px 0; min-width: 0; }
+      .activity-item > div:last-child { min-width: 0; overflow: hidden; }
+      .activity-dot { width: 26px; height: 26px; font-size: 11px; }
     }
   </style>
 </head>
@@ -639,16 +764,16 @@
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
+      <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;" class="overview-two-col">
 
         <!-- Recent students -->
         <div class="card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-users"></i> Recent enrolments</div>
-            <button class="btn btn-outline" onclick="showPage('students', null)" style="font-size:12px; padding:6px 14px;">All students <i class="fas fa-arrow-right"></i></button>
+            <button class="btn btn-outline" onclick="showPage('students', null)" style="font-size:12px; padding:6px 14px; white-space:nowrap;">All students <i class="fas fa-arrow-right"></i></button>
           </div>
           <div style="overflow-x:auto">
-            <table class="data-table">
+            <table class="data-table recent-enroll-table">
               <thead><tr><th>Student</th><th>Course</th><th>Enrolled</th></tr></thead>
               <tbody id="recentStudentsTable">
                 <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:28px;">Loading…</td></tr>
@@ -697,9 +822,9 @@
         </div>
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead><tr><th>Instructor</th><th>Qualifications</th><th>Experience</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Instructor</th><th>Qualifications</th><th>Branch</th><th>Experience</th><th>Actions</th></tr></thead>
             <tbody id="pendingInstructorTableBody">
-              <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:28px;">No pending instructors.</td></tr>
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px;">No pending instructors.</td></tr>
             </tbody>
           </table>
         </div>
@@ -709,9 +834,9 @@
       <div class="card">
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead><tr><th>Instructor</th><th>Email</th><th>Experience</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Instructor</th><th>Email</th><th>Branch</th><th>Experience</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="instructorsTable">
-              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">Loading instructors…</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading instructors…</td></tr>
             </tbody>
           </table>
         </div>
@@ -737,6 +862,16 @@
             <div class="form-group"><label class="form-label">Phone <span>*</span></label><input type="tel" id="newInstrPhone" class="form-input" placeholder="024 000 0000" /></div>
           </div>
           <div class="form-group"><label class="form-label">Date of birth</label><input type="date" id="newInstrDob" class="form-input" /></div>
+          <div class="form-group">
+            <label class="form-label">Branch <span>*</span></label>
+            <select id="newInstrBranch" class="form-select">
+              <option value="">Select branch…</option>
+              <option value="Ablekuma">Ablekuma</option>
+              <option value="Adenta">Adenta</option>
+              <option value="Amasaman">Amasaman</option>
+              <option value="Dansoman">Dansoman</option>
+            </select>
+          </div>
 
           <!-- Ghana Card Uploads -->
           <div class="bio-section"><div class="bio-section-title">Ghana Card <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></div></div>
@@ -879,7 +1014,7 @@
         <div style="overflow-x:auto">
           <table class="data-table">
             <thead>
-      <tr><th>Student</th><th>Course</th><th>Stage</th><th>GH Card</th><th>Attendance</th><th>Enrolled</th><th>Status</th><th>Actions</th></tr>
+      <tr><th>Student</th><th>Course</th><th>Stage</th><th>Branch</th><th>Attendance</th><th>Enrolled</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody id="studentsTable">
               <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Loading students…</td></tr>
@@ -1784,69 +1919,96 @@
     </div>
 
     <!-- ═══ NOTIFICATIONS ═══ -->
-    <div class="page" id="page-notifications">
-      <div class="page-header">
-        <div class="page-title">Send Notifications</div>
-        <div class="page-sub">Push messages directly to individual students or all students.</div>
-      </div>
+<!-- ═══ NOTIFICATIONS ═══ -->
+<div class="page" id="page-notifications">
+  <div class="page-header">
+    <div class="page-title">Send Notifications</div>
+    <div class="page-sub">Push messages directly to individual students or all students.</div>
+  </div>
 
-      <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
-        <div class="card">
-          <div class="card-header"><div class="card-title"><i class="fas fa-paper-plane"></i> New notification</div></div>
-          <div class="card-body">
-            <div class="form-group">
-              <label class="form-label">Recipient <span>*</span></label>
-              <div style="position:relative;">
-                <button type="button" id="recipientDropdownBtn" class="form-select" style="text-align:left; display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="toggleRecipientDropdown()">
-                  <span id="recipientBtnText">Select students…</span>
-                  <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+  <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-paper-plane"></i> New notification</div></div>
+      <div class="card-body">
+        <!-- Recipient type + Filter by course in one row (flexible layout) -->
+        <div class="form-group">
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; width:100%;">
+            <div style="flex:1 1 180px; min-width:140px;">
+              <label class="form-label">Recipient type <span>*</span></label>
+              <div style="display:flex; gap:6px;">
+                <button type="button" class="btn btn-gold" id="tabNotifStudent" onclick="switchNotifRecipientType('student')" style="flex:1; justify-content:center; font-size:12px;">
+                  <i class="fas fa-users"></i> Students
                 </button>
-                                <div id="recipientDropdown" style="position:absolute; top:100%; left:0; right:0; z-index:200; background:var(--navy-mid); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; display:none; max-height:280px; overflow-y:auto; box-shadow:var(--shadow);">
-                  <label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer; border-bottom:1px solid var(--border-subtle); font-weight:600; color:var(--gold);">
-                    <input type="checkbox" id="notifyAll" onchange="toggleAllStudents(this)" style="accent-color:var(--gold);" />
-                    <i class="fas fa-users"></i> All students
-                  </label>
-                  <!-- Search bar inside dropdown -->
-                  <div class="search-input-wrap" style="margin:8px 0;">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="recipientSearch" class="search-input" style="padding:8px 14px 8px 36px; font-size:13px;" placeholder="Search students…" oninput="filterRecipientStudents()" />
-                  </div>
-                  <div id="studentCheckboxList">
-                    <!-- Individual student checkboxes injected by JS -->
-                  </div>
-                </div>
+                <button type="button" class="btn btn-outline" id="tabNotifInstructor" onclick="switchNotifRecipientType('instructor')" style="flex:1; justify-content:center; font-size:12px;">
+                  <i class="fas fa-chalkboard-teacher"></i> Instructors
+                </button>
+                <button type="button" class="btn btn-outline" id="tabNotifBoth" onclick="switchNotifRecipientType('both')" style="flex:1; justify-content:center; font-size:12px;">
+                  <i class="fas fa-users"></i> Both
+                </button>
               </div>
-              <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Click the button to choose recipients.</div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Icon</label>
-              <select class="form-select" id="notifIcon">
-                <option value="fa-bell">🔔 General</option>
-                <option value="fa-calendar-check">📅 Session</option>
-                <option value="fa-trophy">🏆 Achievement</option>
-                <option value="fa-exclamation-triangle">⚠️ Warning</option>
-                <option value="fa-info-circle">ℹ️ Info</option>
-                <option value="fa-check-circle">✅ Completion</option>
+            <div style="flex:0 1 auto; min-width:110px; max-width:180px;">
+              <label class="form-label">Filter by course</label>
+              <select class="form-select" id="notifCourseFilter" onchange="filterRecipientsByCourse()" style="width:100%; min-width:0;">
+                <option value="">All courses</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">Message <span>*</span></label>
-              <textarea class="form-textarea" id="notifMessage" placeholder="Type your message here…"></textarea>
-            </div>
-            <button class="btn btn-gold" style="width:100%; justify-content:center;" onclick="sendNotification()">
-              <i class="fas fa-paper-plane"></i> Send notification
-            </button>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header"><div class="card-title"><i class="fas fa-history"></i> Recent sent</div></div>
-          <div id="sentNotifList" style="max-height:400px;overflow-y:auto;">
-            <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
+        <!-- Recipient selection -->
+        <div class="form-group">
+          <label class="form-label">Recipient <span>*</span></label>
+          <div style="position:relative;">
+            <button type="button" id="recipientDropdownBtn" class="form-select" style="text-align:left; display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="toggleRecipientDropdown()">
+              <span id="recipientBtnText">Select students…</span>
+              <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+            </button>
+            <div id="recipientDropdown" style="position:absolute; top:100%; left:0; right:0; z-index:200; background:var(--navy-mid); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; display:none; max-height:280px; overflow-y:auto; box-shadow:var(--shadow);">
+              <label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer; border-bottom:1px solid var(--border-subtle); font-weight:600; color:var(--gold);">
+                <input type="checkbox" id="notifyAll" onchange="toggleAllRecipients(this)" style="accent-color:var(--gold);" />
+                <i class="fas fa-users"></i> <span id="notifyAllLabel">All students</span>
+              </label>
+              <div class="search-input-wrap" style="margin:8px 0;">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="recipientSearch" class="search-input" style="padding:8px 14px 8px 36px; font-size:13px;" placeholder="Search…" oninput="filterRecipientStudents()" />
+              </div>
+              <div id="studentCheckboxList"></div>
+              <div id="instructorCheckboxListNotif" style="display:none;"></div>
+            </div>
           </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Click the button to choose recipients.</div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label">Icon</label>
+          <select class="form-select" id="notifIcon">
+            <option value="fa-bell">🔔 General</option>
+            <option value="fa-calendar-check">📅 Session</option>
+            <option value="fa-trophy">🏆 Achievement</option>
+            <option value="fa-exclamation-triangle">⚠️ Warning</option>
+            <option value="fa-info-circle">ℹ️ Info</option>
+            <option value="fa-check-circle">✅ Completion</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message <span>*</span></label>
+          <textarea class="form-textarea" id="notifMessage" placeholder="Type your message here…"></textarea>
+        </div>
+        <button class="btn btn-gold" style="width:100%; justify-content:center;" onclick="sendNotification()">
+          <i class="fas fa-paper-plane"></i> Send notification
+        </button>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="fas fa-history"></i> Recent sent</div></div>
+      <div id="sentNotifList" style="max-height:400px;overflow-y:auto;">
+        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- ═══ VEHICLES (Admin) ═══ -->
     <div class="page" id="page-vehicles">
@@ -1935,15 +2097,6 @@
       <div class="page-header">
         <div class="page-title">Resources</div>
         <div class="page-sub">View all course documents and materials uploaded with classes.</div>
-      </div>
-
-      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-        <button class="btn btn-gold" id="tabResourceClasses" onclick="switchResourceTab('classes')" style="min-width:160px; justify-content:center;">
-          <i class="fas fa-paperclip"></i> Class Attachments
-        </button>
-        <button class="btn btn-outline" id="tabResourceLessons" onclick="switchResourceTab('lessons')" style="min-width:160px; justify-content:center;">
-          <i class="fas fa-video"></i> Lesson Videos
-        </button>
       </div>
 
       <div class="filter-bar">
@@ -2559,22 +2712,6 @@
     </div>
   </div>
 
-  <!-- ── VIEW LESSON RESOURCE MODAL (read-only) ── -->
-  <div class="modal-overlay" id="viewLessonResourceModal">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title" id="viewLessonResourceTitle">Lesson details</div>
-        <button class="modal-close" onclick="closeModal('viewLessonResourceModal')"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body" id="viewLessonResourceBody">
-        <!-- Injected by JS -->
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal('viewLessonResourceModal')">Close</button>
-      </div>
-    </div>
-  </div>
-
    <!-- ── ADD LESSON FOLDER MODAL ── -->
   <div class="modal-overlay" id="addFolderModal">
     <div class="modal" style="max-width:420px;">
@@ -2652,8 +2789,37 @@
   <!-- TOAST -->
   <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
 
+  <!-- ── MOBILE BOTTOM NAV ── -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mobile-nav-btn active" id="mob-nav-overview" onclick="switchMobileTab('overview', this)"><i class="fas fa-th-large"></i><span>Home</span></button>
+    <button class="mobile-nav-btn" id="mob-nav-students" onclick="switchMobileTab('students', this)"><span class="mob-badge" id="mobStudentBadge" style="display:none;">!</span><i class="fas fa-users"></i><span>Students</span></button>
+    <button class="mobile-nav-btn" id="mob-nav-classes" onclick="switchMobileTab('classes', this)"><i class="fas fa-chalkboard"></i><span>Classes</span></button>
+    <button class="mobile-nav-btn" id="mob-nav-attendance" onclick="switchMobileTab('attendance', this)"><i class="fas fa-calendar-check"></i><span>Attend</span></button>
+    <button class="mobile-nav-btn" id="mob-nav-more" onclick="toggleMobileMoreMenu()"><span class="mob-badge" id="mobMoreBadge" style="display:none;">!</span><i class="fas fa-bars"></i><span>More</span></button>
+  </nav>
 
-  
+  <div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="closeMobileMoreMenu()"></div>
+  <div class="mobile-more-sheet" id="mobileMoreSheet">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">Dekay Driving School</div>
+      <button class="sheet-close" onclick="closeMobileMoreMenu()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sheet-grid">
+      <button class="sheet-item" onclick="navigateFromMore('instructors')"><div class="sheet-icon" style="background:rgba(100,181,246,0.15);color:var(--info);"><i class="fas fa-chalkboard-teacher"></i></div><span>Instructors</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('lessons')"><div class="sheet-icon" style="background:rgba(245,166,35,0.15);color:var(--gold);"><i class="fas fa-play-circle"></i></div><span>Lessons</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('quizzes')"><div class="sheet-icon" style="background:rgba(255,152,0,0.15);color:var(--warn);"><i class="fas fa-tasks"></i></div><span>Quizzes</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('courses')"><div class="sheet-icon" style="background:rgba(76,175,80,0.15);color:var(--success);"><i class="fas fa-book"></i></div><span>Courses</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('vehicles')"><div class="sheet-icon" style="background:rgba(239,83,80,0.15);color:var(--error);"><i class="fas fa-car-side"></i></div><span>Vehicles</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('resources')"><div class="sheet-icon" style="background:rgba(139,154,176,0.15);color:var(--text-light);"><i class="fas fa-folder-open"></i></div><span>Resources</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('certificates')"><div class="sheet-icon" style="background:rgba(245,166,35,0.15);color:var(--gold);"><i class="fas fa-certificate"></i></div><span>Certificates</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('notifications')"><div class="sheet-icon" style="background:rgba(255,152,0,0.15);color:var(--warn);"><i class="fas fa-bell"></i></div><span>Notify</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('enquiries')"><div class="sheet-icon" style="background:rgba(100,181,246,0.15);color:var(--info);"><i class="fas fa-headset"></i></div><span>Enquiries</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('permissions')"><div class="sheet-icon" style="background:rgba(156,39,176,0.15);color:#CE93D8;"><i class="fas fa-shield-alt"></i></div><span>Permissions</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('settings')"><div class="sheet-icon" style="background:rgba(139,154,176,0.15);color:var(--text-light);"><i class="fas fa-cog"></i></div><span>Settings</span></button>
+    </div>
+  </div>
+
 <script>
   // Global stubs so onclick= attributes work before the module loads
   function showPage(n,b){ window.__showPage && window.__showPage(n,b); }
@@ -3130,18 +3296,20 @@ function hideLoading() {
   // ALL YOUR ADMIN FUNCTIONS (exactly the same logic, with /login fix)
   // ══════════════════════════════════════
   async function loadAll() {
-    await loadStudents();
-    await loadClasses();              // Load classes FIRST so _allClassesMap is ready
-    await loadAttendance();           // Now renderAttTable can use _allClassesMap
-    await loadInstructorAttendance();
-    await loadLessons();
-    await loadQuizzes();
-    await loadNotifications();
-    await loadCourses();
-    await loadInstructors();
-    await loadVehicles();
-    buildOverview();
-  }
+  await loadStudents();
+  await loadClasses();
+  await loadAttendance();
+  await loadInstructorAttendance();
+  await loadLessons();
+  await loadQuizzes();
+  await loadInstructorsForNotif();
+  await loadNotifications();
+  await loadCourses();
+  populateNotifCourseFilter();
+  await loadInstructors();
+  await loadVehicles();
+  buildOverview();
+}
 
     async function loadStudents() {
     try {
@@ -3154,14 +3322,15 @@ function hideLoading() {
       attSel.innerHTML = '<option value="">Select student…</option>';
       
       // Populate student checkboxes for notifications
-      const checkboxList = document.getElementById("studentCheckboxList");
+            const checkboxList = document.getElementById("studentCheckboxList");
       if (checkboxList) {
         checkboxList.innerHTML = allStudents.length === 0
           ? '<div style="padding:8px; color:var(--text-muted); font-size:12px;">No students yet.</div>'
           : allStudents.map(s => {
               const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email;
+              const course = s.courseType || '';
               return `<label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
-                <input type="checkbox" value="${s.id}" style="accent-color:var(--gold);" onchange="updateRecipientBtnText()" />
+                <input type="checkbox" value="${s.id}" data-course="${escapeHtml(course)}" style="accent-color:var(--gold);" onchange="updateRecipientBtnText()" />
                 <span>${name}</span>
               </label>`;
             }).join('');
@@ -3251,7 +3420,7 @@ function hideLoading() {
         </td>
         <td><span class="stage-pill"><i class="fas fa-car" style="font-size:10px"></i> ${s.courseType || 'Manual'}</span></td>
         <td><span class="stage-pill">Stage ${s.trainingStage || 1}</span></td>
-        <td style="font-size:11px;color:var(--text-muted);">${escapeHtml(s.ghCardNumber || '—')}</td>
+        <td>${s.branch ? `<span class="stage-pill"><i class="fas fa-map-marker-alt" style="font-size:10px"></i> ${escapeHtml(s.branch)}</span>` : '—'}</td>
         <td style="color:var(--text-muted)">${s.attendanceRate || '—'}%</td>
         <td style="color:var(--text-muted);font-size:12px">${date}</td>
         <td>${pill}</td>
@@ -3289,7 +3458,7 @@ function hideLoading() {
           </div>
         </td>
         <td><span class="stage-pill"><i class="fas fa-car" style="font-size:10px"></i> ${s.courseType || 'Manual'}</span></td>
-        <td style="font-size:11px;color:var(--text-muted);">${escapeHtml(s.ghCardNumber || '—')}</td>
+        <td style="font-size:11px;color:var(--text-muted);">${escapeHtml(s.ghCardNumber || '—')}${s.branch ? `<br/><span class="stage-pill" style="margin-top:4px;"><i class="fas fa-map-marker-alt" style="font-size:9px"></i> ${escapeHtml(s.branch)}</span>` : ''}</td>
         <td style="color:var(--text-muted);font-size:12px">${date}</td>
         <td style="display:flex; gap:6px;">
           <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);" title="Approve" onclick="approveStudent('${s.id}')"><i class="fas fa-check"></i></button>
@@ -3318,29 +3487,124 @@ function hideLoading() {
 
     // Update the recipient dropdown button text
   function updateRecipientBtnText() {
-    const allChecked = document.getElementById("notifyAll").checked;
-    const checkboxes = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked');
-    const selectedCount = allChecked ? allStudents.length : checkboxes.length;
-    const btnText = document.getElementById("recipientBtnText");
-    if (selectedCount === 0) {
-      btnText.textContent = "Select students…";
-    } else if (selectedCount === allStudents.length) {
-      btnText.textContent = `All students (${selectedCount})`;
-    } else {
-      btnText.textContent = `${selectedCount} student${selectedCount>1?'s':''} selected`;
-    }
+  const studentChecks = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked');
+  const instructorChecks = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]:checked');
+  const total = studentChecks.length + instructorChecks.length;
+  const btnText = document.getElementById("recipientBtnText");
+  
+  if (total === 0) {
+    btnText.textContent = notifRecipientType === 'both' ? 'Select recipients…' : 
+                          (notifRecipientType === 'student' ? 'Select students…' : 'Select instructors…');
+  } else {
+    btnText.textContent = `${total} recipient${total > 1 ? 's' : ''} selected`;
   }
+}
 
       // ── TOGGLE ALL STUDENT CHECKBOXES ──
-  window.toggleAllStudents = function(allCheckbox) {
-    const isChecked = allCheckbox.checked;
-    const checkboxes = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]');
-    checkboxes.forEach(cb => {
+  window.toggleAllRecipients = function(allCheckbox) {
+  const isChecked = allCheckbox.checked;
+  
+  if (notifRecipientType === 'both') {
+    // Select all in both lists
+    document.querySelectorAll('#studentCheckboxList input[type="checkbox"]').forEach(cb => {
       cb.checked = isChecked;
       cb.disabled = isChecked;
     });
-    updateRecipientBtnText();
-  };
+    document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]').forEach(cb => {
+      cb.checked = isChecked;
+      cb.disabled = isChecked;
+    });
+  } else if (notifRecipientType === 'student') {
+    document.querySelectorAll('#studentCheckboxList input[type="checkbox"]').forEach(cb => {
+      cb.checked = isChecked;
+      cb.disabled = isChecked;
+    });
+  } else if (notifRecipientType === 'instructor') {
+    document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]').forEach(cb => {
+      cb.checked = isChecked;
+      cb.disabled = isChecked;
+    });
+  }
+  updateRecipientBtnText();
+};
+
+function updateAllCheckboxState() {
+  const allCheckbox = document.getElementById("notifyAll");
+  if (!allCheckbox) return;
+  
+  let total = 0, checked = 0;
+  if (notifRecipientType === 'both') {
+    const studentCbs = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]');
+    const instructorCbs = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]');
+    total = studentCbs.length + instructorCbs.length;
+    checked = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked').length +
+              document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]:checked').length;
+  } else if (notifRecipientType === 'student') {
+    const cbs = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]');
+    total = cbs.length;
+    checked = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked').length;
+  } else {
+    const cbs = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]');
+    total = cbs.length;
+    checked = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]:checked').length;
+  }
+  
+  allCheckbox.checked = total > 0 && checked === total;
+}
+
+
+function populateNotifCourseFilter() {
+  const sel = document.getElementById("notifCourseFilter");
+  if (!sel) return;
+  const courses = window._allCourses || [];
+  const currentValue = sel.value;
+  sel.innerHTML = '<option value="">All courses</option>';
+  courses.forEach(c => {
+    const name = c.name || c.title || '';
+    if (name) {
+      sel.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+    }
+  });
+  // Restore previous selection if still valid
+  if (currentValue && [...sel.options].some(opt => opt.value === currentValue)) {
+    sel.value = currentValue;
+  }
+}
+
+window.filterRecipientsByCourse = function() {
+  const selectedCourse = document.getElementById("notifCourseFilter").value;
+  const studentList = document.getElementById("studentCheckboxList");
+  const instructorList = document.getElementById("instructorCheckboxListNotif");
+
+  // Filter students
+  if (studentList) {
+    const studentLabels = studentList.querySelectorAll('label');
+    studentLabels.forEach(label => {
+      const checkbox = label.querySelector('input[type="checkbox"]');
+      if (!checkbox) return;
+      const course = checkbox.dataset.course || '';
+      const match = !selectedCourse || course === selectedCourse;
+      label.style.display = match ? 'flex' : 'none';
+    });
+  }
+
+  // Filter instructors
+  if (instructorList) {
+    const instrLabels = instructorList.querySelectorAll('label');
+    instrLabels.forEach(label => {
+      const checkbox = label.querySelector('input[type="checkbox"]');
+      if (!checkbox) return;
+      const coursesAttr = checkbox.dataset.courses || '';
+      const courses = coursesAttr.split(',').map(s => s.trim()).filter(Boolean);
+      const match = !selectedCourse || courses.includes(selectedCourse);
+      label.style.display = match ? 'flex' : 'none';
+    });
+  }
+
+  // Update "All" checkbox state and button text
+  updateAllCheckboxState();
+  updateRecipientBtnText();
+};
 
     // ── FILTER STUDENT CHECKBOXES IN DROPDOWN ──
   window.filterRecipientStudents = function() {
@@ -4442,36 +4706,133 @@ function hideLoading() {
   };
 
   async function loadNotifications() {
-    try {
-      const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(30));
-      const snaps = await getDocs(q);
-      const notifs = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
-      const list = document.getElementById("sentNotifList");
-      if (!notifs.length) {
-        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications sent yet.</div>`;
-        return;
+  try {
+    const [studentSnaps, instrSnaps] = await Promise.all([
+      getDocs(query(collection(db, "notifications"), orderBy("createdAt", "desc"), limit(30))),
+      getDocs(query(collection(db, "instructorNotifications"), orderBy("createdAt", "desc"), limit(30)))
+    ]);
+    const studentNotifs = studentSnaps.docs.map(d => ({ id: d.id, ...d.data(), _kind: 'student' }));
+    const instrNotifs = instrSnaps.docs.map(d => ({ id: d.id, ...d.data(), _kind: 'instructor' }));
+    const notifs = [...studentNotifs, ...instrNotifs]
+      .sort((a,b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0))
+      .slice(0, 30);
+
+    const list = document.getElementById("sentNotifList");
+    if (!notifs.length) {
+      list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications sent yet.</div>`;
+      return;
+    }
+    list.innerHTML = notifs.map(n => {
+      const date = n.createdAt?.toDate();
+      let timeStr = '';
+      if (date) {
+        const formattedDate = date.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        timeStr = `${formattedDate} at ${hours}:${minutes} ${ampm}`;
       }
-      list.innerHTML = notifs.map(n => {
-        const date = n.createdAt?.toDate();
-        let timeStr = '';
-        if (date) {
-          const formattedDate = date.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
-          let hours = date.getHours();
-          const minutes = date.getMinutes().toString().padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          const formattedTime = `${hours}:${minutes} ${ampm}`;
-          timeStr = `${formattedDate} at ${formattedTime}`;
-        }
-        const student = allStudents.find(s => s.id === n.studentId);
-        const recipient = n.studentId === 'all' ? 'All students' : (student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown');
-        return `<div style="padding:12px 16px;border-bottom:1px solid var(--border-subtle);">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">To: <strong style="color:var(--gold)">${recipient}</strong> · ${timeStr}</div>
-          <div style="font-size:13px;color:var(--text-light)">${n.message}</div>
-        </div>`;
-      }).join('');
-    } catch(e) {}
+      let recipient = 'Unknown';
+      if (n._kind === 'student') {
+        const s = allStudents.find(x => x.id === n.studentId);
+        recipient = s ? `${s.firstName || ''} ${s.lastName || ''}`.trim() : 'Unknown student';
+      } else {
+        const i = (window._allInstructorsForNotif || []).find(x => x.id === n.instructorId);
+        recipient = i ? `${i.firstName || ''} ${i.lastName || ''}`.trim() : 'Unknown instructor';
+      }
+      const badge = n._kind === 'instructor' ? ' <span style="color:var(--info);font-size:10px;">(Instructor)</span>' : '';
+      return `<div style="padding:12px 16px;border-bottom:1px solid var(--border-subtle);">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">To: <strong style="color:var(--gold)">${recipient}</strong>${badge} · ${timeStr}</div>
+        <div style="font-size:13px;color:var(--text-light)">${n.message}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+// ── NOTIFICATION RECIPIENT TOGGLE ──
+let notifRecipientType = 'student';
+
+window.switchNotifRecipientType = function(type) {
+  notifRecipientType = type;
+  
+  // Update button styles
+  const studentBtn = document.getElementById("tabNotifStudent");
+  const instructorBtn = document.getElementById("tabNotifInstructor");
+  const bothBtn = document.getElementById("tabNotifBoth");
+  const btns = [studentBtn, instructorBtn, bothBtn];
+  const gold = 'btn btn-gold';
+  const outline = 'btn btn-outline';
+  
+  btns.forEach(b => { if (b) b.className = outline; });
+  if (type === 'student') studentBtn.className = gold;
+  else if (type === 'instructor') instructorBtn.className = gold;
+  else if (type === 'both') bothBtn.className = gold;
+  
+  // Show/hide the appropriate checkbox lists
+  const studentList = document.getElementById("studentCheckboxList");
+  const instructorList = document.getElementById("instructorCheckboxListNotif");
+  
+  if (type === 'both') {
+    studentList.style.display = 'block';
+    instructorList.style.display = 'block';
+  } else {
+    studentList.style.display = (type === 'student') ? 'block' : 'none';
+    instructorList.style.display = (type === 'instructor') ? 'block' : 'none';
   }
+  
+  // Update "All" label and button text
+  const allLabel = document.getElementById("notifyAllLabel");
+  const btnText = document.getElementById("recipientBtnText");
+  
+  if (type === 'both') {
+    allLabel.textContent = 'All recipients (students & instructors)';
+    btnText.textContent = 'Select recipients…';
+  } else {
+    allLabel.textContent = type === 'student' ? 'All students' : 'All instructors';
+    btnText.textContent = type === 'student' ? 'Select students…' : 'Select instructors…';
+  }
+  
+  // Populate instructor list if needed
+  if (type === 'instructor' || type === 'both') {
+    populateInstructorCheckboxes();
+  }
+  
+  // Refresh the "All" checkbox state
+  updateAllCheckboxState();
+  updateRecipientBtnText();
+};
+
+
+async function populateInstructorCheckboxes() {
+  const container = document.getElementById("instructorCheckboxListNotif");
+  if (!container) return;
+  
+  try {
+    const snaps = await getDocs(collection(db, "instructors"));
+    const instructors = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    container.innerHTML = instructors.length === 0
+      ? '<div style="padding:8px; color:var(--text-muted); font-size:12px;">No instructors yet.</div>'
+      : instructors.map(i => {
+          const name = `${i.firstName || ''} ${i.lastName || ''}`.trim() || i.email;
+          // Normalize assignedCourses to a comma-separated string for data attribute
+          let courses = i.assignedCourses || [];
+          if (courses && typeof courses === 'object' && !Array.isArray(courses)) {
+            courses = Object.values(courses);
+          }
+          if (!Array.isArray(courses)) courses = [];
+          const courseStr = courses.map(c => escapeHtml(c)).join(',');
+          return `<label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
+            <input type="checkbox" value="${i.id}" data-courses="${courseStr}" style="accent-color:var(--gold);" onchange="updateRecipientBtnText()" />
+            <span>${name}</span>
+          </label>`;
+        }).join('');
+  } catch(e) {
+    console.error("Failed to load instructors for notifications:", e);
+    container.innerHTML = '<div style="padding:8px; color:var(--error); font-size:12px;">Failed to load instructors.</div>';
+  }
+}
 
   function buildOverview() {
     const total    = allStudents.length;
@@ -4504,7 +4865,7 @@ function hideLoading() {
       ? actItems.map(a => `
           <div class="activity-item">
             <div class="activity-dot ${a.type}"><i class="fas ${iconMap[a.type] || 'fa-bolt'}"></i></div>
-            <div><div class="activity-text">${a.msg}</div><div class="activity-time">${a.time ? a.time.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—'}</div></div>
+            <div style="flex:1;min-width:0;"><div class="activity-text" title="${a.msg.replace(/"/g,'&quot;')}">${a.msg}</div><div class="activity-time">${a.time ? a.time.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—'}</div></div>
           </div>`).join('')
       : `<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px;">No activity yet.</div>`;
 
@@ -4573,6 +4934,16 @@ function hideLoading() {
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Enrolment date</label><div class="form-input" style="background:var(--navy);">${s.enrolDate || s.createdAt?.toDate?.().toLocaleDateString('en-GB') || '—'}</div></div>
+        <div class="form-group">
+          <label class="form-label">Branch</label>
+          <select id="editBranch" class="form-select">
+            <option value="">Select branch…</option>
+            <option value="Ablekuma" ${s.branch === 'Ablekuma' ? 'selected' : ''}>Ablekuma</option>
+            <option value="Adenta" ${s.branch === 'Adenta' ? 'selected' : ''}>Adenta</option>
+            <option value="Amasaman" ${s.branch === 'Amasaman' ? 'selected' : ''}>Amasaman</option>
+            <option value="Dansoman" ${s.branch === 'Dansoman' ? 'selected' : ''}>Dansoman</option>
+          </select>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -4831,6 +5202,7 @@ function hideLoading() {
     const lastName = document.getElementById("editLast").value.trim();
     const phone = document.getElementById("editPhone").value.trim();
     const ghCardNumber = document.getElementById("editGhCardNumber").value.trim();
+    const branch = document.getElementById("editBranch") ? document.getElementById("editBranch").value : '';
     const dob = document.getElementById("editDob") ? document.getElementById("editDob").value : '';
     
     // Collect checked course names
@@ -4854,7 +5226,7 @@ function hideLoading() {
       
             // Update users collection
       await updateDoc(doc(db, "users", uid), {
-        firstName, lastName, phone, ghCardNumber, dob,
+        firstName, lastName, phone, ghCardNumber, branch, dob,
         courseType, courseTypes, trainingStage,
         status, instructor: primaryInstructor, instructors
       });
@@ -4919,6 +5291,7 @@ function hideLoading() {
           lastName,
           phone,
           ghCardNumber,
+          branch,
           courseType,
           courseTypes,
           trainingStage,
@@ -5692,46 +6065,6 @@ window.approveStudent = async function(uid) {
     openModal("editLessonModal");
   };
 
-  window.openViewLessonResourceModal = function(lessonId) {
-    const lesson = (window._allLessons || []).find(l => l.id === lessonId);
-    if (!lesson) return showToast("Lesson not found.", "error");
-
-    document.getElementById("viewLessonResourceTitle").textContent = lesson.title || 'Lesson details';
-
-    const watchers = lesson.watchers || [];
-    const watchersHtml = watchers.length
-      ? [...watchers].sort((a,b) => b.pct - a.pct).map(w => {
-          const student = allStudents.find(s => s.id === w.studentId);
-          const name = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : w.studentId;
-          const pct = Math.round(w.pct);
-          const color = pct >= 80 ? 'var(--success)' : 'var(--gold)';
-          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">
-            <span style="font-size:12px;">${escapeHtml(name)}</span>
-            <span style="font-size:12px;font-weight:700;color:${color};">${pct}%</span>
-          </div>`;
-        }).join('')
-      : '<div style="color:var(--text-muted);font-size:12px;">No students have started this lesson yet.</div>';
-
-    const assignedQuiz = (window._allQuizzes || []).find(q => q.id === lesson.assignedQuizId);
-    const uploaded = lesson.createdAt?.toDate ? lesson.createdAt.toDate().toLocaleDateString('en-GB') : '—';
-
-    document.getElementById("viewLessonResourceBody").innerHTML = `
-      ${lesson.videoUrl ? `<video controls style="width:100%;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;" src="${lesson.videoUrl}" poster="${lesson.thumbnailUrl || ''}"></video>` : ''}
-      <div class="detail-grid">
-        <div class="detail-label">Folder</div><div class="detail-value">${escapeHtml(lesson.folder || '—')}</div>
-        <div class="detail-label">Category</div><div class="detail-value">${escapeHtml(lesson.category || '—')}</div>
-        <div class="detail-label">Duration</div><div class="detail-value">${escapeHtml(lesson.duration || '—')}</div>
-        <div class="detail-label">Uploaded</div><div class="detail-value">${uploaded}</div>
-        <div class="detail-label">Assigned quiz</div><div class="detail-value">${assignedQuiz ? escapeHtml(assignedQuiz.title) : '—'}</div>
-        <div class="detail-label">Avg. completion</div><div class="detail-value">${lesson.avgCompletion != null ? lesson.avgCompletion + '%' : '—'}</div>
-      </div>
-      <div class="bio-section"><div class="bio-section-title">Watch Progress</div></div>
-      <div style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">${watchersHtml}</div>
-    `;
-
-    openModal("viewLessonResourceModal");
-  };
-
   window.updateLesson = async function() {
     const id       = document.getElementById("editLessonId").value;
     const title    = document.getElementById("editLessonTitle").value.trim();
@@ -5912,187 +6245,70 @@ window.approveStudent = async function(uid) {
   };
 
   // ── NOTIFICATIONS ──
-    // ── NOTIFICATIONS (with checkbox recipients) ──
-  window.sendNotification = async function() {
-    const allChecked = document.getElementById("notifyAll").checked;
-    const message = document.getElementById("notifMessage").value.trim();
-    const icon = document.getElementById("notifIcon").value;
+    window.sendNotification = async function() {
+  const message = document.getElementById("notifMessage").value.trim();
+  const icon = document.getElementById("notifIcon").value;
 
-    if (!message) {
-      showToast("Enter a message.", "error");
-      return;
-    }
+  if (!message) { showToast("Enter a message.", "error"); return; }
 
-    // Determine recipients
-    let recipients = [];
-    if (allChecked) {
-      // Send to all students
-      recipients = allStudents.map(s => s.id);
-    } else {
-      // Collect checked individual student IDs
-      const checkboxes = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked');
-      recipients = Array.from(checkboxes).map(cb => cb.value);
-      if (recipients.length === 0) {
-        showToast("Select at least one recipient.", "error");
-        return;
-      }
-    }
+  // Gather checked students and instructors
+  const studentChecks = document.querySelectorAll('#studentCheckboxList input[type="checkbox"]:checked');
+  const instructorChecks = document.querySelectorAll('#instructorCheckboxListNotif input[type="checkbox"]:checked');
+  
+  let studentIds = [], instructorIds = [];
+  
+  if (notifRecipientType === 'student' || notifRecipientType === 'both') {
+    studentIds = Array.from(studentChecks).map(cb => cb.value);
+  }
+  if (notifRecipientType === 'instructor' || notifRecipientType === 'both') {
+    instructorIds = Array.from(instructorChecks).map(cb => cb.value);
+  }
+  
+  const total = studentIds.length + instructorIds.length;
+  if (total === 0) {
+    showToast("Select at least one recipient.", "error");
+    return;
+  }
 
-    try {
-      const batch = recipients.map(studentId =>
-        addDoc(collection(db, "notifications"), {
-          studentId,
+  try {
+    const batch = [];
+    // Send to students
+    if (studentIds.length > 0) {
+      studentIds.forEach(id => {
+        batch.push(addDoc(collection(db, "notifications"), {
+          studentId: id,
           message,
           icon,
           read: false,
-          type: "instructor",
+          type: "admin",
           createdAt: serverTimestamp()
-        })
-      );
-      await Promise.all(batch);
-      showToast(`Sent to ${recipients.length} student${recipients.length > 1 ? 's' : ''} ✓`, "success");
-      document.getElementById("notifMessage").value = "";
-      await loadNotifications();
-    } catch (e) {
-      showToast("Send failed. Try again.", "error");
+        }));
+      });
     }
-  };
-
-
-  function populateNotifCourseFilter() {
-  const sel = document.getElementById("notifCourseFilter");
-  if (!sel) return;
-  const courses = window._allCourses || [];
-  const currentValue = sel.value;
-  sel.innerHTML = '<option value="">All courses</option>';
-  courses.forEach(c => {
-    const name = c.name || c.title || '';
-    if (name) {
-      sel.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+    // Send to instructors
+    if (instructorIds.length > 0) {
+      instructorIds.forEach(id => {
+        batch.push(addDoc(collection(db, "instructorNotifications"), {
+          instructorId: id,
+          message,
+          icon,
+          read: false,
+          type: "admin",
+          createdAt: serverTimestamp()
+        }));
+      });
     }
-  });
-  // Restore previous selection if still valid
-  if (currentValue && [...sel.options].some(opt => opt.value === currentValue)) {
-    sel.value = currentValue;
-  }
-}
-
-  let notifRecipientType = 'student';
-let allInstructorsForNotif = [];
-
-window.switchNotifRecipientType = function(type) {
-  notifRecipientType = type;
-  document.getElementById("tabNotifStudent").className = type === 'student' ? 'btn btn-gold' : 'btn btn-outline';
-  document.getElementById("tabNotifInstructor").className = type === 'instructor' ? 'btn btn-gold' : 'btn btn-outline';
-  document.getElementById("notifyAllLabel").textContent = type === 'student' ? 'All students' : 'All instructors';
-  document.getElementById("recipientBtnText").textContent = type === 'student' ? 'Select students…' : 'Select instructors…';
-  document.getElementById("studentCheckboxList").style.display = type === 'student' ? 'block' : 'none';
-  document.getElementById("instructorCheckboxListNotif").style.display = type === 'instructor' ? 'block' : 'none';
-  document.getElementById("notifyAll").checked = false;
-  document.getElementById("recipientSearch").value = '';
-  populateNotifCourseFilter();
-  filterRecipientsByCourse();
-  updateRecipientBtnText();
-};
-
-async function loadInstructorsForNotif() {
-  try {
-    const snaps = await getDocs(collection(db, "instructors"));
-    allInstructorsForNotif = snaps.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(i => i.status === 'active');
-    window._allInstructorsForNotif = allInstructorsForNotif;
-    renderInstructorCheckboxListNotif();
-  } catch(e) { console.error(e); }
-}
-
-function renderInstructorCheckboxListNotif() {
-  const el = document.getElementById("instructorCheckboxListNotif");
-  if (!el) return;
-  el.innerHTML = allInstructorsForNotif.length === 0
-    ? '<div style="padding:8px; color:var(--text-muted); font-size:12px;">No instructors yet.</div>'
-    : allInstructorsForNotif.map(i => {
-        const name = `${i.firstName || ''} ${i.lastName || ''}`.trim() || i.email;
-        let courses = i.assignedCourses || [];
-        if (courses && typeof courses === 'object' && !Array.isArray(courses)) courses = Object.values(courses);
-        return `<label class="notif-instructor-row" data-courses='${JSON.stringify(courses).replace(/'/g, "&#39;")}' style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
-          <input type="checkbox" value="${i.id}" style="accent-color:var(--gold);" onchange="updateRecipientBtnText()" />
-          <span>${escapeHtml(name)}</span>
-        </label>`;
-      }).join('');
-}
-
-async function populateNotifCourseFilter() {
-  const sel = document.getElementById("notifCourseFilter");
-  if (!sel) return;
-  let courses = window._allCourses;
-  if (!courses || !courses.length) {
-    try {
-      const snaps = await getDocs(collection(db, "courses"));
-      courses = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
-      window._allCourses = courses;
-    } catch(e) { courses = []; }
-  }
-  const names = [...new Set(courses.map(c => c.name || c.title).filter(Boolean))];
-  const current = sel.value;
-  sel.innerHTML = '<option value="">All courses</option>' +
-    names.map(n => `<option value="${escapeHtml(n)}" ${current === n ? 'selected' : ''}>${escapeHtml(n)}</option>`).join('');
-}
-
-window.filterRecipientsByCourse = function() {
-  const course = document.getElementById("notifCourseFilter").value;
-  if (notifRecipientType === 'student') {
-    document.querySelectorAll('#studentCheckboxList label').forEach(label => {
-      const cb = label.querySelector('input[type=checkbox]');
-      const student = allStudents.find(s => s.id === cb?.value);
-      const match = !course || (student && (student.courseType === course || (student.courseTypes || []).includes(course)));
-      label.style.display = match ? 'flex' : 'none';
-    });
-  } else {
-    document.querySelectorAll('#instructorCheckboxListNotif label').forEach(label => {
-      let courses = [];
-      try { courses = JSON.parse(label.dataset.courses || '[]'); } catch(e) {}
-      const match = !course || courses.includes(course);
-      label.style.display = match ? 'flex' : 'none';
-    });
+    
+    await Promise.all(batch);
+    showToast(`Sent to ${total} recipient${total > 1 ? 's' : ''} ✓`, "success");
+    document.getElementById("notifMessage").value = "";
+    await loadNotifications();
+  } catch (e) {
+    console.error(e);
+    showToast("Send failed. Try again.", "error");
   }
 };
 
-window.toggleAllRecipients = function(allCheckbox) {
-  const isChecked = allCheckbox.checked;
-  const containerId = notifRecipientType === 'student' ? 'studentCheckboxList' : 'instructorCheckboxListNotif';
-  document.querySelectorAll(`#${containerId} label`).forEach(label => {
-    if (label.style.display === 'none') return; // skip filtered-out entries
-    const cb = label.querySelector('input[type=checkbox]');
-    if (cb) cb.checked = isChecked;
-  });
-  updateRecipientBtnText();
-};
-
-function updateRecipientBtnText() {
-  const allChecked = document.getElementById("notifyAll").checked;
-  const containerId = notifRecipientType === 'student' ? 'studentCheckboxList' : 'instructorCheckboxListNotif';
-  const checkboxes = document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`);
-  const selectedCount = checkboxes.length;
-  const btnText = document.getElementById("recipientBtnText");
-  const noun = notifRecipientType === 'student' ? 'student' : 'instructor';
-  if (selectedCount === 0) {
-    btnText.textContent = `Select ${noun}s…`;
-  } else {
-    btnText.textContent = `${selectedCount} ${noun}${selectedCount > 1 ? 's' : ''} selected`;
-  }
-}
-
-window.filterRecipientStudents = function() {
-  filterRecipientsByCourse();
-  const term = document.getElementById("recipientSearch").value.toLowerCase();
-  const containerId = notifRecipientType === 'student' ? 'studentCheckboxList' : 'instructorCheckboxListNotif';
-  document.querySelectorAll(`#${containerId} label`).forEach(label => {
-    if (label.style.display === 'none') return; // already excluded by course filter
-    const text = label.textContent.toLowerCase();
-    if (!text.includes(term)) label.style.display = 'none';
-  });
-};
 
     window.handleLogout = async function() {
     await signOut(auth);
@@ -6206,6 +6422,7 @@ window.filterRecipientStudents = function() {
       document.getElementById("newInstrEmail").value = '';
       document.getElementById("newInstrPhone").value = '';
       document.getElementById("newInstrDob").value = '';
+      document.getElementById("newInstrBranch").value = '';
       document.getElementById("newInstrGhFront").value = '';
       document.getElementById("newInstrGhBack").value = '';
       // Clear previews
@@ -6256,6 +6473,7 @@ window.filterRecipientStudents = function() {
       const email = document.getElementById("newInstrEmail").value.trim();
       const phone = document.getElementById("newInstrPhone").value.trim();
       const dob   = document.getElementById("newInstrDob").value;
+      const branch = document.getElementById("newInstrBranch").value;
       const qual  = document.getElementById("newInstrQual").value.trim();
       const cert  = document.getElementById("newInstrCert").value.trim();
       const exp   = document.getElementById("newInstrExp").value.trim();
@@ -6318,6 +6536,7 @@ window.filterRecipientStudents = function() {
           email,
           phone,
           dob: dob || null,
+          branch: branch || null,
           ghCardFront: ghFrontUrl,
           ghCardBack: ghBackUrl,
           qualifications: qual,
@@ -6388,6 +6607,16 @@ window.filterRecipientStudents = function() {
     } catch(e) { console.error(e); }
   }
 
+  async function loadInstructorsForNotif() {
+  try {
+    const snaps = await getDocs(collection(db, "instructors"));
+    window._allInstructorsForNotif = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) {
+    console.error("Failed to load instructors for notifications:", e);
+    window._allInstructorsForNotif = [];
+  }
+}
+
   function renderPendingInstructorTable(pending) {
     const card = document.getElementById("pendingInstructorCard");
     const tbody = document.getElementById("pendingInstructorTableBody");
@@ -6408,6 +6637,7 @@ window.filterRecipientStudents = function() {
           <div style="font-size:11px;color:var(--text-muted)">${i.email || ''}</div>
         </td>
         <td style="font-size:12px;color:var(--text-muted)">${i.qualifications || '—'}</td>
+        <td>${i.branch ? `<span class="stage-pill"><i class="fas fa-map-marker-alt" style="font-size:10px"></i> ${escapeHtml(i.branch)}</span>` : '—'}</td>
         <td style="color:var(--text-muted)">${i.experience || '—'} yrs</td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-icon btn-outline" title="View details" onclick="openInstructorDetail('${i.id}')"><i class="fas fa-eye"></i></button>
@@ -6431,6 +6661,7 @@ window.filterRecipientStudents = function() {
       return `<tr>
         <td><div style="font-weight:600">${i.firstName || ''} ${i.lastName || ''}</div></td>
         <td style="color:var(--text-muted)">${email}</td>
+        <td>${i.branch ? `<span class="stage-pill"><i class="fas fa-map-marker-alt" style="font-size:10px"></i> ${escapeHtml(i.branch)}</span>` : '—'}</td>
         <td style="color:var(--text-muted)">${i.experience || '—'} yrs</td>
         <td>${pill}</td>
         <td style="display:flex;gap:6px;">
@@ -6497,6 +6728,16 @@ window.filterRecipientStudents = function() {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div><label class="form-label">Date of birth</label><input type="date" id="editDob" class="form-input" value="${i.dob || ''}" /></div>
           <div><label class="form-label">Years of experience</label><input type="number" id="editExperience" class="form-input" value="${i.experience || 0}" min="0" /></div>
+        </div>
+        <div style="margin-top:12px;">
+          <label class="form-label">Branch</label>
+          <select id="editInstrBranch" class="form-select">
+            <option value="">Select branch…</option>
+            <option value="Ablekuma" ${i.branch === 'Ablekuma' ? 'selected' : ''}>Ablekuma</option>
+            <option value="Adenta" ${i.branch === 'Adenta' ? 'selected' : ''}>Adenta</option>
+            <option value="Amasaman" ${i.branch === 'Amasaman' ? 'selected' : ''}>Amasaman</option>
+            <option value="Dansoman" ${i.branch === 'Dansoman' ? 'selected' : ''}>Dansoman</option>
+          </select>
         </div>
       </div>
 
@@ -6606,6 +6847,7 @@ window.filterRecipientStudents = function() {
       const phone = document.getElementById("editPhone")?.value.trim();
       const ghanaCardNumber = document.getElementById("editGhCardNumber")?.value.trim();
       const dob = document.getElementById("editDob")?.value;
+      const branch = document.getElementById("editInstrBranch")?.value || null;
       const qualifications = document.getElementById("editQualifications")?.value.trim();
 
       const experience = parseInt(document.getElementById("editExperience")?.value) || 0;
@@ -6661,7 +6903,7 @@ window.filterRecipientStudents = function() {
 
       try {
         await updateDoc(doc(db, "instructors", currentInstructorUid), {
-          firstName, lastName, phone, ghanaCardNumber, dob,
+          firstName, lastName, phone, ghanaCardNumber, dob, branch,
           qualifications, experience,
           guarantor, references,
           assignedCourses: assignedCourses,
@@ -7134,32 +7376,6 @@ window.filterRecipientStudents = function() {
   let allVehicles = [];
   const VEHICLE_IMAGE_PRESET = "vehicle_images_upload"; // create this unsigned Cloudinary preset
 
-  // ── CHECK IF VEHICLE IS CURRENTLY BUSY (based on live class time) ──
-  function isVehicleCurrentlyBusy(vehicleId) {
-    const now = new Date();
-    return (allClasses || []).some(c => {
-      if (c.vehicleId !== vehicleId) return false;
-      const { start, end } = getClassDateTimeRange(c);
-      return now >= start && now <= end;
-    });
-  }
-
-  // ── LIVE-UPDATE VEHICLE BUSY/AVAILABLE BADGES WITHOUT RELOADING ──
-  let _vehicleBusyWatcherStarted = false;
-  function refreshVehicleBusyBadges() {
-    (allVehicles || []).forEach(v => {
-      const badgeWrap = document.getElementById(`vehicleBusyBadge_${v.id}`);
-      if (!badgeWrap) return;
-      const isBusy = isVehicleCurrentlyBusy(v.id);
-      badgeWrap.innerHTML = `<span class="pill" style="font-size:10px; background:${isBusy ? 'rgba(239,83,80,0.15)' : 'rgba(76,175,80,0.15)'}; color:${isBusy ? 'var(--error)' : 'var(--success)'};">${isBusy ? 'Busy' : 'Available'}</span>`;
-    });
-  }
-  function startVehicleBusyWatcher() {
-    if (_vehicleBusyWatcherStarted) return;
-    _vehicleBusyWatcherStarted = true;
-    setInterval(refreshVehicleBusyBadges, 15000);
-  }
-
   async function loadVehicles() {
     const grid = document.getElementById("vehiclesGrid");
     if (!grid) return;
@@ -7173,10 +7389,12 @@ window.filterRecipientStudents = function() {
         return;
       }
       grid.innerHTML = allVehicles.map(v => {
-        const isBusy = isVehicleCurrentlyBusy(v.id);
+        // Check if this vehicle is assigned to any class
+        const busyClasses = (allClasses || []).filter(c => c.vehicleId === v.id);
+        const isBusy = busyClasses.length > 0;
         return `
         <div class="stat-card" style="padding:0;overflow:hidden;position:relative;">
-          <div id="vehicleBusyBadge_${v.id}" style="position:absolute;top:10px;right:10px;z-index:10;"><span class="pill" style="font-size:10px; background:${isBusy ? 'rgba(239,83,80,0.15)' : 'rgba(76,175,80,0.15)'}; color:${isBusy ? 'var(--error)' : 'var(--success)'};">${isBusy ? 'Busy' : 'Available'}</span></div>
+          ${isBusy ? `<div style="position:absolute;top:10px;right:10px;z-index:10;"><span class="pill" style="font-size:10px; background:rgba(239,83,80,0.15); color:var(--error);">Busy</span></div>` : ''}
           <div style="width:100%;aspect-ratio:16/9;background:var(--navy);${v.imageUrl ? `background-image:url(${v.imageUrl});background-size:cover;background-position:center;` : 'display:flex;align-items:center;justify-content:center;'}">
             ${v.imageUrl ? '' : '<i class="fas fa-car" style="font-size:32px;color:var(--border);"></i>'}
           </div>
@@ -7191,7 +7409,6 @@ window.filterRecipientStudents = function() {
           </div>
         </div>`;
       }).join('');
-      startVehicleBusyWatcher();
     } catch(e) {
       console.error(e);
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load vehicles.</div>';
@@ -8669,9 +8886,6 @@ window.showBusyResources = showBusyResources;
   // ══════════════════════════════════════
   let allAdminResources = [];
   let filteredAdminResources = [];
-  let allAdminLessonResources = [];
-  let filteredAdminLessonResources = [];
-  let currentResourceTab = 'classes';
 
   function getFileIcon(ext) {
     if (ext === 'pdf') return { icon: 'fa-file-pdf', color: '#EF5350', bg: 'rgba(239,83,80,0.1)' };
@@ -8702,25 +8916,16 @@ window.showBusyResources = showBusyResources;
           return db2 - da;
         });
 
-      // Get all lesson videos (Cloudinary-hosted)
-      if (!window._allLessons || !window._allLessons.length) { await loadLessons(); }
-      allAdminLessonResources = [...(window._allLessons || [])].sort((a, b) => {
-        return (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0);
-      });
-
-      // Populate course filter (from both class documents and lesson folders)
+      // Populate course filter
       const courseFilter = document.getElementById("resourceCourseFilter");
       if (courseFilter) {
-        const classCourses = allAdminResources.map(c => c.courseName).filter(Boolean);
-        const lessonCourses = allAdminLessonResources.map(l => courseFromFolderPath(l.folder || '')).filter(Boolean);
-        const courses = [...new Set([...classCourses, ...lessonCourses])];
+        const courses = [...new Set(allAdminResources.map(c => c.courseName).filter(Boolean))];
         const currentVal = courseFilter.value;
         courseFilter.innerHTML = '<option value="">All courses</option>' +
           courses.map(c => `<option value="${escapeHtml(c)}" ${currentVal === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('');
       }
 
       filteredAdminResources = [...allAdminResources];
-      filteredAdminLessonResources = [...allAdminLessonResources];
       renderAdminResources(filteredAdminResources);
     } catch(e) {
       console.error("Error loading resources:", e);
@@ -8730,9 +8935,8 @@ window.showBusyResources = showBusyResources;
 
   function renderAdminResources(resources) {
   const container = document.getElementById("adminResourcesContainer");
-  const lessonsCheck = filteredAdminLessonResources || [];
-  if (!resources.length && !lessonsCheck.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No resources found.</div>';
+  if (!resources.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No class documents found.</div>';
     return;
   }
 
@@ -8744,7 +8948,7 @@ window.showBusyResources = showBusyResources;
     grouped[course].push(cls);
   });
 
-  const classesHtml = Object.entries(grouped).map(([course, classes]) => {
+  container.innerHTML = Object.entries(grouped).map(([course, classes]) => {
     const totalDocs = classes.reduce((sum, cls) => sum + cls.documents.length, 0);
     return `
       <div class="card" style="margin-bottom:20px;">
@@ -8797,69 +9001,7 @@ window.showBusyResources = showBusyResources;
       </div>
     `;
   }).join('');
-
-  const lessonsForRender = filteredAdminLessonResources || [];
-  const lessonsByFolder = {};
-  lessonsForRender.forEach(l => {
-    const folder = l.folder || 'Uncategorized';
-    if (!lessonsByFolder[folder]) lessonsByFolder[folder] = [];
-    lessonsByFolder[folder].push(l);
-  });
-  const lessonsHtml = lessonsForRender.length ? `
-    <div class="card" style="margin-bottom:20px;">
-      <div class="card-header">
-        <div class="card-title">
-          <i class="fas fa-video" style="color:var(--gold);"></i>
-          Lesson Videos
-          <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;">${lessonsForRender.length} video${lessonsForRender.length > 1 ? 's' : ''}</span>
-        </div>
-      </div>
-      <div style="overflow-x:auto;">
-        <table class="data-table">
-          <thead>
-            <tr><th>Thumbnail</th><th>Title</th><th>Folder</th><th>Category</th><th>Duration</th><th>Uploaded</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            ${Object.entries(lessonsByFolder).map(([folder, vids]) => vids.map(l => {
-              const uploaded = l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString('en-GB') : '—';
-              const thumb = l.thumbnailUrl
-                ? `<img src="${l.thumbnailUrl}" style="width:56px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);" />`
-                : `<div style="width:56px;height:36px;border-radius:6px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);"><i class="fas fa-play" style="font-size:12px;"></i></div>`;
-              return `<tr>
-                <td>${thumb}</td>
-                <td><div style="font-weight:600;">${escapeHtml(l.title || 'Untitled')}</div></td>
-                <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(folder)}</td>
-                <td><span class="stage-pill">${escapeHtml(l.category || 'Theory')}</span></td>
-                <td style="color:var(--text-muted);">${escapeHtml(l.duration || '—')}</td>
-                <td style="color:var(--text-muted);font-size:12px;">${uploaded}</td>
-                <td>
-                  ${l.videoUrl ? `<button class="btn btn-icon btn-outline" title="Open video" onclick="window.open('${l.videoUrl}', '_blank')"><i class="fas fa-play"></i></button>` : ''}
-                  <button class="btn btn-icon btn-outline" title="View details" onclick="openViewLessonResourceModal('${l.id}')"><i class="fas fa-eye"></i></button>
-                </td>
-              </tr>`;
-            }).join('')).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  ` : '';
-
-  container.innerHTML =
-    `<div id="resourceClassesSection" style="display:${currentResourceTab === 'classes' ? 'block' : 'none'};">${classesHtml || '<div style="text-align:center;color:var(--text-muted);padding:40px;">No class attachments found.</div>'}</div>` +
-    `<div id="resourceLessonsSection" style="display:${currentResourceTab === 'lessons' ? 'block' : 'none'};">${lessonsHtml || '<div style="text-align:center;color:var(--text-muted);padding:40px;">No lesson videos found.</div>'}</div>`;
 }
-
-window.switchResourceTab = function(tab) {
-  currentResourceTab = tab;
-  const classesBtn = document.getElementById("tabResourceClasses");
-  const lessonsBtn = document.getElementById("tabResourceLessons");
-  if (classesBtn) classesBtn.className = tab === 'classes' ? 'btn btn-gold' : 'btn btn-outline';
-  if (lessonsBtn) lessonsBtn.className = tab === 'lessons' ? 'btn btn-gold' : 'btn btn-outline';
-  const classesSection = document.getElementById("resourceClassesSection");
-  const lessonsSection = document.getElementById("resourceLessonsSection");
-  if (classesSection) classesSection.style.display = tab === 'classes' ? 'block' : 'none';
-  if (lessonsSection) lessonsSection.style.display = tab === 'lessons' ? 'block' : 'none';
-};
 
   window.filterResources = function() {
     const search = document.getElementById("resourceSearch")?.value.toLowerCase() || '';
@@ -8867,12 +9009,6 @@ window.switchResourceTab = function(tab) {
     filteredAdminResources = allAdminResources.filter(cls => {
       const matchSearch = !search || cls.title?.toLowerCase().includes(search) || cls.courseName?.toLowerCase().includes(search) || cls.instructorName?.toLowerCase().includes(search);
       const matchCourse = !course || cls.courseName === course;
-      return matchSearch && matchCourse;
-    });
-    filteredAdminLessonResources = allAdminLessonResources.filter(l => {
-      const folderCourse = courseFromFolderPath(l.folder || '');
-      const matchSearch = !search || (l.title || '').toLowerCase().includes(search) || (l.folder || '').toLowerCase().includes(search) || (l.category || '').toLowerCase().includes(search);
-      const matchCourse = !course || folderCourse === course;
       return matchSearch && matchCourse;
     });
     renderAdminResources(filteredAdminResources);
@@ -9164,6 +9300,26 @@ window.switchResourceTab = function(tab) {
   window.__toggleSidebar = toggleSidebar;
   window.__openModal     = openModal;
   window.__closeModal    = closeModal;
+
+  // ── MOBILE BOTTOM NAV / SHEET ──
+  window.switchMobileTab = function(name, btn) {
+    document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    showPage(name, null);
+  };
+  window.toggleMobileMoreMenu = function() {
+    document.getElementById('mobileMoreOverlay').classList.add('open');
+    document.getElementById('mobileMoreSheet').classList.add('open');
+  };
+  window.closeMobileMoreMenu = function() {
+    document.getElementById('mobileMoreOverlay').classList.remove('open');
+    document.getElementById('mobileMoreSheet').classList.remove('open');
+  };
+  window.navigateFromMore = function(name) {
+    closeMobileMoreMenu();
+    document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+    showPage(name, null);
+  };
 
   // Close modals on overlay click
   document.querySelectorAll(".modal-overlay").forEach(overlay => {

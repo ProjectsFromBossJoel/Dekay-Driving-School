@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Instructor Registration | Dekay Driving School</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="img/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="img/favicon_io/favicon-16x16.png">
+  <link rel="manifest" href="img/favicon_io/site.webmanifest">
+
   <meta name="description" content="Apply to become an instructor at Dekay Driving School." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -346,6 +351,21 @@
         <div class="input-wrap">
           <i class="fas fa-id-card input-icon"></i>
           <input type="text" id="ghanaCardNumber" class="form-input" placeholder="GHA-XXXXXXXXXX" />
+        </div>
+      </div>
+
+      <!-- Branch -->
+      <div class="form-group">
+        <label class="form-label">Branch <span>*</span></label>
+        <div class="input-wrap">
+          <i class="fas fa-map-marker-alt input-icon"></i>
+          <select id="branch" class="form-select">
+            <option value="">Select branch…</option>
+            <option value="Ablekuma">Ablekuma</option>
+            <option value="Adenta">Adenta</option>
+            <option value="Amasaman">Amasaman</option>
+            <option value="Dansoman">Dansoman</option>
+          </select>
         </div>
       </div>
 
@@ -698,6 +718,7 @@
       const phone           = document.getElementById("phone").value.trim();
       const dob             = document.getElementById("dob").value;
       const ghanaCardNumber = document.getElementById("ghanaCardNumber").value.trim();
+      const branch           = document.getElementById("branch").value;
       const profileFile     = document.getElementById("profilePhoto").files[0];
       const qualifications  = document.getElementById("qualifications").value.trim();
       // certifications will be collected from dynamic rows
@@ -716,7 +737,7 @@
 
       setError("");
 
-      if (!firstName || !lastName || !email || !phone || !dob || !qualifications || !experience || !guarantorName || !guarantorEmail || !guarantorPhone || !ref1Name || !password || !profileFile) {
+      if (!firstName || !lastName || !email || !phone || !dob || !branch || !qualifications || !experience || !guarantorName || !guarantorEmail || !guarantorPhone || !ref1Name || !password || !profileFile) {
         setError("Please fill in all required fields.");
         return;
       }
@@ -789,6 +810,7 @@
           phone,
           dob,
           ghanaCardNumber: ghanaCardNumber,
+          branch: branch,
           profilePhoto: profilePhotoUrl,   // <-- new field
           qualifications,
           certifications: certResults,
@@ -814,6 +836,7 @@
         document.querySelectorAll(".form-input, .form-select").forEach(el => el.value = "");
         document.getElementById("dob").value = "";
         document.getElementById("ghanaCardNumber").value = "";
+        document.getElementById("branch").value = "";
         document.getElementById("profilePhoto").value = "";
         document.getElementById("profilePreview").style.display = "none";
         document.getElementById("profileUploadText").textContent = "Tap to upload passport picture";

@@ -2,13 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- To further prevent any cached page from being shown before the auth guard runs -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
   <title>Admin Dashboard | Dekay Driving School</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon_io/favicon-16x16.png">
+  <link rel="manifest" href="../img/favicon_io/site.webmanifest">
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -546,87 +551,6 @@
       .stat-grid { grid-template-columns: 1fr 1fr; }
       .form-row { grid-template-columns: 1fr; }
     }
-
-    /* ── MOBILE BOTTOM NAV ── */
-    .mobile-bottom-nav { display: none; }
-    .mobile-more-overlay { display: none; }
-    .mobile-more-sheet { display: none; }
-
-    @media (max-width: 900px) {
-      .sidebar { display: none !important; }
-      .main { margin-left: 0 !important; padding-bottom: 88px !important; }
-      .hamburger-btn { display: none !important; }
-      .admin-chip { display: none; }
-
-
-      /* Stat cards responsive vertical stacking */
-      .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-      .form-row { grid-template-columns: 1fr; }
-      .page { padding: 20px 18px 28px; }
-      .stat-card { padding: 18px 16px; }
-      .card-header { padding: 16px 18px; }
-      .card-body { padding: 18px; }
-      .page-title { font-size: 20px; }
-      .page-header { margin-bottom: 20px; }
-
-      .mobile-bottom-nav {
-        display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 68px;
-        background: rgba(18,34,63,0.96); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-        border-top: 1px solid var(--border); justify-content: space-around; align-items: center;
-        z-index: 990; box-shadow: 0 -4px 20px rgba(0,0,0,0.4); padding-bottom: env(safe-area-inset-bottom);
-        padding-top: 4px;
-      }
-      .mobile-nav-item {
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-        background: transparent; border: none; color: var(--text-muted); font-size: 10px; font-weight: 500;
-        cursor: pointer; width: 20%; height: 100%; font-family: 'Inter', sans-serif;
-        transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; position: relative;
-      }
-      .mobile-nav-item i { font-size: 19px; transition: transform 0.2s ease, color 0.2s ease; }
-      .mobile-nav-item span { font-size: 10px; letter-spacing: 0.2px; }
-      .mobile-nav-item.active { color: var(--gold); font-weight: 700; }
-      .mobile-nav-item.active i { transform: translateY(-2px); color: var(--gold); }
-      .mobile-nav-item.active::before {
-        content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 3px;
-        background: var(--gold); border-radius: 0 0 3px 3px;
-      }
-      .mobile-nav-dot {
-        position: absolute; top: 6px; right: 22%; width: 8px; height: 8px; border-radius: 50%;
-        background: var(--error); display: none;
-      }
-      .mobile-nav-dot.show { display: block; }
-
-      .mobile-more-overlay {
-        display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
-        z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-      }
-      .mobile-more-overlay.open { opacity: 1; pointer-events: auto; }
-      .mobile-more-sheet {
-        display: block; position: fixed; bottom: -100%; left: 0; right: 0; background: var(--navy-mid);
-        border-top-left-radius: 24px; border-top-right-radius: 24px; border-top: 1px solid var(--border);
-        padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); z-index: 1001;
-        transition: bottom 0.35s cubic-bezier(0.1,0.9,0.2,1); max-height: 80vh; overflow-y: auto;
-        box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
-      }
-      .mobile-more-sheet.open { bottom: 0; }
-      .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; margin: 0 auto 18px; }
-      .sheet-title { font-size: 12px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; text-align: center; }
-      .sheet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 10px; }
-      .sheet-item {
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-        padding: 16px 8px; background: var(--navy); border: 1px solid var(--border-subtle); border-radius: var(--radius);
-        color: var(--white); font-size: 11px; font-weight: 500; text-align: center; cursor: pointer; transition: all 0.2s ease;
-      }
-      .sheet-item i { font-size: 20px; color: var(--gold); }
-      .sheet-item:active { background: rgba(245,166,35,0.15); border-color: var(--gold); transform: scale(0.97); }
-      .sheet-item.logout { border-color: rgba(239,83,80,0.3); }
-      .sheet-item.logout i { color: var(--error); }
-    }
-
-    @media (max-width: 500px) {
-      .sheet-grid { grid-template-columns: repeat(2, 1fr); }
-      .toast { left: 16px; right: 16px; max-width: none; bottom: 80px; }
-    }
   </style>
 </head>
 <body>
@@ -684,10 +608,7 @@
       </div>
       <div class="topbar-right">
         <div class="admin-chip"><i class="fas fa-shield-alt"></i> <span id="adminName">Admin</span></div>
-        <button class="icon-btn" style="position:relative;" onclick="showPage('notifications', null)">
-          <i class="fas fa-bell"></i>
-          <span id="topbarNotifDot" style="display:none; position:absolute; top:5px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--error); border:1.5px solid var(--navy-mid);"></span>
-        </button>
+        <button class="icon-btn" onclick="showPage('notifications', null)"><i class="fas fa-bell"></i></button>
         <div class="avatar-btn" id="adminAvatarTopBtn" onclick="showPage('settings', null)" title="Admin Profile"></div>
       </div>
     </header>
@@ -781,9 +702,9 @@
         </div>
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead><tr><th>Instructor</th><th>Qualifications</th><th>Experience</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Instructor</th><th>Qualifications</th><th>Branch</th><th>Experience</th><th>Actions</th></tr></thead>
             <tbody id="pendingInstructorTableBody">
-              <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:28px;">No pending instructors.</td></tr>
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px;">No pending instructors.</td></tr>
             </tbody>
           </table>
         </div>
@@ -793,9 +714,9 @@
       <div class="card">
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead><tr><th>Instructor</th><th>Email</th><th>Experience</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Instructor</th><th>Email</th><th>Branch</th><th>Experience</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="instructorsTable">
-              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">Loading instructors…</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading instructors…</td></tr>
             </tbody>
           </table>
         </div>
@@ -821,6 +742,16 @@
             <div class="form-group"><label class="form-label">Phone <span>*</span></label><input type="tel" id="newInstrPhone" class="form-input" placeholder="024 000 0000" /></div>
           </div>
           <div class="form-group"><label class="form-label">Date of birth</label><input type="date" id="newInstrDob" class="form-input" /></div>
+          <div class="form-group">
+            <label class="form-label">Branch <span>*</span></label>
+            <select id="newInstrBranch" class="form-select">
+              <option value="">Select branch…</option>
+              <option value="Ablekuma">Ablekuma</option>
+              <option value="Adenta">Adenta</option>
+              <option value="Amasaman">Amasaman</option>
+              <option value="Dansoman">Dansoman</option>
+            </select>
+          </div>
 
           <!-- Ghana Card Uploads -->
           <div class="bio-section"><div class="bio-section-title">Ghana Card <span style="font-weight:normal;color:var(--text-muted);">(optional)</span></div></div>
@@ -963,7 +894,7 @@
         <div style="overflow-x:auto">
           <table class="data-table">
             <thead>
-      <tr><th>Student</th><th>Course</th><th>Stage</th><th>GH Card</th><th>Attendance</th><th>Enrolled</th><th>Status</th><th>Actions</th></tr>
+      <tr><th>Student</th><th>Course</th><th>Stage</th><th>GH Card</th><th>Branch</th><th>Attendance</th><th>Enrolled</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody id="studentsTable">
               <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Loading students…</td></tr>
@@ -2048,15 +1979,6 @@
         <div class="page-sub">View all course documents and materials uploaded with classes.</div>
       </div>
 
-      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-        <button class="btn btn-gold" id="tabResourceClasses" onclick="switchResourceTab('classes')" style="min-width:160px; justify-content:center;">
-          <i class="fas fa-paperclip"></i> Class Attachments
-        </button>
-        <button class="btn btn-outline" id="tabResourceLessons" onclick="switchResourceTab('lessons')" style="min-width:160px; justify-content:center;">
-          <i class="fas fa-video"></i> Lesson Videos
-        </button>
-      </div>
-
       <div class="filter-bar">
         <div class="search-input-wrap">
           <i class="fas fa-search search-icon"></i>
@@ -2312,46 +2234,6 @@
     </div>
 
   </div><!-- end main -->
-
-  <!-- MOBILE APP BOTTOM NAVIGATION BAR -->
-  <nav class="mobile-bottom-nav">
-    <button class="mobile-nav-item active" data-page="overview" onclick="mobileSelectTab('overview')">
-      <i class="fas fa-th-large"></i><span>Overview</span>
-    </button>
-    <button class="mobile-nav-item" data-page="students" onclick="mobileSelectTab('students')">
-      <i class="fas fa-users"></i><span>Students</span>
-    </button>
-    <button class="mobile-nav-item" data-page="instructors" onclick="mobileSelectTab('instructors')">
-      <i class="fas fa-chalkboard-teacher"></i><span>Instructors</span>
-    </button>
-    <button class="mobile-nav-item" data-page="classes" onclick="mobileSelectTab('classes')">
-      <i class="fas fa-chalkboard"></i><span>Classes</span>
-    </button>
-    <button class="mobile-nav-item" id="mobileMoreBtn" onclick="toggleMobileMoreSheet()">
-      <i class="fas fa-ellipsis-h"></i><span>More</span>
-      <span class="mobile-nav-dot" id="mobileMoreDot"></span>
-    </button>
-  </nav>
-
-  <div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="closeMobileMoreSheet()"></div>
-  <div class="mobile-more-sheet" id="mobileMoreSheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">More Options</div>
-    <div class="sheet-grid">
-      <div class="sheet-item" onclick="mobileMoreNavigate('attendance')"><i class="fas fa-calendar-check"></i><span>Attendance</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('lessons')"><i class="fas fa-play-circle"></i><span>Lessons</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('quizzes')"><i class="fas fa-tasks"></i><span>Quizzes</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('courses')"><i class="fas fa-book"></i><span>Courses</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('vehicles')"><i class="fas fa-car-side"></i><span>Vehicles</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('resources')"><i class="fas fa-folder-open"></i><span>Resources</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('certificates')"><i class="fas fa-certificate"></i><span>Certificates</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('notifications')"><i class="fas fa-bell"></i><span>Notifs</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('enquiries')"><i class="fas fa-headset"></i><span>Enquiries</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('permissions')"><i class="fas fa-shield-alt"></i><span>Permissions</span></div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('settings')"><i class="fas fa-cog"></i><span>Settings</span></div>
-      <div class="sheet-item logout" onclick="closeMobileMoreSheet(); handleLogout();"><i class="fas fa-sign-out-alt"></i><span>Sign Out</span></div>
-    </div>
-  </div>
 
   <!-- ── ADD STUDENT MODAL ── -->
   <div class="modal-overlay" id="addStudentModal">
@@ -2706,22 +2588,6 @@
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeEditLessonModal()">Cancel</button>
         <button class="btn btn-gold" onclick="updateLesson()"><i class="fas fa-save"></i> Save changes</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── VIEW LESSON RESOURCE MODAL (read-only) ── -->
-  <div class="modal-overlay" id="viewLessonResourceModal">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title" id="viewLessonResourceTitle">Lesson details</div>
-        <button class="modal-close" onclick="closeModal('viewLessonResourceModal')"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body" id="viewLessonResourceBody">
-        <!-- Injected by JS -->
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeModal('viewLessonResourceModal')">Close</button>
       </div>
     </div>
   </div>
@@ -3294,18 +3160,6 @@ function hideLoading() {
   await loadInstructors();
   await loadVehicles();
   buildOverview();
-  refreshTopbarNotifDot();
-}
-
-function refreshTopbarNotifDot() {
-  const pendingStudents = document.getElementById("pendingCount")?.textContent;
-  const pendingInstructors = document.getElementById("pendingInstructorCount")?.textContent;
-  const enquiries = document.getElementById("enquiriesBadge")?.textContent;
-  const hasPending = (Number(pendingStudents) > 0) || (Number(pendingInstructors) > 0) || (Number(enquiries) > 0);
-  const dot = document.getElementById("topbarNotifDot");
-  const moreDot = document.getElementById("mobileMoreDot");
-  if (dot) dot.style.display = hasPending ? "block" : "none";
-  if (moreDot) moreDot.classList.toggle("show", hasPending);
 }
 
     async function loadStudents() {
@@ -3417,7 +3271,7 @@ function refreshTopbarNotifDot() {
         </td>
         <td><span class="stage-pill"><i class="fas fa-car" style="font-size:10px"></i> ${s.courseType || 'Manual'}</span></td>
         <td><span class="stage-pill">Stage ${s.trainingStage || 1}</span></td>
-        <td style="font-size:11px;color:var(--text-muted);">${escapeHtml(s.ghCardNumber || '—')}</td>
+        <td>${s.branch ? `<span class="stage-pill"><i class="fas fa-map-marker-alt" style="font-size:10px"></i> ${escapeHtml(s.branch)}</span>` : '—'}</td>
         <td style="color:var(--text-muted)">${s.attendanceRate || '—'}%</td>
         <td style="color:var(--text-muted);font-size:12px">${date}</td>
         <td>${pill}</td>
@@ -3455,7 +3309,7 @@ function refreshTopbarNotifDot() {
           </div>
         </td>
         <td><span class="stage-pill"><i class="fas fa-car" style="font-size:10px"></i> ${s.courseType || 'Manual'}</span></td>
-        <td style="font-size:11px;color:var(--text-muted);">${escapeHtml(s.ghCardNumber || '—')}</td>
+        <td style="font-size:11px;color:var(--text-muted);">${escapeHtml(s.ghCardNumber || '—')}${s.branch ? `<br/><span class="stage-pill" style="margin-top:4px;"><i class="fas fa-map-marker-alt" style="font-size:9px"></i> ${escapeHtml(s.branch)}</span>` : ''}</td>
         <td style="color:var(--text-muted);font-size:12px">${date}</td>
         <td style="display:flex; gap:6px;">
           <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);" title="Approve" onclick="approveStudent('${s.id}')"><i class="fas fa-check"></i></button>
@@ -4931,6 +4785,16 @@ async function populateInstructorCheckboxes() {
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Enrolment date</label><div class="form-input" style="background:var(--navy);">${s.enrolDate || s.createdAt?.toDate?.().toLocaleDateString('en-GB') || '—'}</div></div>
+        <div class="form-group">
+          <label class="form-label">Branch</label>
+          <select id="editBranch" class="form-select">
+            <option value="">Select branch…</option>
+            <option value="Ablekuma" ${s.branch === 'Ablekuma' ? 'selected' : ''}>Ablekuma</option>
+            <option value="Adenta" ${s.branch === 'Adenta' ? 'selected' : ''}>Adenta</option>
+            <option value="Amasaman" ${s.branch === 'Amasaman' ? 'selected' : ''}>Amasaman</option>
+            <option value="Dansoman" ${s.branch === 'Dansoman' ? 'selected' : ''}>Dansoman</option>
+          </select>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -5189,6 +5053,7 @@ async function populateInstructorCheckboxes() {
     const lastName = document.getElementById("editLast").value.trim();
     const phone = document.getElementById("editPhone").value.trim();
     const ghCardNumber = document.getElementById("editGhCardNumber").value.trim();
+    const branch = document.getElementById("editBranch") ? document.getElementById("editBranch").value : '';
     const dob = document.getElementById("editDob") ? document.getElementById("editDob").value : '';
     
     // Collect checked course names
@@ -5212,7 +5077,7 @@ async function populateInstructorCheckboxes() {
       
             // Update users collection
       await updateDoc(doc(db, "users", uid), {
-        firstName, lastName, phone, ghCardNumber, dob,
+        firstName, lastName, phone, ghCardNumber, branch, dob,
         courseType, courseTypes, trainingStage,
         status, instructor: primaryInstructor, instructors
       });
@@ -5277,6 +5142,7 @@ async function populateInstructorCheckboxes() {
           lastName,
           phone,
           ghCardNumber,
+          branch,
           courseType,
           courseTypes,
           trainingStage,
@@ -6050,46 +5916,6 @@ window.approveStudent = async function(uid) {
     openModal("editLessonModal");
   };
 
-  window.openViewLessonResourceModal = function(lessonId) {
-    const lesson = (window._allLessons || []).find(l => l.id === lessonId);
-    if (!lesson) return showToast("Lesson not found.", "error");
-
-    document.getElementById("viewLessonResourceTitle").textContent = lesson.title || 'Lesson details';
-
-    const watchers = lesson.watchers || [];
-    const watchersHtml = watchers.length
-      ? [...watchers].sort((a,b) => b.pct - a.pct).map(w => {
-          const student = allStudents.find(s => s.id === w.studentId);
-          const name = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : w.studentId;
-          const pct = Math.round(w.pct);
-          const color = pct >= 80 ? 'var(--success)' : 'var(--gold)';
-          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--navy);border:1px solid var(--border);border-radius:6px;">
-            <span style="font-size:12px;">${escapeHtml(name)}</span>
-            <span style="font-size:12px;font-weight:700;color:${color};">${pct}%</span>
-          </div>`;
-        }).join('')
-      : '<div style="color:var(--text-muted);font-size:12px;">No students have started this lesson yet.</div>';
-
-    const assignedQuiz = (window._allQuizzes || []).find(q => q.id === lesson.assignedQuizId);
-    const uploaded = lesson.createdAt?.toDate ? lesson.createdAt.toDate().toLocaleDateString('en-GB') : '—';
-
-    document.getElementById("viewLessonResourceBody").innerHTML = `
-      ${lesson.videoUrl ? `<video controls style="width:100%;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;" src="${lesson.videoUrl}" poster="${lesson.thumbnailUrl || ''}"></video>` : ''}
-      <div class="detail-grid">
-        <div class="detail-label">Folder</div><div class="detail-value">${escapeHtml(lesson.folder || '—')}</div>
-        <div class="detail-label">Category</div><div class="detail-value">${escapeHtml(lesson.category || '—')}</div>
-        <div class="detail-label">Duration</div><div class="detail-value">${escapeHtml(lesson.duration || '—')}</div>
-        <div class="detail-label">Uploaded</div><div class="detail-value">${uploaded}</div>
-        <div class="detail-label">Assigned quiz</div><div class="detail-value">${assignedQuiz ? escapeHtml(assignedQuiz.title) : '—'}</div>
-        <div class="detail-label">Avg. completion</div><div class="detail-value">${lesson.avgCompletion != null ? lesson.avgCompletion + '%' : '—'}</div>
-      </div>
-      <div class="bio-section"><div class="bio-section-title">Watch Progress</div></div>
-      <div style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">${watchersHtml}</div>
-    `;
-
-    openModal("viewLessonResourceModal");
-  };
-
   window.updateLesson = async function() {
     const id       = document.getElementById("editLessonId").value;
     const title    = document.getElementById("editLessonTitle").value.trim();
@@ -6447,6 +6273,7 @@ window.approveStudent = async function(uid) {
       document.getElementById("newInstrEmail").value = '';
       document.getElementById("newInstrPhone").value = '';
       document.getElementById("newInstrDob").value = '';
+      document.getElementById("newInstrBranch").value = '';
       document.getElementById("newInstrGhFront").value = '';
       document.getElementById("newInstrGhBack").value = '';
       // Clear previews
@@ -6497,6 +6324,7 @@ window.approveStudent = async function(uid) {
       const email = document.getElementById("newInstrEmail").value.trim();
       const phone = document.getElementById("newInstrPhone").value.trim();
       const dob   = document.getElementById("newInstrDob").value;
+      const branch = document.getElementById("newInstrBranch").value;
       const qual  = document.getElementById("newInstrQual").value.trim();
       const cert  = document.getElementById("newInstrCert").value.trim();
       const exp   = document.getElementById("newInstrExp").value.trim();
@@ -6559,6 +6387,7 @@ window.approveStudent = async function(uid) {
           email,
           phone,
           dob: dob || null,
+          branch: branch || null,
           ghCardFront: ghFrontUrl,
           ghCardBack: ghBackUrl,
           qualifications: qual,
@@ -6659,6 +6488,7 @@ window.approveStudent = async function(uid) {
           <div style="font-size:11px;color:var(--text-muted)">${i.email || ''}</div>
         </td>
         <td style="font-size:12px;color:var(--text-muted)">${i.qualifications || '—'}</td>
+        <td>${i.branch ? `<span class="stage-pill"><i class="fas fa-map-marker-alt" style="font-size:10px"></i> ${escapeHtml(i.branch)}</span>` : '—'}</td>
         <td style="color:var(--text-muted)">${i.experience || '—'} yrs</td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-icon btn-outline" title="View details" onclick="openInstructorDetail('${i.id}')"><i class="fas fa-eye"></i></button>
@@ -6682,6 +6512,7 @@ window.approveStudent = async function(uid) {
       return `<tr>
         <td><div style="font-weight:600">${i.firstName || ''} ${i.lastName || ''}</div></td>
         <td style="color:var(--text-muted)">${email}</td>
+        <td>${i.branch ? `<span class="stage-pill"><i class="fas fa-map-marker-alt" style="font-size:10px"></i> ${escapeHtml(i.branch)}</span>` : '—'}</td>
         <td style="color:var(--text-muted)">${i.experience || '—'} yrs</td>
         <td>${pill}</td>
         <td style="display:flex;gap:6px;">
@@ -6748,6 +6579,16 @@ window.approveStudent = async function(uid) {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div><label class="form-label">Date of birth</label><input type="date" id="editDob" class="form-input" value="${i.dob || ''}" /></div>
           <div><label class="form-label">Years of experience</label><input type="number" id="editExperience" class="form-input" value="${i.experience || 0}" min="0" /></div>
+        </div>
+        <div style="margin-top:12px;">
+          <label class="form-label">Branch</label>
+          <select id="editInstrBranch" class="form-select">
+            <option value="">Select branch…</option>
+            <option value="Ablekuma" ${i.branch === 'Ablekuma' ? 'selected' : ''}>Ablekuma</option>
+            <option value="Adenta" ${i.branch === 'Adenta' ? 'selected' : ''}>Adenta</option>
+            <option value="Amasaman" ${i.branch === 'Amasaman' ? 'selected' : ''}>Amasaman</option>
+            <option value="Dansoman" ${i.branch === 'Dansoman' ? 'selected' : ''}>Dansoman</option>
+          </select>
         </div>
       </div>
 
@@ -6857,6 +6698,7 @@ window.approveStudent = async function(uid) {
       const phone = document.getElementById("editPhone")?.value.trim();
       const ghanaCardNumber = document.getElementById("editGhCardNumber")?.value.trim();
       const dob = document.getElementById("editDob")?.value;
+      const branch = document.getElementById("editInstrBranch")?.value || null;
       const qualifications = document.getElementById("editQualifications")?.value.trim();
 
       const experience = parseInt(document.getElementById("editExperience")?.value) || 0;
@@ -6912,7 +6754,7 @@ window.approveStudent = async function(uid) {
 
       try {
         await updateDoc(doc(db, "instructors", currentInstructorUid), {
-          firstName, lastName, phone, ghanaCardNumber, dob,
+          firstName, lastName, phone, ghanaCardNumber, dob, branch,
           qualifications, experience,
           guarantor, references,
           assignedCourses: assignedCourses,
@@ -7385,32 +7227,6 @@ window.approveStudent = async function(uid) {
   let allVehicles = [];
   const VEHICLE_IMAGE_PRESET = "vehicle_images_upload"; // create this unsigned Cloudinary preset
 
-  // ── CHECK IF VEHICLE IS CURRENTLY BUSY (based on live class time) ──
-  function isVehicleCurrentlyBusy(vehicleId) {
-    const now = new Date();
-    return (allClasses || []).some(c => {
-      if (c.vehicleId !== vehicleId) return false;
-      const { start, end } = getClassDateTimeRange(c);
-      return now >= start && now <= end;
-    });
-  }
-
-  // ── LIVE-UPDATE VEHICLE BUSY/AVAILABLE BADGES WITHOUT RELOADING ──
-  let _vehicleBusyWatcherStarted = false;
-  function refreshVehicleBusyBadges() {
-    (allVehicles || []).forEach(v => {
-      const badgeWrap = document.getElementById(`vehicleBusyBadge_${v.id}`);
-      if (!badgeWrap) return;
-      const isBusy = isVehicleCurrentlyBusy(v.id);
-      badgeWrap.innerHTML = `<span class="pill" style="font-size:10px; background:${isBusy ? 'rgba(239,83,80,0.15)' : 'rgba(76,175,80,0.15)'}; color:${isBusy ? 'var(--error)' : 'var(--success)'};">${isBusy ? 'Busy' : 'Available'}</span>`;
-    });
-  }
-  function startVehicleBusyWatcher() {
-    if (_vehicleBusyWatcherStarted) return;
-    _vehicleBusyWatcherStarted = true;
-    setInterval(refreshVehicleBusyBadges, 15000);
-  }
-
   async function loadVehicles() {
     const grid = document.getElementById("vehiclesGrid");
     if (!grid) return;
@@ -7424,10 +7240,12 @@ window.approveStudent = async function(uid) {
         return;
       }
       grid.innerHTML = allVehicles.map(v => {
-        const isBusy = isVehicleCurrentlyBusy(v.id);
+        // Check if this vehicle is assigned to any class
+        const busyClasses = (allClasses || []).filter(c => c.vehicleId === v.id);
+        const isBusy = busyClasses.length > 0;
         return `
         <div class="stat-card" style="padding:0;overflow:hidden;position:relative;">
-          <div id="vehicleBusyBadge_${v.id}" style="position:absolute;top:10px;right:10px;z-index:10;"><span class="pill" style="font-size:10px; background:${isBusy ? 'rgba(239,83,80,0.15)' : 'rgba(76,175,80,0.15)'}; color:${isBusy ? 'var(--error)' : 'var(--success)'};">${isBusy ? 'Busy' : 'Available'}</span></div>
+          ${isBusy ? `<div style="position:absolute;top:10px;right:10px;z-index:10;"><span class="pill" style="font-size:10px; background:rgba(239,83,80,0.15); color:var(--error);">Busy</span></div>` : ''}
           <div style="width:100%;aspect-ratio:16/9;background:var(--navy);${v.imageUrl ? `background-image:url(${v.imageUrl});background-size:cover;background-position:center;` : 'display:flex;align-items:center;justify-content:center;'}">
             ${v.imageUrl ? '' : '<i class="fas fa-car" style="font-size:32px;color:var(--border);"></i>'}
           </div>
@@ -7442,7 +7260,6 @@ window.approveStudent = async function(uid) {
           </div>
         </div>`;
       }).join('');
-      startVehicleBusyWatcher();
     } catch(e) {
       console.error(e);
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load vehicles.</div>';
@@ -8920,9 +8737,6 @@ window.showBusyResources = showBusyResources;
   // ══════════════════════════════════════
   let allAdminResources = [];
   let filteredAdminResources = [];
-  let allAdminLessonResources = [];
-  let filteredAdminLessonResources = [];
-  let currentResourceTab = 'classes';
 
   function getFileIcon(ext) {
     if (ext === 'pdf') return { icon: 'fa-file-pdf', color: '#EF5350', bg: 'rgba(239,83,80,0.1)' };
@@ -8953,25 +8767,16 @@ window.showBusyResources = showBusyResources;
           return db2 - da;
         });
 
-      // Get all lesson videos (Cloudinary-hosted)
-      if (!window._allLessons || !window._allLessons.length) { await loadLessons(); }
-      allAdminLessonResources = [...(window._allLessons || [])].sort((a, b) => {
-        return (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0);
-      });
-
-      // Populate course filter (from both class documents and lesson folders)
+      // Populate course filter
       const courseFilter = document.getElementById("resourceCourseFilter");
       if (courseFilter) {
-        const classCourses = allAdminResources.map(c => c.courseName).filter(Boolean);
-        const lessonCourses = allAdminLessonResources.map(l => courseFromFolderPath(l.folder || '')).filter(Boolean);
-        const courses = [...new Set([...classCourses, ...lessonCourses])];
+        const courses = [...new Set(allAdminResources.map(c => c.courseName).filter(Boolean))];
         const currentVal = courseFilter.value;
         courseFilter.innerHTML = '<option value="">All courses</option>' +
           courses.map(c => `<option value="${escapeHtml(c)}" ${currentVal === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('');
       }
 
       filteredAdminResources = [...allAdminResources];
-      filteredAdminLessonResources = [...allAdminLessonResources];
       renderAdminResources(filteredAdminResources);
     } catch(e) {
       console.error("Error loading resources:", e);
@@ -8981,9 +8786,8 @@ window.showBusyResources = showBusyResources;
 
   function renderAdminResources(resources) {
   const container = document.getElementById("adminResourcesContainer");
-  const lessonsCheck = filteredAdminLessonResources || [];
-  if (!resources.length && !lessonsCheck.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No resources found.</div>';
+  if (!resources.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No class documents found.</div>';
     return;
   }
 
@@ -8995,7 +8799,7 @@ window.showBusyResources = showBusyResources;
     grouped[course].push(cls);
   });
 
-  const classesHtml = Object.entries(grouped).map(([course, classes]) => {
+  container.innerHTML = Object.entries(grouped).map(([course, classes]) => {
     const totalDocs = classes.reduce((sum, cls) => sum + cls.documents.length, 0);
     return `
       <div class="card" style="margin-bottom:20px;">
@@ -9048,69 +8852,7 @@ window.showBusyResources = showBusyResources;
       </div>
     `;
   }).join('');
-
-  const lessonsForRender = filteredAdminLessonResources || [];
-  const lessonsByFolder = {};
-  lessonsForRender.forEach(l => {
-    const folder = l.folder || 'Uncategorized';
-    if (!lessonsByFolder[folder]) lessonsByFolder[folder] = [];
-    lessonsByFolder[folder].push(l);
-  });
-  const lessonsHtml = lessonsForRender.length ? `
-    <div class="card" style="margin-bottom:20px;">
-      <div class="card-header">
-        <div class="card-title">
-          <i class="fas fa-video" style="color:var(--gold);"></i>
-          Lesson Videos
-          <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;">${lessonsForRender.length} video${lessonsForRender.length > 1 ? 's' : ''}</span>
-        </div>
-      </div>
-      <div style="overflow-x:auto;">
-        <table class="data-table">
-          <thead>
-            <tr><th>Thumbnail</th><th>Title</th><th>Folder</th><th>Category</th><th>Duration</th><th>Uploaded</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            ${Object.entries(lessonsByFolder).map(([folder, vids]) => vids.map(l => {
-              const uploaded = l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString('en-GB') : '—';
-              const thumb = l.thumbnailUrl
-                ? `<img src="${l.thumbnailUrl}" style="width:56px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);" />`
-                : `<div style="width:56px;height:36px;border-radius:6px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);"><i class="fas fa-play" style="font-size:12px;"></i></div>`;
-              return `<tr>
-                <td>${thumb}</td>
-                <td><div style="font-weight:600;">${escapeHtml(l.title || 'Untitled')}</div></td>
-                <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(folder)}</td>
-                <td><span class="stage-pill">${escapeHtml(l.category || 'Theory')}</span></td>
-                <td style="color:var(--text-muted);">${escapeHtml(l.duration || '—')}</td>
-                <td style="color:var(--text-muted);font-size:12px;">${uploaded}</td>
-                <td>
-                  ${l.videoUrl ? `<button class="btn btn-icon btn-outline" title="Open video" onclick="window.open('${l.videoUrl}', '_blank')"><i class="fas fa-play"></i></button>` : ''}
-                  <button class="btn btn-icon btn-outline" title="View details" onclick="openViewLessonResourceModal('${l.id}')"><i class="fas fa-eye"></i></button>
-                </td>
-              </tr>`;
-            }).join('')).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  ` : '';
-
-  container.innerHTML =
-    `<div id="resourceClassesSection" style="display:${currentResourceTab === 'classes' ? 'block' : 'none'};">${classesHtml || '<div style="text-align:center;color:var(--text-muted);padding:40px;">No class attachments found.</div>'}</div>` +
-    `<div id="resourceLessonsSection" style="display:${currentResourceTab === 'lessons' ? 'block' : 'none'};">${lessonsHtml || '<div style="text-align:center;color:var(--text-muted);padding:40px;">No lesson videos found.</div>'}</div>`;
 }
-
-window.switchResourceTab = function(tab) {
-  currentResourceTab = tab;
-  const classesBtn = document.getElementById("tabResourceClasses");
-  const lessonsBtn = document.getElementById("tabResourceLessons");
-  if (classesBtn) classesBtn.className = tab === 'classes' ? 'btn btn-gold' : 'btn btn-outline';
-  if (lessonsBtn) lessonsBtn.className = tab === 'lessons' ? 'btn btn-gold' : 'btn btn-outline';
-  const classesSection = document.getElementById("resourceClassesSection");
-  const lessonsSection = document.getElementById("resourceLessonsSection");
-  if (classesSection) classesSection.style.display = tab === 'classes' ? 'block' : 'none';
-  if (lessonsSection) lessonsSection.style.display = tab === 'lessons' ? 'block' : 'none';
-};
 
   window.filterResources = function() {
     const search = document.getElementById("resourceSearch")?.value.toLowerCase() || '';
@@ -9118,12 +8860,6 @@ window.switchResourceTab = function(tab) {
     filteredAdminResources = allAdminResources.filter(cls => {
       const matchSearch = !search || cls.title?.toLowerCase().includes(search) || cls.courseName?.toLowerCase().includes(search) || cls.instructorName?.toLowerCase().includes(search);
       const matchCourse = !course || cls.courseName === course;
-      return matchSearch && matchCourse;
-    });
-    filteredAdminLessonResources = allAdminLessonResources.filter(l => {
-      const folderCourse = courseFromFolderPath(l.folder || '');
-      const matchSearch = !search || (l.title || '').toLowerCase().includes(search) || (l.folder || '').toLowerCase().includes(search) || (l.category || '').toLowerCase().includes(search);
-      const matchCourse = !course || folderCourse === course;
       return matchSearch && matchCourse;
     });
     renderAdminResources(filteredAdminResources);
@@ -9328,10 +9064,6 @@ window.switchResourceTab = function(tab) {
   document.getElementById(`page-${name}`).classList.add("active");
   document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
   if (btn) btn.classList.add("active");
-  document.querySelectorAll(".mobile-nav-item").forEach(b => b.classList.remove("active"));
-  const mobileMatch = document.querySelector(`.mobile-nav-item[data-page="${name}"]`);
-  if (mobileMatch) mobileMatch.classList.add("active");
-  else document.getElementById("mobileMoreBtn")?.classList.add("active");
   const titles = {
     overview:'Overview', students:'Students', attendance:'Attendance',
     lessons:'Video Lessons', quizzes:'Quizzes', courses:'Courses',
@@ -9378,25 +9110,6 @@ window.switchResourceTab = function(tab) {
 }
 
   function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
-
-  window.mobileSelectTab = function(pageName) {
-    closeMobileMoreSheet();
-    showPage(pageName, document.querySelector(`.nav-item[onclick*="'${pageName}'"]`));
-  };
-  window.toggleMobileMoreSheet = function() {
-    const sheet = document.getElementById("mobileMoreSheet");
-    const overlay = document.getElementById("mobileMoreOverlay");
-    if (sheet.classList.contains("open")) { closeMobileMoreSheet(); }
-    else { sheet.classList.add("open"); overlay.classList.add("open"); }
-  };
-  window.closeMobileMoreSheet = function() {
-    document.getElementById("mobileMoreSheet")?.classList.remove("open");
-    document.getElementById("mobileMoreOverlay")?.classList.remove("open");
-  };
-  window.mobileMoreNavigate = function(pageName) {
-    closeMobileMoreSheet();
-    showPage(pageName, document.querySelector(`.nav-item[onclick*="'${pageName}'"]`));
-  };
 
   function openModal(id)  { document.getElementById(id).classList.add("open"); }
   function closeModal(id) {

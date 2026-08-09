@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <title>Dekay Driving School | Learning Management & Operations System</title>
+  
+  <!-- Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- EMBEDDED COMPLETE STYLESHEET (DESKTOP + MOBILE APP UI) -->
+  <style>
+    :root {
+      --navy: #0A1628;
+      --navy-mid: #12223F;
+      --navy-light: #1C3259;
+      --gold: #F5A623;
+      --gold-light: #FAC75A;
+      --white: #FFFFFF;
+      --text-muted: #8B9AB0;
+      --text-light: #C8D4E3;
+      --border: rgba(245,166,35,0.2);
+      --border-subtle: rgba(255,255,255,0.06);
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.2);
+      --transition: 0.25s ease;
+      --success: #4CAF50;
+      --error: #EF5350;
+      --warn: #FF9800;
+      --info: #64B5F6;
+      --sidebar: 250px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── DESKTOP SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar);
+      background: var(--navy-mid);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform var(--transition);
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+    }
+
+    .sidebar-brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .sidebar-brand-sub {
+      font-size: 10px;
+      color: var(--gold);
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(245,166,35,0.12);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 2px 8px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      padding: 14px 10px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-section-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 10px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      color: var(--text-light);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      transition: all var(--transition);
+    }
+
+    .nav-item i {
+      font-size: 15px;
+      width: 20px;
+      color: var(--text-muted);
+      transition: color var(--transition);
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--white);
+    }
+
+    .nav-item:hover i {
+      color: var(--gold);
+    }
+
+    .nav-item.active {
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    .nav-item.active i {
+      color: var(--navy);
+    }
+
+    .nav-item .badge {
+      margin-left: auto;
+      background: var(--error);
+      color: var(--white);
+      border-radius: 50px;
+      padding: 1px 6px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
+      padding: 12px 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* ── MAIN CONTENT AREA ── */
+    .main {
+      margin-left: var(--sidebar);
+      flex: 1;
+      min-height: 100vh;
+      background: var(--navy);
+      padding: 24px;
+      transition: margin-left var(--transition);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hamburger-btn {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--white);
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .topbar-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .icon-btn {
+      background: var(--navy-mid);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-light);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: all var(--transition);
+    }
+
+    .icon-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .avatar-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--navy-light);
+      border: 1.5px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+      cursor: pointer;
+    }
+
+    /* ── PAGES & LAYOUTS ── */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-header {
+      margin-bottom: 20px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: all var(--transition);
+    }
+
+    .stat-card:hover {
+      border-color: var(--border);
+      transform: translateY(-2px);
+    }
+
+    .stat-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card-value {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .stat-card-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .stat-card-delta {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .delta-up { color: var(--success); }
+    .delta-down { color: var(--error); }
+
+    .card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* ── TABLES ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .data-table th {
+      padding: 12px 16px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(0,0,0,0.15);
+    }
+
+    .data-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-light);
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* ── BUTTONS & BADGES ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    .btn-gold:hover {
+      background: var(--gold-light);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--white);
+    }
+
+    .btn-outline:hover {
+      background: rgba(245,166,35,0.1);
+      color: var(--gold);
+    }
+
+    .btn-danger {
+      background: rgba(239,83,80,0.15);
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+
+    .btn-danger:hover {
+      background: var(--error);
+      color: var(--white);
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 8px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .pill-active, .pill-present {
+      background: rgba(76,175,80,0.15);
+      color: var(--success);
+      border: 1px solid rgba(76,175,80,0.3);
+    }
+
+    .pill-pending, .pill-excused {
+      background: rgba(245,166,35,0.15);
+      color: var(--gold);
+      border: 1px solid rgba(245,166,35,0.3);
+    }
+
+    .pill-absent, .pill-inactive {
+      background: rgba(239,83,80,0.15);
+      color: var(--error);
+      border: 1px solid rgba(239,83,80,0.3);
+    }
+
+    .stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(100,181,246,0.15);
+      color: var(--info);
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* ── FORMS & FILTERS ── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .filter-select {
+      padding: 9px 12px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+
+    .form-label span {
+      color: var(--error);
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--navy-light);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .form-textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    /* ── MODALS & TOASTS ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(10,22,40,0.8);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 900;
+      background: var(--navy-mid);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      box-shadow: var(--shadow);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ── MOBILE APP RESPONSIVE UI STYLES (MOODLE / COURSERA EXPERIENCE) ── */
+    .mobile-bottom-nav,
+    .mobile-more-sheet,
+    .mobile-more-overlay {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+        z-index: 300;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main {
+        margin-left: 0 !important;
+        padding-bottom: 84px !important;
+      }
+      .hamburger-btn {
+        display: flex !important;
+      }
+
+      .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: rgba(18, 34, 63, 0.96);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(245, 166, 35, 0.25);
+        z-index: 450;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 4px;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      .mobile-nav-btn {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .mobile-nav-btn i {
+        font-size: 18px;
+        transition: transform 0.2s ease, color 0.2s ease;
+      }
+
+      .mobile-nav-btn.active {
+        color: var(--gold);
+      }
+
+      .mobile-nav-btn.active i {
+        transform: translateY(-2px);
+        color: var(--gold);
+      }
+
+      .mobile-nav-btn.active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 20%;
+        right: 20%;
+        height: 3px;
+        background: var(--gold);
+        border-radius: 0 0 4px 4px;
+      }
+
+      .mob-badge {
+        position: absolute;
+        top: 6px;
+        right: calc(50% - 16px);
+        background: var(--error);
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+        height: 15px;
+        min-width: 15px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 3px;
+        border: 1.5px solid var(--navy-mid);
+      }
+
+      .mobile-more-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 22, 40, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 500;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .mobile-more-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .mobile-more-sheet {
+        display: block;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--navy-mid);
+        border-top: 1px solid var(--border);
+        border-radius: 20px 20px 0 0;
+        z-index: 550;
+        padding: 16px 16px 84px;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .mobile-more-sheet.open {
+        transform: translateY(0);
+      }
+
+      .sheet-drag-handle {
+        width: 36px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        margin: 0 auto 12px;
+      }
+
+      .sheet-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: 16px;
+      }
+
+      .sheet-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--white);
+      }
+
+      .sheet-close {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 18px;
+        cursor: pointer;
+      }
+
+      .sheet-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .sheet-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        color: var(--text-light);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+      }
+
+      .sheet-item:active {
+        background: rgba(245, 166, 35, 0.1);
+        border-color: var(--border);
+        transform: scale(0.96);
+      }
+
+      .sheet-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+
+      .overview-layout {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── DESKTOP SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">
+        <i class="fas fa-car" style="font-size:22px; color:var(--gold);"></i>
+      </div>
+      <div>
+        <div class="sidebar-brand-name">Dekay School</div>
+        <div class="sidebar-brand-sub">Admin & Learning</div>
+        <div class="admin-badge"><i class="fas fa-crown" style="font-size:8px"></i> Administrator</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <button class="nav-item active" onclick="showPage('overview', this)"><i class="fas fa-th-large"></i> Overview</button>
+      <button class="nav-item" onclick="showPage('instructors', this)"><i class="fas fa-chalkboard-teacher"></i> Instructors <span class="badge" id="instructorPendingBadge" style="display:none">!</span></button>
+      <button class="nav-item" onclick="showPage('students', this)"><i class="fas fa-users"></i> Students <span class="badge" id="newStudentBadge" style="display:none">!</span></button>
+      <button class="nav-item" onclick="showPage('attendance', this)"><i class="fas fa-calendar-check"></i> Attendance</button>
+
+      <div class="nav-section-label">Content</div>
+      <button class="nav-item" onclick="showPage('lessons', this)"><i class="fas fa-play-circle"></i> Lessons</button>
+      <button class="nav-item" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes</button>
+      <button class="nav-item" onclick="showPage('courses', this)"><i class="fas fa-book"></i> Courses</button>
+
+      <button class="nav-item" onclick="showPage('classes', this)"><i class="fas fa-chalkboard"></i> Classes</button>
+      <button class="nav-item" onclick="showPage('vehicles', this)"><i class="fas fa-car-side"></i> Vehicles</button>
+      <button class="nav-item" onclick="showPage('resources', this)"><i class="fas fa-folder-open"></i> Resources</button>
+      <button class="nav-item" onclick="showPage('certificates', this)"><i class="fas fa-certificate"></i> Certificates</button>
+
+      <div class="nav-section-label">Communication</div>
+      <button class="nav-item" onclick="showPage('notifications', this)"><i class="fas fa-bell"></i> Send Notifications</button>
+      <button class="nav-item" onclick="showPage('enquiries', this)"><i class="fas fa-headset"></i> Enquiries <span class="badge" id="enquiriesBadge" style="display:none;"></span></button>
+
+      <div class="nav-section-label">System</div>
+      <button class="nav-item" onclick="showPage('permissions', this)"><i class="fas fa-shield-alt"></i> Permissions</button>
+      <button class="nav-item" onclick="showPage('settings', this)"><i class="fas fa-cog"></i> Settings</button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="handleLogout()" style="color:var(--error)"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT AREA ── -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title" id="topbarTitle">Overview</div>
+      </div>
+      <div class="topbar-right">
+        <div class="admin-chip"><i class="fas fa-shield-alt"></i> <span id="adminName">Admin</span></div>
+        <button class="icon-btn" onclick="showPage('notifications', null)"><i class="fas fa-bell"></i></button>
+        <div class="avatar-btn" id="adminAvatarTopBtn" onclick="showPage('settings', null)" title="Admin Profile"></div>
+      </div>
+    </header>
+
+    <!-- ═══ OVERVIEW ═══ -->
+    <div class="page active" id="page-overview">
+      <div class="page-header">
+        <div class="page-title">School Overview</div>
+        <div class="page-sub" id="overviewDate">Loading…</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(76,175,80,0.1)"><i class="fas fa-users" style="color:var(--success)"></i></div>
+          <div class="stat-card-value" id="statTotal" style="color:var(--success)">—</div>
+          <div class="stat-card-label">Total students</div>
+          <div class="stat-card-delta delta-up" id="statNewDelta"><i class="fas fa-arrow-up"></i> Loading…</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas fa-user-clock" style="color:var(--gold)"></i></div>
+          <div class="stat-card-value" id="statActive" style="color:var(--gold)">—</div>
+          <div class="stat-card-label">Active this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(100,181,246,0.1)"><i class="fas fa-id-card" style="color:var(--info)"></i></div>
+          <div class="stat-card-value" id="statDvlaReady" style="color:var(--info)">—</div>
+          <div class="stat-card-label">DVLA ready</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:rgba(239,83,80,0.1)"><i class="fas fa-calendar-times" style="color:var(--error)"></i></div>
+          <div class="stat-card-value" id="statAbsent" style="color:var(--error)">—</div>
+          <div class="stat-card-label">Missed sessions today</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;" class="overview-layout">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-users"></i> Recent enrolments</div>
+            <button class="btn btn-outline" onclick="showPage('students', null)" style="font-size:12px; padding:6px 14px;">All students <i class="fas fa-arrow-right"></i></button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead><tr><th>Student</th><th>Course</th><th>Enrolled</th></tr></thead>
+              <tbody id="recentStudentsTable">
+                <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:28px;">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-bolt"></i> Recent activity</div></div>
+          <div class="card-body" id="activityFeed" style="max-height:320px;overflow-y:auto;">
+            <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px;">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-chart-bar"></i> Enrolments by course</div></div>
+          <div class="card-body" id="courseDistribution">
+            <div style="display:flex;flex-direction:column;gap:12px;" id="courseBars"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ INSTRUCTORS ═══ -->
+    <div class="page" id="page-instructors">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="page-title">Instructors</div>
+          <div class="page-sub">Review and manage instructor applications.</div>
+        </div>
+        <button class="btn btn-gold" onclick="openAddInstructorModal()"><i class="fas fa-user-plus"></i> Add instructor</button>
+      </div>
+
+      <div class="card" id="pendingInstructorCard" style="margin-bottom:20px; display:none;">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-clock"></i> Pending Instructor Approvals</div>
+          <span class="pill pill-pending" id="pendingInstructorCount" style="font-size:12px;">0</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Instructor</th><th>Qualifications</th><th>Branch</th><th>Experience</th><th>Actions</th></tr></thead>
+            <tbody id="pendingInstructorTableBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px;">No pending instructors.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Instructor</th><th>Email</th><th>Branch</th><th>Experience</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="instructorsTable">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading instructors…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STUDENTS ═══ -->
+    <div class="page" id="page-students">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="page-title">Students</div>
+          <div class="page-sub">Manage all enrolled students, their stages, and course details.</div>
+        </div>
+        <button class="btn btn-gold" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Add student</button>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="search-input" id="studentSearch" placeholder="Search by name or email…" oninput="filterStudents()" />
+        </div>
+        <select class="filter-select" id="courseFilter" onchange="filterStudents()">
+          <option value="">All courses</option>
+          <option value="Manual">Manual</option>
+          <option value="Automatic">Automatic</option>
+          <option value="Motorcycle">Motorcycle</option>
+          <option value="Commercial Bus">Commercial Bus</option>
+          <option value="Truck / HGV">Truck / HGV</option>
+        </select>
+        <select class="filter-select" id="stageFilter" onchange="filterStudents()">
+          <option value="">All stages</option>
+          <option value="1">Stage 1</option><option value="2">Stage 2</option>
+          <option value="3">Stage 3</option><option value="4">Stage 4</option>
+          <option value="5">Stage 5</option><option value="6">Stage 6</option>
+        </select>
+      </div>
+
+      <div class="card" id="pendingCard" style="margin-bottom:20px; display:none;">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-clock"></i> Pending Approvals</div>
+          <span class="pill pill-pending" id="pendingCount" style="font-size:12px;">0</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Course</th><th>Enrolled</th><th>Actions</th></tr></thead>
+            <tbody id="pendingTableBody">
+              <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:28px;">No pending students.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr><th>Student</th><th>Course</th><th>Stage</th><th>GH Card</th><th>Branch</th><th>Attendance</th><th>Enrolled</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="studentsTable">
+              <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">Loading students…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ATTENDANCE ═══ -->
+    <div class="page" id="page-attendance">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="page-title">Attendance Records</div>
+          <div class="page-sub">View and manage all student session attendance.</div>
+        </div>
+        <button class="btn btn-gold" onclick="openMarkAttendanceModal()"><i class="fas fa-plus"></i> Mark session</button>
+      </div>
+
+      <div class="card" id="studentAttCard">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Student</th><th>Date</th><th>Course</th><th>Instructor</th><th>Class Title</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="adminAttTable">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Loading attendance…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LESSONS ═══ -->
+    <div class="page" id="page-lessons">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="page-title" id="lessonsPageTitle">Video Lessons</div>
+          <div class="page-sub" id="lessonsPageSub">Select a course folder to manage its video lessons.</div>
+        </div>
+      </div>
+
+      <div class="card" id="lessonTableCard">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Duration</th><th>Completion avg.</th><th>Published</th><th>Actions</th></tr></thead>
+            <tbody id="lessonsTable">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading lessons…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ QUIZZES ═══ -->
+    <div class="page" id="page-quizzes">
+      <div class="page-header">
+        <div class="page-title" id="quizPageTitle">Quizzes</div>
+        <div class="page-sub">Manage course quiz modules and test questions.</div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Quiz title</th><th>Questions</th><th>Pass mark</th><th>Avg. score</th><th>Completion</th><th>Actions</th></tr></thead>
+            <tbody id="adminQuizTable">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading quizzes…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ COURSES ═══ -->
+    <div class="page" id="page-courses">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="page-title">Courses</div>
+          <div class="page-sub">Manage course listings and view enrolled students.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Course</th><th>Category</th><th>Duration</th><th>Price</th><th>Enrolled</th><th>Students</th><th>Actions</th></tr></thead>
+            <tbody id="adminCoursesTable">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Loading courses…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CLASSES ═══ -->
+    <div class="page" id="page-classes">
+      <div class="page-header">
+        <div class="page-title">Classes</div>
+        <div class="page-sub">Schedule and manage class sessions for each course.</div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr><th>Title</th><th>Course</th><th>Instructor</th><th>Date & Time</th><th>Duration</th><th>Mode</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="classesTableBody">
+              <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">Loading classes…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VEHICLES ═══ -->
+    <div class="page" id="page-vehicles">
+      <div class="page-header">
+        <div class="page-title">Vehicles</div>
+        <div class="page-sub">Manage the school's fleet of training vehicles.</div>
+      </div>
+
+      <div class="stat-grid" id="vehiclesGrid" style="grid-template-columns:repeat(4,1fr);">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading vehicles…</div>
+      </div>
+    </div>
+
+    <!-- ═══ RESOURCES ═══ -->
+    <div class="page" id="page-resources">
+      <div class="page-header">
+        <div class="page-title">Resources</div>
+        <div class="page-sub">View all course documents and materials.</div>
+      </div>
+
+      <div id="adminResourcesContainer">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;">Loading resources…</div>
+      </div>
+    </div>
+
+    <!-- ═══ CERTIFICATES ═══ -->
+    <div class="page" id="page-certificates">
+      <div class="page-header">
+        <div class="page-title">Certificates</div>
+        <div class="page-sub">Generate professional completion certificates for students</div>
+      </div>
+    </div>
+
+    <!-- ═══ NOTIFICATIONS ═══ -->
+    <div class="page" id="page-notifications">
+      <div class="page-header">
+        <div class="page-title">Send Notifications</div>
+        <div class="page-sub">Push messages directly to individual students or all students.</div>
+      </div>
+    </div>
+
+    <!-- ═══ ENQUIRIES ═══ -->
+    <div class="page" id="page-enquiries">
+      <div class="page-header">
+        <div class="page-title">Client Enquiries</div>
+        <div class="page-sub">Contact form submissions from website</div>
+      </div>
+    </div>
+
+    <!-- ═══ PERMISSIONS ═══ -->
+    <div class="page" id="page-permissions">
+      <div class="page-header">
+        <div class="page-title">Permissions</div>
+        <div class="page-sub">Manage student and instructor privileges.</div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div class="page-title">Settings</div>
+        <div class="page-sub">School configuration and admin profile settings.</div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+
+  <!-- ── MOODLE / COURSERA MOBILE BOTTOM NAVIGATION BAR ── -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mobile-nav-btn active" id="mob-nav-overview" onclick="switchMobileTab('overview', this)">
+      <i class="fas fa-th-large"></i>
+      <span>Home</span>
+    </button>
+    <button class="mobile-nav-btn" id="mob-nav-courses" onclick="switchMobileTab('courses', this)">
+      <i class="fas fa-book"></i>
+      <span>Learn</span>
+    </button>
+    <button class="mobile-nav-btn" id="mob-nav-classes" onclick="switchMobileTab('classes', this)">
+      <i class="fas fa-chalkboard"></i>
+      <span>Classes</span>
+    </button>
+    <button class="mobile-nav-btn" id="mob-nav-students" onclick="switchMobileTab('students', this)">
+      <i class="fas fa-users"></i>
+      <span class="mob-badge" id="mobStudentBadge" style="display:none;">!</span>
+      <span>Students</span>
+    </button>
+    <button class="mobile-nav-btn" id="mob-nav-more" onclick="toggleMobileMoreMenu()">
+      <i class="fas fa-bars"></i>
+      <span class="mob-badge" id="mobMoreBadge" style="display:none;">!</span>
+      <span>More</span>
+    </button>
+  </nav>
+
+  <!-- ── MOBILE SLIDE-UP SHEET MENU ── -->
+  <div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="closeMobileMoreMenu()"></div>
+  <div class="mobile-more-sheet" id="mobileMoreSheet">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">Dekay Driving School</div>
+      <button class="sheet-close" onclick="closeMobileMoreMenu()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sheet-grid">
+      <button class="sheet-item" onclick="navigateFromMore('overview')"><div class="sheet-icon" style="background:rgba(245,166,35,0.15);color:var(--gold);"><i class="fas fa-th-large"></i></div><span>Overview</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('instructors')"><div class="sheet-icon" style="background:rgba(100,181,246,0.15);color:var(--info);"><i class="fas fa-chalkboard-teacher"></i></div><span>Instructors</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('students')"><div class="sheet-icon" style="background:rgba(76,175,80,0.15);color:var(--success);"><i class="fas fa-users"></i></div><span>Students</span><span class="sheet-badge" id="sheetStudentBadge" style="display:none;">!</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('attendance')"><div class="sheet-icon" style="background:rgba(156,39,176,0.15);color:#CE93D8;"><i class="fas fa-calendar-check"></i></div><span>Attendance</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('lessons')"><div class="sheet-icon" style="background:rgba(245,166,35,0.15);color:var(--gold);"><i class="fas fa-play-circle"></i></div><span>Lessons</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('quizzes')"><div class="sheet-icon" style="background:rgba(255,152,0,0.15);color:var(--warn);"><i class="fas fa-tasks"></i></div><span>Quizzes</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('courses')"><div class="sheet-icon" style="background:rgba(76,175,80,0.15);color:var(--success);"><i class="fas fa-book"></i></div><span>Courses</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('classes')"><div class="sheet-icon" style="background:rgba(100,181,246,0.15);color:var(--info);"><i class="fas fa-chalkboard"></i></div><span>Classes</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('vehicles')"><div class="sheet-icon" style="background:rgba(239,83,80,0.15);color:var(--error);"><i class="fas fa-car-side"></i></div><span>Vehicles</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('resources')"><div class="sheet-icon" style="background:rgba(139,154,176,0.15);color:var(--text-light);"><i class="fas fa-folder-open"></i></div><span>Resources</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('certificates')"><div class="sheet-icon" style="background:rgba(245,166,35,0.15);color:var(--gold);"><i class="fas fa-certificate"></i></div><span>Certificates</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('notifications')"><div class="sheet-icon" style="background:rgba(255,152,0,0.15);color:var(--warn);"><i class="fas fa-bell"></i></div><span>Notifications</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('enquiries')"><div class="sheet-icon" style="background:rgba(100,181,246,0.15);color:var(--info);"><i class="fas fa-headset"></i></div><span>Enquiries</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('permissions')"><div class="sheet-icon" style="background:rgba(156,39,176,0.15);color:#CE93D8;"><i class="fas fa-shield-alt"></i></div><span>Permissions</span></button>
+      <button class="sheet-item" onclick="navigateFromMore('settings')"><div class="sheet-icon" style="background:rgba(139,154,176,0.15);color:var(--text-light);"><i class="fas fa-cog"></i></div><span>Settings</span></button>
+    </div>
+  </div>
+
+  <!-- ── MODALS ── -->
+  <div class="modal-overlay" id="addStudentModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Add new student</div>
+        <button class="modal-close" onclick="closeModal('addStudentModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">First name <span>*</span></label><input type="text" id="newFirst" class="form-input" placeholder="Kwame" /></div>
+        <div class="form-group"><label class="form-label">Last name <span>*</span></label><input type="text" id="newLast" class="form-input" placeholder="Asante" /></div>
+        <div class="form-group"><label class="form-label">Email <span>*</span></label><input type="email" id="newEmail" class="form-input" placeholder="kwame@example.com" /></div>
+        <div class="form-group"><label class="form-label">Phone <span>*</span></label><input type="tel" id="newPhone" class="form-input" placeholder="024 000 0000" /></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('addStudentModal')">Cancel</button>
+        <button class="btn btn-gold" onclick="createStudent()"><i class="fas fa-user-plus"></i> Create account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+  <!-- GLOBAL LOADING OVERLAY -->
+  <div id="globalLoadingOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(10,22,40,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; flex-direction:column; gap:16px;">
+    <div style="width:50px; height:50px; border:4px solid var(--gold); border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+    <div style="color:var(--gold); font-size:14px; font-weight:500;">Loading…</div>
+  </div>
+  <style> @keyframes spin { to { transform: rotate(360deg); } } </style>
+
+  <!-- ALSO REFERENCE EXTERNAL BACKUP JS OR EMBEDDED MODULE -->
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
