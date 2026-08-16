@@ -811,7 +811,7 @@
           dob,
           ghanaCardNumber: ghanaCardNumber,
           branch: branch,
-          profilePhoto: profilePhotoUrl,   // <-- new field
+          profilePhoto: profilePhotoUrl,
           qualifications,
           certifications: certResults,
           experience: parseInt(experience),
@@ -826,7 +826,8 @@
           ],
           role: "instructor",
           status: "pending",
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          schoolId: "78BZvydj3iz8FEQMiDp5"
         });
 
         await signOut(auth);
@@ -894,7 +895,8 @@
           role: "instructor",
           status: "pending",
           createdAt: serverTimestamp(),
-          fromGoogle: true  // flag to indicate incomplete profile
+          fromGoogle: true,
+          schoolId: "78BZvydj3iz8FEQMiDp5"
         });
         await signOut(auth);
         showToast("Application submitted via Google! Pending approval.", "success");

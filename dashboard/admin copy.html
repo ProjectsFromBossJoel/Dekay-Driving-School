@@ -2858,7 +2858,9 @@ function hideLoading() {
     collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, limit
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // ── YOUR REAL FIREBASE CONFIG ──
+  const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
+
+  // ── FIREBASE CONFIG ──
   const firebaseConfig = {
     apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
     authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
@@ -5486,7 +5488,8 @@ window.approveStudent = async function(uid) {
         trainingStage: 1,
         status: "active",
         createdAt: serverTimestamp(),
-        enrolDate: new Date().toLocaleDateString('en-GB')
+        enrolDate: new Date().toLocaleDateString('en-GB'),
+        schoolId: SCHOOL_ID
       });
 
       // 3. Success
@@ -5550,16 +5553,14 @@ window.approveStudent = async function(uid) {
         const [yr1, mo1, dy1] = dateVal.split('-').map(Number);
         const localDate1 = new Date(yr1, mo1 - 1, dy1);
         await addDoc(collection(db, "attendance"), {
-          studentId, 
-          status, 
-          sessionType: course,
-          instructor,
-          date: localDate1,
+          studentId, status, sessionType: course,
+          instructor, date: localDate1,
           timestamp: serverTimestamp(),
           stage: student?.trainingStage || 1,
           classId: classId || null,
           classTitle: classTitle || null,
-          courseName: course
+          courseName: course,
+          schoolId: SCHOOL_ID
         });
         showToast("Student attendance recorded ✓", "success");
         await loadAttendance();
@@ -5601,7 +5602,8 @@ window.approveStudent = async function(uid) {
           classTitle: classTitle || null,
           courseName: course || null,
           notes: classTitle ? `Class: ${classTitle}` : null,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          schoolId: SCHOOL_ID
         });
         showToast("Instructor attendance recorded ✓", "success");
         await loadInstructorAttendance();
@@ -6281,7 +6283,8 @@ window.approveStudent = async function(uid) {
           icon,
           read: false,
           type: "admin",
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          schoolId: SCHOOL_ID
         }));
       });
     }
@@ -6294,7 +6297,8 @@ window.approveStudent = async function(uid) {
           icon,
           read: false,
           type: "admin",
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          schoolId: SCHOOL_ID
         }));
       });
     }
@@ -6530,32 +6534,26 @@ window.approveStudent = async function(uid) {
         ]);
 
         // 3. Write Firestore document
-        await setDoc(doc(db, "instructors", uid), {
-          firstName: first,
-          lastName: last,
-          email,
-          phone,
-          dob: dob || null,
-          branch: branch || null,
-          ghCardFront: ghFrontUrl,
-          ghCardBack: ghBackUrl,
-          qualifications: qual,
-          certifications: cert,
-          experience: parseInt(exp) || 0,
-          guarantor: {
-            name: guarName || '',
-            email: guarEmail || '',
-            phone: guarPhone || ''
-          },
-          references: [
-            { name: ref1Name || '', email: ref1Email || '', phone: ref1Phone || '' },
-            { name: ref2Name || '', email: ref2Email || '', phone: ref2Phone || '' }
-          ],
-          role: "instructor",
-          status: "active",
-          assignedCourses: [],
-          createdAt: serverTimestamp()
-        });
+          await setDoc(doc(db, "instructors", uid), {
+            firstName: first,
+            lastName: last,
+            email,
+            phone,
+            dob: dob || null,
+            branch: branch || null,
+            ghCardFront: ghFrontUrl,
+            ghCardBack: ghBackUrl,
+            qualifications: qual,
+            certifications: cert,
+            experience: parseInt(exp) || 0,
+            guarantor: { name: guarName || '', email: guarEmail || '', phone: guarPhone || '' },
+            references: [ { name: ref1Name || '', email: ref1Email || '', phone: ref1Phone || '' }, { name: ref2Name || '', email: ref2Email || '', phone: ref2Phone || '' } ],
+            role: "instructor",
+            status: "active",
+            assignedCourses: [],
+            createdAt: serverTimestamp(),
+            schoolId: SCHOOL_ID
+          });
 
         closeModal("addInstructorModal");
         showToast(`${first} ${last} added as instructor ✓`, "success");
@@ -7513,7 +7511,7 @@ renderVehicleSchedulePage();
       if (id) {
         await updateDoc(doc(db, "vehicles", id), payload);
       } else {
-        await addDoc(collection(db, "vehicles"), { ...payload, createdAt: serverTimestamp() });
+        await addDoc(collection(db, "vehicles"), { ...payload, createdAt: serverTimestamp(), schoolId: SCHOOL_ID });
       }
 
       closeModal("vehicleModal");
@@ -8646,13 +8644,14 @@ window.showBusyResources = showBusyResources;
       await addDoc(collection(db, "classes"), {
         title, description: desc,
         courseName, instructorId, instructorName,
-        date, time, endDate, endTime, durationMinutes: durationMinutes, mode,
+        date, time, endDate, endTime, durationMinutes, mode,
         platform: platform || null,
         meetingLink: meetingLink || null,
         vehicleId, vehicleName,
         studentIds, studentNames,
         documents: documents,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        schoolId: SCHOOL_ID
       });
       closeModal("addClassModal");
       showToast("Class scheduled ✓", "success");
@@ -9192,7 +9191,7 @@ window.showBusyResources = showBusyResources;
     });
 
     try {
-      await setDoc(doc(db, "permissions", docId), perms, { merge: true });
+      await setDoc(doc(db, "permissions", docId), { ...perms, schoolId: SCHOOL_ID }, { merge: true });
       showToast(`${type === 'student' ? 'Student' : 'Instructor'} permissions saved ✓`, "success");
     } catch(e) {
       console.error(e);
@@ -9611,11 +9610,12 @@ window.showBusyResources = showBusyResources;
       const cloudinaryUrl = await uploadCertificateToCloudinary(imageDataUrl, currentCertificateData.serialNumber);
       if (!cloudinaryUrl) throw new Error("Failed to upload to Cloudinary");
 
-      await addDoc(collection(db, "certificates"), {
-        ...currentCertificateData,
-        imageUrl: cloudinaryUrl,
-        createdAt: serverTimestamp()
-      });
+            await addDoc(collection(db, "certificates"), {
+            ...currentCertificateData,
+            imageUrl: cloudinaryUrl,
+            createdAt: serverTimestamp(),
+            schoolId: SCHOOL_ID
+          });
 
       showToast("Certificate saved successfully ✓", "success");
       btn.innerHTML = originalHTML;
@@ -9844,7 +9844,8 @@ window.showBusyResources = showBusyResources;
         approvedBy: adminUser.uid,
         checklist: { feesPaid, dvlaTests, classesAttended, quizzesCompleted },
         certificateGenerated: true,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        schoolId: SCHOOL_ID
       });
       
       // 2. Update user to DVLA Ready
@@ -9906,7 +9907,8 @@ window.showBusyResources = showBusyResources;
         createdAt: serverTimestamp(),
         generatedBy: adminUser.uid,
         generatedByName: adminName,
-        type: "dvla_completion"
+        type: "dvla_completion",
+        schoolId: SCHOOL_ID
       });
       
       // 5. Send notification to student
@@ -9916,7 +9918,8 @@ window.showBusyResources = showBusyResources;
         icon: "fa-certificate",
         read: false,
         type: "system",
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        schoolId: SCHOOL_ID
       });
       
       closeModal("dvlaChecklistModal");

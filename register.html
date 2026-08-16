@@ -708,7 +708,8 @@
           status: "pending",
           trainingStage: 1,
           createdAt: serverTimestamp(),
-          enrolDate: new Date().toLocaleDateString('en-GB')
+          enrolDate: new Date().toLocaleDateString('en-GB'),
+          schoolId: "78BZvydj3iz8FEQMiDp5"
         });
         // Immediately sign out – the student will sign in again after approval
         await signOut(auth);
@@ -811,7 +812,8 @@
           trainingStage: 1,
           createdAt: serverTimestamp(),
           enrolDate: new Date().toLocaleDateString("en-GB"),
-          avatarUrl: user.photoURL || ""
+          avatarUrl: user.photoURL || "",
+          schoolId: "78BZvydj3iz8FEQMiDp5"
         });
 
         // Sign out so they don’t stay signed in

@@ -1216,6 +1216,8 @@
   const CLOUDINARY_CLOUD = "drs2xpwho";
   const CLOUDINARY_PRESET = "student_avatars";
 
+  const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
+
   const SCHOOL_LAT = 5.6120526;
   const SCHOOL_LNG = -0.2969936;
   const MAX_CHECKIN_DISTANCE_METERS = 200;
@@ -2080,8 +2082,9 @@
         sessionType: sessionType,
         instructor:  instructor,
         stage:       studentData.trainingStage || 1,
-        classId:     classId || null
-      });
+        classId:     classId || null,
+        schoolId:    SCHOOL_ID
+});
 
       showToast("Attendance marked ✓", "success");
       const records = await loadAttendance(studentData.trainingStage || 1);
@@ -2127,7 +2130,10 @@
   async function saveLessonProgress() {
     if (!_currentLessonId) return;
     try {
-      await setDoc(doc(db, "lessonProgress", currentUser.uid), { [_currentLessonId]: _currentLessonBestPct }, { merge: true });
+      await setDoc(doc(db, "lessonProgress", currentUser.uid), { 
+      [_currentLessonId]: _currentLessonBestPct,
+      schoolId: SCHOOL_ID
+    }, { merge: true });
       if (!window._lessonProgress) window._lessonProgress = {};
       window._lessonProgress[_currentLessonId] = _currentLessonBestPct;
       checkAndAdvanceToTheoryTest();
@@ -2151,7 +2157,9 @@
     if (!allWatched) return;
 
     try {
-      await updateDoc(doc(db, "users", currentUser.uid), { trainingStage: 3 });
+      await updateDoc(doc(db, "users", currentUser.uid), { 
+        trainingStage: 3
+      });
 
       const progressRef = doc(db, "stageProgress", currentUser.uid);
       const studentName = `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim();
@@ -2168,21 +2176,22 @@
         });
       } catch(e) {
         await setDoc(progressRef, {
-          studentId: currentUser.uid,
-          currentStage: 3,
-          dvlaReady: false,
-          dvlaReadyAt: null,
-          updatedAt: nowIso,
-          stages: {
-            2: {
-              completed: true,
-              completedAt: nowIso,
-              approvedBy: currentUser.uid,
-              approverRole: "student",
-              approverName: studentName
-            }
+        studentId: currentUser.uid,
+        currentStage: 3,
+        dvlaReady: false,
+        dvlaReadyAt: null,
+        updatedAt: nowIso,
+        stages: {
+          2: {
+            completed: true,
+            completedAt: nowIso,
+            approvedBy: currentUser.uid,
+            approverRole: "student",
+            approverName: studentName
           }
-        }, { merge: true });
+        },
+        schoolId: SCHOOL_ID
+      }, { merge: true });
       }
 
       studentData.trainingStage = 3;
@@ -2326,8 +2335,11 @@
       const pass  = score >= passMark;
 
       try {
-        await setDoc(doc(db, "quizResults", currentUser.uid), { [aq.quiz.id]: score }, { merge: true });
-      } catch(e) {}
+        await setDoc(doc(db, "quizResults", currentUser.uid), { 
+      [aq.quiz.id]: score, 
+      schoolId: SCHOOL_ID
+    }, { merge: true });
+          } catch(e) {}
 
       document.getElementById("quizModalBody").innerHTML = `
         <div class="quiz-result">
@@ -2414,21 +2426,22 @@
           });
         } catch(e) {
           await setDoc(progressRef, {
-            studentId: currentUser.uid,
-            currentStage: 2,
-            dvlaReady: false,
-            dvlaReadyAt: null,
-            updatedAt: new Date().toISOString(),
-            stages: {
-              1: {
-                completed: true,
-                completedAt: new Date().toISOString(),
-                approvedBy: currentUser.uid,
-                approverRole: "student",
-                approverName: `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim()
-              }
+          studentId: currentUser.uid,
+          currentStage: 2,
+          dvlaReady: false,
+          dvlaReadyAt: null,
+          updatedAt: new Date().toISOString(),
+          stages: {
+            1: {
+              completed: true,
+              completedAt: new Date().toISOString(),
+              approvedBy: currentUser.uid,
+              approverRole: "student",
+              approverName: `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim()
             }
-          });
+          },
+          schoolId: SCHOOL_ID
+        });
         }
         
         showToast("✅ Stage 1 complete! Refreshing...", "success");
