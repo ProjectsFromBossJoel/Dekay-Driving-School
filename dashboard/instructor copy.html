@@ -920,7 +920,12 @@
     async function loadAttendanceRecords() {
       if (myStudents.length === 0) { renderAttendanceTable([]); return; }
       const studentIds = myStudents.map(s => s.id);
-      const allAttSnap = await getDocs(collection(db, "attendance"));
+      // Query attendance with schoolId
+      const attQuery = query(
+        collection(db, "attendance"),
+        where("schoolId", "==", SCHOOL_ID)
+      );
+      const allAttSnap = await getDocs(attQuery);
       attendanceRecords = allAttSnap.docs.map(d => ({ id: d.id, ...d.data() }))
         .filter(rec => studentIds.includes(rec.studentId))
         .sort((a,b) => (b.date?.toDate?.() || 0) - (a.date?.toDate?.() || 0));
@@ -1567,7 +1572,11 @@
     async function loadInstructorClasses() {
       try {
         const instructorName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
-        const q = query(collection(db, "classes"), where("instructorName", "==", instructorName));
+        const q = query(
+          collection(db, "classes"),
+          where("instructorName", "==", instructorName),
+          where("schoolId", "==", SCHOOL_ID)
+        );
         const snaps = await getDocs(q);
         allInstructorClasses = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
         renderUpcomingSessions();

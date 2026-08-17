@@ -1200,14 +1200,16 @@
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
-    authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
-    projectId: "dekaydrivingschool-6933c",
-    storageBucket: "dekaydrivingschool-6933c.firebasestorage.app",
-    messagingSenderId: "1017266487810",
-    appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b",
-    measurementId: "G-QTR8V6LG85"
+    apiKey: "AIzaSyA5TnyzHJpcHcM2N-77gkyAaj7yRru3-V0",
+    authDomain: "marvini-smart-driving-school.firebaseapp.com",
+    projectId: "marvini-smart-driving-school",
+    storageBucket: "marvini-smart-driving-school.firebasestorage.app",
+    messagingSenderId: "750557352716",
+    appId: "1:750557352716:web:dcae14b3dacaea88a4ef29",
+    measurementId: "G-RHRMJLDLDK"
   };
+
+  const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -1215,8 +1217,6 @@
 
   const CLOUDINARY_CLOUD = "drs2xpwho";
   const CLOUDINARY_PRESET = "student_avatars";
-
-  const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
 
   const SCHOOL_LAT = 5.6120526;
   const SCHOOL_LNG = -0.2969936;
@@ -1254,20 +1254,36 @@
 
       const snap = await getDoc(doc(db, "users", user.uid));
 
-      if (!snap.exists() || snap.data().role !== "student") {
+      if (!snap.exists()) {
         await signOut(auth);
         window.location.href = "/login";
         return;
       }
 
-      if (snap.data().status === "pending") {
+      const userData = snap.data();
+
+      // --- NEW: Check if user belongs to this school ---
+      if (userData.schoolId !== SCHOOL_ID) {
+        await signOut(auth);
+        alert("You are not authorized to access this school's portal.");
+        window.location.href = "/login";
+        return;
+      }
+
+      if (userData.role !== "student") {
+        await signOut(auth);
+        window.location.href = "/login";
+        return;
+      }
+
+      if (userData.status === "pending" || userData.status === "disabled") {
         await signOut(auth);
         window.location.href = "/login";
         return;
       }
 
       currentUser = user;
-      studentData = snap.data();
+      studentData = userData;
       initDashboard();
     } catch (err) {
       console.error("Student guard failed:", err);
@@ -1392,7 +1408,11 @@
 
   async function loadAttendance(stage) {
     try {
-      const q = query(collection(db, "attendance"), where("studentId", "==", currentUser.uid));
+      const q = query(
+        collection(db, "attendance"),
+        where("studentId", "==", currentUser.uid),
+        where("schoolId", "==", SCHOOL_ID)
+      );
       const snaps = await getDocs(q);
       const records = snaps.docs
         .map(d => ({ id: d.id, ...d.data() }))
@@ -1748,6 +1768,7 @@
       const q = query(
         collection(db, "notifications"),
         where("studentId", "==", currentUser.uid),
+        where("schoolId", "==", SCHOOL_ID),
         orderBy("createdAt", "desc")
       );
       const snaps = await getDocs(q);
@@ -2620,7 +2641,11 @@
         return;
       }
 
-      const q = query(collection(db, "classes"), where("courseName", "==", courseName));
+      const q = query(
+        collection(db, "classes"),
+        where("courseName", "==", courseName),
+        where("schoolId", "==", SCHOOL_ID)
+      );
       const snaps = await getDocs(q);
       allMyClasses = snaps.docs.map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
@@ -2725,7 +2750,11 @@
         return;
       }
 
-      const q = query(collection(db, "classes"), where("courseName", "==", courseName));
+      const q = query(
+        collection(db, "classes"),
+        where("courseName", "==", courseName),
+        where("schoolId", "==", SCHOOL_ID)
+      );
       const snaps = await getDocs(q);
       allResourcesClasses = snaps.docs
         .map(d => ({ id: d.id, ...d.data() }))
@@ -2895,7 +2924,12 @@
       const instructorNames = new Set();
       const studentCourse = studentData.courseType || '';
       
-      const attSnap = await getDocs(query(collection(db, "attendance"), where("studentId", "==", currentUser.uid)));
+      // --- NEW: Add schoolId filter to attendance query ---
+      const attSnap = await getDocs(query(
+        collection(db, "attendance"),
+        where("studentId", "==", currentUser.uid),
+        where("schoolId", "==", SCHOOL_ID)
+      ));
       attSnap.forEach(doc => {
         const inst = doc.data().instructor;
         if (inst && inst !== "—") instructorNames.add(inst);
@@ -2914,7 +2948,11 @@
 
       let allInstructors = [];
       try {
-        const instrSnap = await getDocs(collection(db, "instructors"));
+        // --- NEW: Add schoolId filter to instructors query ---
+        const instrSnap = await getDocs(query(
+          collection(db, "instructors"),
+          where("schoolId", "==", SCHOOL_ID)
+        ));
         allInstructors = instrSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       } catch (permError) {
         console.error("Firestore permission error:", permError);
@@ -3284,6 +3322,7 @@
       const q = query(
         collection(db, "certificates"),
         where("studentId", "==", currentUser.uid),
+        where("schoolId", "==", SCHOOL_ID),
         orderBy("createdAt", "desc")
       );
       const snaps = await getDocs(q);

@@ -919,13 +919,15 @@
     import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, orderBy, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
-      authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
-      projectId: "dekaydrivingschool-6933c",
-      storageBucket: "dekaydrivingschool-6933c.firebasestorage.app",
-      messagingSenderId: "1017266487810",
-      appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b"
+      apiKey: "AIzaSyA5TnyzHJpcHcM2N-77gkyAaj7yRru3-V0",
+      authDomain: "marvini-smart-driving-school.firebaseapp.com",
+      projectId: "marvini-smart-driving-school",
+      storageBucket: "marvini-smart-driving-school.firebasestorage.app",
+      messagingSenderId: "750557352716",
+      appId: "1:750557352716:web:dcae14b3dacaea88a4ef29"
     };
+
+    const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -934,7 +936,6 @@
     const CLOUDINARY_CLOUD = "drs2xpwho";
     const CLOUDINARY_PRESET = "instructor_avatars";
 
-    const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
 
     function showToast(msg, type = "success") {
       const t = document.getElementById("toast");
@@ -983,7 +984,7 @@
     let dashboardLoaded = false;
     let authGuardDone = false;
 
-    onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, async (user) => {
       if (authGuardDone) return;
       authGuardDone = true;
 
@@ -997,12 +998,25 @@
 
         if (!snap.exists()) {
           showToast("Your instructor account is not registered. Please contact the school.", "error");
+          await signOut(auth);
+          window.location.href = "/login";
           return;
         }
 
         const data = snap.data();
+
+        // --- NEW: Check if instructor belongs to this school ---
+        if (data.schoolId !== SCHOOL_ID) {
+          await signOut(auth);
+          alert("You are not authorized to access this school's portal.");
+          window.location.href = "/login";
+          return;
+        }
+
         if (data.status !== "active") {
           showToast("Your account is pending approval. Please wait for the admin to activate it.", "error");
+          await signOut(auth);
+          window.location.href = "/login";
           return;
         }
 
@@ -1113,11 +1127,22 @@
         const instructorFullName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
         let q;
         try {
-          q = query(collection(db, "users"), where("role", "==", "student"), where("instructors", "array-contains", instructorFullName));
+          q = query(
+            collection(db, "users"),
+            where("role", "==", "student"),
+            where("instructors", "array-contains", instructorFullName),
+            where("schoolId", "==", SCHOOL_ID)
+          );
           const snaps = await getDocs(q);
           myStudents = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
         } catch(e) {
-          const oldQ = query(collection(db, "users"), where("role", "==", "student"), where("instructor", "==", instructorFullName));
+          // Fallback: try old field "instructor"
+          const oldQ = query(
+            collection(db, "users"),
+            where("role", "==", "student"),
+            where("instructor", "==", instructorFullName),
+            where("schoolId", "==", SCHOOL_ID)
+          );
           const oldSnaps = await getDocs(oldQ);
           myStudents = oldSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
         }
@@ -1154,7 +1179,12 @@
     async function loadAttendanceRecords() {
       if (myStudents.length === 0) { renderAttendanceTable([]); return; }
       const studentIds = myStudents.map(s => s.id);
-      const allAttSnap = await getDocs(collection(db, "attendance"));
+      // Query attendance with schoolId
+      const attQuery = query(
+        collection(db, "attendance"),
+        where("schoolId", "==", SCHOOL_ID)
+      );
+      const allAttSnap = await getDocs(attQuery);
       attendanceRecords = allAttSnap.docs.map(d => ({ id: d.id, ...d.data() }))
         .filter(rec => studentIds.includes(rec.studentId))
         .sort((a,b) => (b.date?.toDate?.() || 0) - (a.date?.toDate?.() || 0));
@@ -1506,7 +1536,11 @@
 
     async function loadNotifications() {
       try {
-        const q = query(collection(db, "instructorNotifications"), where("instructorId", "==", currentUser.uid));
+        const q = query(
+          collection(db, "instructorNotifications"),
+          where("instructorId", "==", currentUser.uid),
+          where("schoolId", "==", SCHOOL_ID)
+        );
         const snaps = await getDocs(q);
         let notifs = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
         notifs.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
@@ -1544,12 +1578,21 @@
 
     async function loadMyAttendance() {
       try {
-        const q = query(collection(db, "instructorAttendance"), where("instructorId", "==", currentUser.uid), orderBy("date", "desc"));
+        const q = query(
+          collection(db, "instructorAttendance"),
+          where("instructorId", "==", currentUser.uid),
+          where("schoolId", "==", SCHOOL_ID),
+          orderBy("date", "desc")
+        );
         const snaps = await getDocs(q);
         myAttendanceRecords = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
       } catch(e) {
         try {
-          const fallbackQ = query(collection(db, "instructorAttendance"), where("instructorId", "==", currentUser.uid));
+          const fallbackQ = query(
+            collection(db, "instructorAttendance"),
+            where("instructorId", "==", currentUser.uid),
+            where("schoolId", "==", SCHOOL_ID)
+          );
           const snaps = await getDocs(fallbackQ);
           myAttendanceRecords = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
           myAttendanceRecords.sort((a, b) => (b.date?.toDate?.() || 0) - (a.date?.toDate?.() || 0));
@@ -1721,7 +1764,11 @@
     async function loadInstructorClasses() {
       try {
         const instructorName = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim();
-        const q = query(collection(db, "classes"), where("instructorName", "==", instructorName));
+        const q = query(
+          collection(db, "classes"),
+          where("instructorName", "==", instructorName),
+          where("schoolId", "==", SCHOOL_ID)
+        );
         const snaps = await getDocs(q);
         allInstructorClasses = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
         renderUpcomingSessions();

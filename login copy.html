@@ -511,16 +511,17 @@
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ── FIREBASE CONFIG ──
-   const firebaseConfig = {
-  apiKey: "AIzaSyAaGMZc34_v-fvTvjs4jgw67tJXBYvrNBM",
-  authDomain: "dekaydrivingschool-6933c.firebaseapp.com",
-  projectId: "dekaydrivingschool-6933c",
-  storageBucket: "dekaydrivingschool-6933c.firebasestorage.app",
-  messagingSenderId: "1017266487810",
-  appId: "1:1017266487810:web:d1f9f6fc7b131b3d391d1b",
-  measurementId: "G-QTR8V6LG85"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyA5TnyzHJpcHcM2N-77gkyAaj7yRru3-V0",
+    authDomain: "marvini-smart-driving-school.firebaseapp.com",
+    projectId: "marvini-smart-driving-school",
+    storageBucket: "marvini-smart-driving-school.firebasestorage.app",
+    messagingSenderId: "750557352716",
+    appId: "1:750557352716:web:dcae14b3dacaea88a4ef29",
+    measurementId: "G-RHRMJLDLDK"
+  };
 
+    const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
 
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -558,9 +559,22 @@
           return;
         }
 
-        // Existing user – check if pending
-        if (snap.data().status === "pending") {
+        const userData = snap.data();
+
+        // --- NEW: Check if user belongs to this school ---
+        if (userData.schoolId !== SCHOOL_ID) {
           await signOut(auth);
+          await deleteUser(user);
+          showToast("You are not authorized to access this school's portal.", "error");
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          return;
+        }
+
+        // Check if pending
+        if (userData.status === "pending" || userData.status === "disabled") {
+          await signOut(auth);
+          await deleteUser(user);
           showToast("Your account is pending approval.", "error");
           btn.disabled = false;
           btn.style.opacity = "1";
@@ -588,20 +602,39 @@
         const userSnap = await getDoc(doc(db, "users", user.uid));
         if (userSnap.exists()) {
           const userData = userSnap.data();
-          // Block pending students
-          if (userData.status === "pending") {
+
+          // --- NEW: Check if user belongs to this school ---
+          if (userData.schoolId !== SCHOOL_ID) {
+            await signOut(auth);
+            alert("You are not authorized to access this school's portal.");
+            return;
+          }
+
+          // Block pending or disabled students
+          if (userData.status === "pending" || userData.status === "disabled") {
             await signOut(auth);
             return;
           }
+          
           const role = userData.role;
           if (role === "admin")   window.location.href = "/dashboard/admin";
-          else                    window.location.href = "/dashboard/student";
+          else if (role === "student") window.location.href = "/dashboard/student";
+          else {
+            await signOut(auth);
+            return;
+          }
           return;
         }
 
         // Not a student/admin – check instructors collection
         const instructorSnap = await getDoc(doc(db, "instructors", user.uid));
         if (instructorSnap.exists() && instructorSnap.data().status === "active") {
+          // --- NEW: Check if instructor belongs to this school ---
+          if (instructorSnap.data().schoolId !== SCHOOL_ID) {
+            await signOut(auth);
+            alert("You are not authorized to access this school's portal.");
+            return;
+          }
           window.location.href = "/dashboard/instructor.html";
           return;
         }
@@ -685,6 +718,16 @@
           const userData = snap.data();
           const role = userData.role;
 
+          // --- NEW: Check if user belongs to this school ---
+          if (userData.schoolId !== SCHOOL_ID) {
+            await window._firebaseAuth.signOut();
+            setError("passError", "You are not authorized to access this school's portal.");
+            btn.disabled = false;
+            btn.classList.remove("loading");
+            showToast("Access denied", "error");
+            return;
+          }
+
           // Role mismatch guard for student/admin
           if (currentRole === "admin" && role !== "admin") {
             throw new Error("not-admin");
@@ -713,6 +756,15 @@
             window._firebaseDoc(window._firebaseDb, "instructors", cred.user.uid)
           );
           if (instructorSnap.exists() && instructorSnap.data().status === "active") {
+            // --- NEW: Check if instructor belongs to this school ---
+            if (instructorSnap.data().schoolId !== SCHOOL_ID) {
+              await window._firebaseAuth.signOut();
+              setError("passError", "You are not authorized to access this school's portal.");
+              btn.disabled = false;
+              btn.classList.remove("loading");
+              showToast("Access denied", "error");
+              return;
+            }
             // If toggle is not "instructor", deny
             if (currentRole !== "instructor") {
               throw new Error("role-mismatch-instructor");
