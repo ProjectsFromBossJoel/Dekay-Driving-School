@@ -537,6 +537,8 @@
     window._firebaseGetDoc = getDoc;
     window._signIn       = signInWithEmailAndPassword;
     window._resetPass    = sendPasswordResetEmail;
+    window._updateDoc    = updateDoc;
+    window.loginInProgress = false;
 
         
         // Google Sign-In handler
@@ -597,6 +599,7 @@
     // Redirect if already signed in
     onAuthStateChanged(auth, async (user) => {
       if (!user) return;
+      if (window.loginInProgress) return; // handleLogin() already owns this sign-in
       try {
         // First check users collection (students/admins)
         const userSnap = await getDoc(doc(db, "users", user.uid));

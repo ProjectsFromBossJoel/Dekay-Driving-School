@@ -528,6 +528,7 @@
   };
 
     const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
+    window.SCHOOL_ID = SCHOOL_ID;
 
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -543,6 +544,8 @@
     window._firebaseGetDoc = getDoc;
     window._signIn       = signInWithEmailAndPassword;
     window._resetPass    = sendPasswordResetEmail;
+    window._updateDoc    = updateDoc;
+    window.loginInProgress = false;
 
         
         // Google Sign-In handler
@@ -649,6 +652,7 @@
         // Redirect if already signed in
     onAuthStateChanged(auth, async (user) => {
       if (!user) return;
+      if (window.loginInProgress) return; // handleLogin() already owns this sign-in
       try {
         // First check users collection (students/admins)
         const userSnap = await getDoc(doc(db, "users", user.uid));
@@ -663,7 +667,7 @@
           }
 
           // --- For everyone else, check schoolId ---
-          if (userData.schoolId !== SCHOOL_ID) {
+          if (userData.schoolId !== window.SCHOOL_ID) {
             await signOut(auth);
             alert("You are not authorized to access this school's portal.");
             return;
@@ -776,6 +780,7 @@
   if (!email) return setError("emailError", "Email address is required.");
   if (!pass)  return setError("passError",  "Password is required.");
 
+  window.loginInProgress = true;
   const btn = document.getElementById("loginBtn");
   btn.disabled = true; btn.classList.add("loading");
 
@@ -784,6 +789,7 @@
   let cred;
   try {
     cred = await window._signIn(window._firebaseAuth, email, pass);
+    await cred.user.getIdToken(true); // force-refresh token before any Firestore read
   } catch (err) {
     btn.disabled = false; btn.classList.remove("loading");
     const code = err.code || err.message || "";
@@ -805,16 +811,16 @@
     const uid = cred.user.uid;
     let userDoc = null, collectionName = null, userData = null;
 
-    let snap = await getDoc(doc(db, "students", uid));
+    let snap = await window._firebaseGetDoc(window._firebaseDoc(window._firebaseDb, "students", uid));
     if (snap.exists()) { userDoc = snap; collectionName = "students"; userData = snap.data(); }
 
     if (!userDoc) {
-      snap = await getDoc(doc(db, "users", uid));
+      snap = await window._firebaseGetDoc(window._firebaseDoc(window._firebaseDb, "users", uid));
       if (snap.exists()) { userDoc = snap; collectionName = "users"; userData = snap.data(); }
     }
 
     if (!userDoc) {
-      snap = await getDoc(doc(db, "instructors", uid));
+      snap = await window._firebaseGetDoc(window._firebaseDoc(window._firebaseDb, "instructors", uid));
       if (snap.exists()) { userDoc = snap; collectionName = "instructors"; userData = snap.data(); }
     }
 
@@ -834,7 +840,7 @@
     if (role === "superAdmin") {
       redirectUrl = "/dashboard/admin";
     } else {
-      if (userData.schoolId !== SCHOOL_ID) {
+      if (userData.schoolId !== window.SCHOOL_ID) {
         await window._firebaseAuth.signOut();
         setError("passError", "You are not authorized to access this school's portal.");
         showToast("Access denied", "error");
@@ -873,7 +879,7 @@
     if (!redirectUrl) throw new Error("account-not-found");
 
     // Success — safe to write now (account is active/approved)
-    await updateDoc(userDoc.ref, { loginAttempts: 0, locked: false });
+    await window._updateDoc(userDoc.ref, { loginAttempts: 0, locked: false });
 
     showToast("Signed in! Redirecting…");
     setTimeout(() => {
@@ -881,6 +887,7 @@
     }, 800);
 
   } catch (err) {
+    console.error("LOGIN STEP2 ERROR:", err);
     await window._firebaseAuth.signOut().catch(() => {});
     const code = err.code || err.message || "";
     if (code === "account-not-found") {
@@ -901,6 +908,7 @@
   } finally {
     btn.disabled = false;
     btn.classList.remove("loading");
+    window.loginInProgress = false;
   }
 }
 
