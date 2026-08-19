@@ -513,7 +513,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, deleteUser }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs, updateDoc }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ── FIREBASE CONFIG ──
@@ -546,7 +546,7 @@
 
         
         // Google Sign-In handler
-        window.handleGoogleLogin = async function() {
+      window.handleGoogleLogin = async function() {
       const btn = document.getElementById("googleBtn");
       btn.disabled = true;
       btn.style.opacity = "0.7";
@@ -554,24 +554,13 @@
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
 
-        // Check if user doc exists in Firestore
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (!snap.exists()) {
-          // ❌ No account – delete the auth user we just created
-          await deleteUser(user);
-          showToast("No account found. Please register first or contact the school.", "error");
-          btn.disabled = false;
-          btn.style.opacity = "1";
-          return;
-        }
+        // 1. Check users collection (admins)
+        let snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          const userData = snap.data();
+          const role = userData.role;
 
-        const userData = snap.data();
-        const role = userData.role;
-
-        // --- NEW: SuperAdmin bypasses school check ---
-        if (role !== "superAdmin") {
-          // Check if user belongs to this school
-          if (userData.schoolId !== SCHOOL_ID) {
+          if (role !== "superAdmin" && userData.schoolId !== SCHOOL_ID) {
             await signOut(auth);
             await deleteUser(user);
             showToast("You are not authorized to access this school's portal.", "error");
@@ -579,19 +568,72 @@
             btn.style.opacity = "1";
             return;
           }
-        }
 
-        // Check if pending
-        if (userData.status === "pending" || userData.status === "disabled") {
-          await signOut(auth);
-          await deleteUser(user);
-          showToast("Your account is pending approval.", "error");
+          if (userData.status === "pending" || userData.status === "disabled") {
+            await signOut(auth);
+            await deleteUser(user);
+            showToast("Your account is pending approval.", "error");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            return;
+          }
+
           btn.disabled = false;
           btn.style.opacity = "1";
           return;
         }
 
-        // auth state observer will auto‑redirect
+        // 2. Check students collection
+        const studentSnap = await getDoc(doc(db, "students", user.uid));
+        if (studentSnap.exists()) {
+          const studentData = studentSnap.data();
+
+          if (studentData.schoolId !== SCHOOL_ID) {
+            await signOut(auth);
+            await deleteUser(user);
+            showToast("You are not authorized to access this school's portal.", "error");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            return;
+          }
+
+          if (studentData.status === "pending" || studentData.status === "disabled") {
+            await signOut(auth);
+            await deleteUser(user);
+            showToast("Your account is pending approval.", "error");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            return;
+          }
+
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          return;
+        }
+
+        // 3. Check instructors collection
+        const instructorSnap = await getDoc(doc(db, "instructors", user.uid));
+        if (instructorSnap.exists() && instructorSnap.data().status === "active") {
+          if (instructorSnap.data().schoolId !== SCHOOL_ID) {
+            await signOut(auth);
+            await deleteUser(user);
+            showToast("You are not authorized to access this school's portal.", "error");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            return;
+          }
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          return;
+        }
+
+        // No account found
+        await signOut(auth);
+        await deleteUser(user);
+        showToast("Account not found. Please register first or contact the school.", "error");
+        btn.disabled = false;
+        btn.style.opacity = "1";
+
       } catch (err) {
         console.error(err);
         btn.disabled = false;
@@ -639,6 +681,23 @@
             await signOut(auth);
             return;
           }
+          return;
+        }
+
+        // Not in users – check students collection
+        const studentSnap = await getDoc(doc(db, "students", user.uid));
+        if (studentSnap.exists()) {
+          const studentData = studentSnap.data();
+          if (studentData.schoolId !== SCHOOL_ID) {
+            await signOut(auth);
+            alert("You are not authorized to access this school's portal.");
+            return;
+          }
+          if (studentData.status === "pending" || studentData.status === "disabled") {
+            await signOut(auth);
+            return;
+          }
+          window.location.href = "/dashboard/student";
           return;
         }
 
@@ -709,123 +768,186 @@
       el.classList.toggle("show", !!msg);
     }
 
-        async function handleLogin() {
-      const email = document.getElementById("loginEmail").value.trim();
-      const pass  = document.getElementById("loginPassword").value;
-      setError("emailError", ""); setError("passError", "");
+      async function handleLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass  = document.getElementById("loginPassword").value;
+  setError("emailError", ""); setError("passError", "");
 
-      if (!email) return setError("emailError", "Email address is required.");
-      if (!pass)  return setError("passError",  "Password is required.");
+  if (!email) return setError("emailError", "Email address is required.");
+  if (!pass)  return setError("passError",  "Password is required.");
 
-      const btn = document.getElementById("loginBtn");
-      btn.disabled = true; btn.classList.add("loading");
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true; btn.classList.add("loading");
 
-      try {
-        const cred = await window._signIn(window._firebaseAuth, email, pass);
-        
-        // First check users collection (students/admins)
-        let snap = await window._firebaseGetDoc(
-          window._firebaseDoc(window._firebaseDb, "users", cred.user.uid)
-        );
+  try {
+    // 1. Find user document by email across collections
+    let userDoc = null;
+    let collectionName = null;
+    let userData = null;
 
-        let redirectUrl = null;
-
-        if (snap.exists()) {
-          const userData = snap.data();
-          const role = userData.role;
-
-          // --- NEW: SuperAdmin bypasses school check ---
-          if (role === "superAdmin") {
-            redirectUrl = "/dashboard/admin";
-          } else {
-            // --- For everyone else, check schoolId ---
-            if (userData.schoolId !== SCHOOL_ID) {
-              await window._firebaseAuth.signOut();
-              setError("passError", "You are not authorized to access this school's portal.");
-              btn.disabled = false;
-              btn.classList.remove("loading");
-              showToast("Access denied", "error");
-              return;
-            }
-          }
-
-          // Role mismatch guard for student/admin
-          if (currentRole === "admin" && role !== "admin" && role !== "superAdmin") {
-            throw new Error("not-admin");
-          }
-          if (currentRole === "student" && role !== "student") {
-            throw new Error("not-student");
-          }
-          // If toggle is instructor but the user is a student/admin, deny
-          if (currentRole === "instructor") {
-            throw new Error("not-instructor");
-          }
-          // Block pending students
-          if (userData.status === "pending") {
-            await window._firebaseAuth.signOut();
-            setError("passError", "Your account is pending approval.");
-            btn.disabled = false;
-            btn.classList.remove("loading");
-            showToast("Account pending approval", "error");
-            return;
-          }
-
-          if (!redirectUrl) {
-            redirectUrl = role === "admin" || role === "superAdmin" ? "/dashboard/admin" : "/dashboard/student";
-          }
-        } else {
-          // Not in users – must be an instructor (or nothing)
-          const instructorSnap = await window._firebaseGetDoc(
-            window._firebaseDoc(window._firebaseDb, "instructors", cred.user.uid)
-          );
-          if (instructorSnap.exists() && instructorSnap.data().status === "active") {
-            // Check if instructor belongs to this school
-            if (instructorSnap.data().schoolId !== SCHOOL_ID) {
-              await window._firebaseAuth.signOut();
-              setError("passError", "You are not authorized to access this school's portal.");
-              btn.disabled = false;
-              btn.classList.remove("loading");
-              showToast("Access denied", "error");
-              return;
-            }
-            // If toggle is not "instructor", deny
-            if (currentRole !== "instructor") {
-              throw new Error("role-mismatch-instructor");
-            }
-            redirectUrl = "/dashboard/instructor.html";
-          } else {
-            throw new Error("account-not-found");
-          }
+    // Check students first (most common)
+    const studentQuery = query(collection(db, "students"), where("email", "==", email));
+    const studentSnap = await getDocs(studentQuery);
+    if (!studentSnap.empty) {
+      userDoc = studentSnap.docs[0];
+      collectionName = "students";
+      userData = userDoc.data();
+    } else {
+      // Check users (admins)
+      const userQuery = query(collection(db, "users"), where("email", "==", email));
+      const userSnap = await getDocs(userQuery);
+      if (!userSnap.empty) {
+        userDoc = userSnap.docs[0];
+        collectionName = "users";
+        userData = userDoc.data();
+      } else {
+        // Check instructors
+        const instrQuery = query(collection(db, "instructors"), where("email", "==", email));
+        const instrSnap = await getDocs(instrQuery);
+        if (!instrSnap.empty) {
+          userDoc = instrSnap.docs[0];
+          collectionName = "instructors";
+          userData = userDoc.data();
         }
-
-        if (!redirectUrl) throw new Error("account-not-found");
-
-        showToast("Signed in! Redirecting…");
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 800);
-
-      } catch(err) {
-        btn.disabled = false; btn.classList.remove("loading");
-        const code = err.code || err.message;
-        if (code.includes("user-not-found") || code.includes("wrong-password") || code.includes("invalid-credential") || code === "account-not-found") {
-          setError("passError", "Email or password is incorrect, or account not approved yet.");
-        } else if (code === "not-admin") {
-          setError("passError", "This account is not an admin account.");
-        } else if (code === "not-student") {
-          setError("passError", "This account is not a student account.");
-        } else if (code === "not-instructor") {
-          setError("passError", "Please select the Instructor role to log in.");
-        } else if (code === "role-mismatch-instructor") {
-          setError("passError", "This is an instructor account. Please select the Instructor role.");
-        } else if (code.includes("too-many-requests")) {
-          setError("passError", "Too many failed attempts. Please wait a moment.");
-        } else {
-          setError("passError", "Sign in failed. Check your connection and try again.");
-        }
-        showToast("Sign in failed", "error");
       }
     }
+
+    // If no user found at all
+    if (!userDoc) {
+      throw new Error("account-not-found");
+    }
+
+    // 2. Check locked status
+    if (userData.locked === true) {
+      await window._firebaseAuth.signOut();
+      setError("passError", "Account locked due to too many failed attempts. Contact administrator.");
+      btn.disabled = false; btn.classList.remove("loading");
+      showToast("Account locked", "error");
+      return;
+    }
+
+    // 3. Check login attempts (>= 3 locks the account immediately)
+    const attempts = userData.loginAttempts || 0;
+    if (attempts >= 3) {
+      // Lock the account
+      await updateDoc(userDoc.ref, { locked: true, loginAttempts: 0 });
+      await window._firebaseAuth.signOut();
+      setError("passError", "Account locked due to too many failed attempts. Contact administrator.");
+      btn.disabled = false; btn.classList.remove("loading");
+      showToast("Account locked", "error");
+      return;
+    }
+
+    // 4. Attempt sign‑in
+    const cred = await window._signIn(window._firebaseAuth, email, pass);
+
+    // 5. Success – reset attempts and locked (if any)
+    await updateDoc(userDoc.ref, { loginAttempts: 0, locked: false });
+
+    // 6. Now perform role checks and redirect
+    let redirectUrl = null;
+    const role = userData.role || (collectionName === "instructors" ? "instructor" : "");
+
+    // --- NEW: SuperAdmin bypasses school check ---
+    if (role === "superAdmin") {
+      redirectUrl = "/dashboard/admin";
+    } else {
+      // --- For everyone else, check schoolId ---
+      if (userData.schoolId !== SCHOOL_ID) {
+        await window._firebaseAuth.signOut();
+        setError("passError", "You are not authorized to access this school's portal.");
+        btn.disabled = false; btn.classList.remove("loading");
+        showToast("Access denied", "error");
+        return;
+      }
+
+      // Role mismatch guards
+      if (currentRole === "admin" && role !== "admin" && role !== "superAdmin") {
+        throw new Error("not-admin");
+      }
+      if (currentRole === "student" && role !== "student") {
+        throw new Error("not-student");
+      }
+      if (currentRole === "instructor" && role !== "instructor") {
+        throw new Error("not-instructor");
+      }
+
+      // Block pending/disabled
+      if (userData.status === "pending" || userData.status === "disabled") {
+        await window._firebaseAuth.signOut();
+        setError("passError", "Your account is pending approval.");
+        btn.disabled = false; btn.classList.remove("loading");
+        showToast("Account pending approval", "error");
+        return;
+      }
+
+      if (!redirectUrl) {
+        if (role === "admin" || role === "superAdmin") {
+          redirectUrl = "/dashboard/admin";
+        } else if (role === "student") {
+          redirectUrl = "/dashboard/student";
+        } else if (role === "instructor") {
+          redirectUrl = "/dashboard/instructor.html";
+        } else {
+          throw new Error("account-not-found");
+        }
+      }
+    }
+
+    if (!redirectUrl) throw new Error("account-not-found");
+
+    showToast("Signed in! Redirecting…");
+    setTimeout(() => {
+      window.location.href = redirectUrl;
+    }, 800);
+
+  } catch(err) {
+    btn.disabled = false; btn.classList.remove("loading");
+    const code = err.code || err.message;
+
+    // Handle wrong‑password specifically – we already checked attempts before sign-in,
+    // but if the sign-in fails due to wrong password (the only reason after we've checked),
+    // we need to increment attempts.
+    if (code.includes("wrong-password") || code.includes("invalid-credential")) {
+      // Increment attempts if we have a userDoc
+      if (userDoc) {
+        const currentAttempts = (userData?.loginAttempts || 0) + 1;
+        if (currentAttempts >= 3) {
+          await updateDoc(userDoc.ref, { locked: true, loginAttempts: 0 });
+          setError("passError", "Account locked due to too many failed attempts. Contact administrator.");
+          showToast("Account locked", "error");
+        } else {
+          await updateDoc(userDoc.ref, { loginAttempts: currentAttempts });
+          setError("passError", "Invalid email or password. Please try again.");
+          showToast("Invalid credentials", "error");
+        }
+      } else {
+        setError("passError", "Invalid email or password. Please try again.");
+        showToast("Invalid credentials", "error");
+      }
+    } else if (code === "account-not-found") {
+      setError("passError", "Account not found. Please register first or contact the school.");
+      showToast("Account not found", "error");
+    } else if (code === "not-admin") {
+      setError("passError", "This account is not an admin account.");
+    } else if (code === "not-student") {
+      setError("passError", "Please select the Student role to log in.");
+    } else if (code === "not-instructor") {
+      setError("passError", "Please select the Instructor role to log in.");
+    } else if (code === "role-mismatch-instructor") {
+      setError("passError", "This is an instructor account. Please select the Instructor role.");
+    } else if (code.includes("too-many-requests")) {
+      setError("passError", "Too many failed attempts. Please wait a moment.");
+    } else {
+      setError("passError", "Sign in failed. Check your connection and try again.");
+    }
+    // Note: We don't set btn.disabled or remove loading here because we already did at top of catch.
+  } finally {
+    // Ensure button is always re-enabled
+    btn.disabled = false;
+    btn.classList.remove("loading");
+  }
+}
 
     async function handleReset() {
       const email = document.getElementById("resetEmail").value.trim();
