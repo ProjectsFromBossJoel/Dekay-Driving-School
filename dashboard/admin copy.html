@@ -565,7 +565,7 @@
       div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
     }
     html, body { max-width: 100vw; overflow-x: hidden; }
-    .card, table, .modal { max-width: 100%; }
+    .card, table { max-width: 100%; }
 
     /* ── MOBILE BOTTOM NAV (Bolt-app style) ── */
     .mobile-bottom-nav, .mobile-more-sheet, .mobile-more-overlay { display: none; }
@@ -2099,18 +2099,51 @@
         <div class="page-sub">View all course documents and materials uploaded with classes.</div>
       </div>
 
-      <div class="filter-bar">
-        <div class="search-input-wrap">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" class="search-input" id="resourceSearch" placeholder="Search by course or class title…" oninput="filterResources()" />
-        </div>
-        <select class="filter-select" id="resourceCourseFilter" onchange="filterResources()">
-          <option value="">All courses</option>
-        </select>
+      <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+        <button class="btn btn-gold" id="tabClassDocs" onclick="switchResourcesTab('classdocs')" style="min-width:160px; justify-content:center;">
+          <i class="fas fa-chalkboard"></i> Class Documents
+        </button>
+        <button class="btn btn-outline" id="tabMediaLibrary" onclick="switchResourcesTab('media')" style="min-width:160px; justify-content:center;">
+          <i class="fas fa-photo-video"></i> Media Library
+        </button>
       </div>
 
-      <div id="adminResourcesContainer">
-        <div style="text-align:center;color:var(--text-muted);padding:40px;">Loading resources…</div>
+      <div id="classDocsView">
+        <div class="filter-bar">
+          <div class="search-input-wrap">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="resourceSearch" placeholder="Search by course or class title…" oninput="filterResources()" />
+          </div>
+          <select class="filter-select" id="resourceCourseFilter" onchange="filterResources()">
+            <option value="">All courses</option>
+          </select>
+        </div>
+
+        <div id="adminResourcesContainer">
+          <div style="text-align:center;color:var(--text-muted);padding:40px;">Loading resources…</div>
+        </div>
+      </div>
+
+      <div id="mediaLibraryView" style="display:none;">
+        <div class="filter-bar">
+          <div class="search-input-wrap">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="mediaSearch" placeholder="Search media…" oninput="filterMediaLibrary()" />
+          </div>
+          <select class="filter-select" id="mediaTypeFilter" onchange="filterMediaLibrary()">
+            <option value="">All types</option>
+            <option value="video">Videos</option>
+            <option value="image">Images</option>
+            <option value="document">Documents</option>
+          </select>
+        </div>
+        <div class="stat-grid" id="mediaLibraryGrid" style="grid-template-columns:repeat(4,1fr);">
+          <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading media…</div>
+        </div>
+        <div class="pagination-wrap" id="mediaPagination" style="display:none;">
+          <div class="pagination-info" id="mediaPageInfo">Showing 1–12 of 0</div>
+          <div class="pagination-btns" id="mediaPageBtns"></div>
+        </div>
       </div>
     </div>
 
@@ -2477,22 +2510,37 @@
     </div>
 
    <!-- ── MARK ATTENDANCE MODAL ── -->
-    <!-- ── MARK ATTENDANCE MODAL ── -->
   <div class="modal-overlay" id="markAttModal">
-    <div class="modal" style="max-width:480px">
+    <div class="modal" style="max-width:540px">
       <div class="modal-header">
         <div class="modal-title" id="attModalTitle">Mark session attendance</div>
         <button class="modal-close" onclick="closeModal('markAttModal')"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
-        <!-- Student Selection (only for student attendance) -->
-        <div class="form-group" id="attStudentRow">
-          <label class="form-label">Student <span>*</span></label>
-          <select id="attStudentSelect" class="form-select" onchange="loadCoursesForInstructor()">
-            <option value="">Select student…</option>
+        <!-- Attendee row: Student (student mode) + Instructor (student mode, "who ran it") -->
+        <div class="form-row">
+          <div class="form-group" id="attStudentRow">
+            <label class="form-label">Student <span>*</span></label>
+            <select id="attStudentSelect" class="form-select" onchange="loadCoursesForInstructor()">
+              <option value="">Select student…</option>
+            </select>
+          </div>
+          <div class="form-group" id="attInstructorRow">
+            <label class="form-label">Instructor <span>*</span></label>
+            <select id="attInstructor" class="form-select" onchange="loadCoursesForInstructor()">
+              <option value="">Select instructor…</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Instructor Name (instructor-attendance mode only — full width, replaces the row above) -->
+        <div class="form-group" id="attInstructorNameRow">
+          <label class="form-label">Instructor <span>*</span></label>
+          <select id="attInstructorName" class="form-select" onchange="loadCoursesForInstructorName()">
+            <option value="">Select instructor…</option>
           </select>
         </div>
-        
+
         <!-- Date and Status -->
         <div class="form-row">
           <div class="form-group">
@@ -2508,39 +2556,23 @@
             </select>
           </div>
         </div>
-        
-        <!-- Instructor (for student attendance) OR Instructor Name (for instructor attendance) -->
-        <div class="form-group" id="attInstructorRow">
-          <label class="form-label">Instructor <span>*</span></label>
-          <select id="attInstructor" class="form-select" onchange="loadCoursesForInstructor()">
-            <option value="">Select instructor…</option>
-          </select>
+
+        <!-- Course + Class Title (always both visible, in either mode) -->
+        <div class="form-row">
+          <div class="form-group" id="attCourseRow">
+            <label class="form-label">Course <span>*</span></label>
+            <select id="attCourse" class="form-select" onchange="loadClassesForCourse()">
+              <option value="">Select course…</option>
+            </select>
+          </div>
+          <div class="form-group" id="attClassRow">
+            <label class="form-label">Class Title</label>
+            <select id="attClass" class="form-select">
+              <option value="">Select class…</option>
+            </select>
+          </div>
         </div>
-        
-        <!-- Instructor Name (for instructor attendance - dropdown) -->
-        <div class="form-group" id="attInstructorNameRow">
-          <label class="form-label">Instructor <span>*</span></label>
-          <select id="attInstructorName" class="form-select" onchange="loadCoursesForInstructorName()">
-            <option value="">Select instructor…</option>
-          </select>
-        </div>
-        
-        <!-- Course Selection (populated based on selected instructor) -->
-        <div class="form-group" id="attCourseRow">
-          <label class="form-label">Course <span>*</span></label>
-          <select id="attCourse" class="form-select" onchange="loadClassesForCourse()">
-            <option value="">Select course…</option>
-          </select>
-        </div>
-        
-        <!-- Class Title (populated based on selected course) -->
-        <div class="form-group" id="attClassRow">
-          <label class="form-label">Class Title</label>
-          <select id="attClass" class="form-select">
-            <option value="">Select class…</option>
-          </select>
-        </div>
-        
+
         <!-- Hidden session type field (for backward compatibility) -->
         <input type="hidden" id="attSessionType" value="Practical" />
       </div>
@@ -9068,6 +9100,166 @@ window.showBusyResources = showBusyResources;
     openModal("adminResourceModal");
   };
 
+  // ══════════════════════════════════════
+  // MEDIA LIBRARY (aggregated Cloudinary assets)
+  // ══════════════════════════════════════
+  let allMediaItems = [];
+  let filteredMediaItems = [];
+  let mediaPage = 1;
+  const MEDIA_PAGE_SIZE = 12;
+  let resourcesTab = 'classdocs';
+
+  window.switchResourcesTab = function(tab) {
+    resourcesTab = tab;
+    document.getElementById("classDocsView").style.display = tab === 'classdocs' ? 'block' : 'none';
+    document.getElementById("mediaLibraryView").style.display = tab === 'media' ? 'block' : 'none';
+    document.getElementById("tabClassDocs").className = tab === 'classdocs' ? 'btn btn-gold' : 'btn btn-outline';
+    document.getElementById("tabMediaLibrary").className = tab === 'media' ? 'btn btn-gold' : 'btn btn-outline';
+    if (tab === 'media' && !allMediaItems.length) loadMediaLibrary();
+  };
+
+  function fileExtFromUrl(url) {
+    if (!url) return '';
+    const clean = url.split('?')[0].split('#')[0];
+    const parts = clean.split('.');
+    return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
+  }
+
+  async function loadMediaLibrary() {
+    const grid = document.getElementById("mediaLibraryGrid");
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading media…</div>';
+    try {
+      const items = [];
+
+      (window._allLessons || allLessonsFlat || []).forEach(l => {
+        if (l.videoUrl) items.push({ type: 'video', url: l.videoUrl, name: l.title || 'Lesson video', source: `Lesson · ${l.folder || ''}` });
+        if (l.thumbnailUrl) items.push({ type: 'image', url: l.thumbnailUrl, name: `${l.title || 'Lesson'} (thumbnail)`, source: `Lesson · ${l.folder || ''}` });
+      });
+
+      try {
+        const qSnap = await getDocs(collection(db, "quizQuestions"));
+        qSnap.docs.forEach(d => {
+          const q = d.data();
+          if (q.imageUrl) items.push({ type: 'image', url: q.imageUrl, name: (q.text || 'Quiz question').slice(0, 60), source: 'Quiz question' });
+        });
+      } catch(e) { console.error("Media: quiz images failed", e); }
+
+      (window._allVehicles || allVehicles || []).forEach(v => {
+        if (v.imageUrl) items.push({ type: 'image', url: v.imageUrl, name: `${v.year || ''} ${v.make || ''} ${v.model || ''}`.trim() || 'Vehicle photo', source: 'Vehicle' });
+      });
+
+      try {
+        const cSnap = await getDocs(query(collection(db, "certificates"), where("schoolId", "==", adminSchoolId)));
+        cSnap.docs.forEach(d => {
+          const c = d.data();
+          if (c.imageUrl) items.push({ type: 'image', url: c.imageUrl, name: `${c.studentName || 'Certificate'} — ${c.serialNumber || ''}`.trim(), source: 'Certificate' });
+        });
+      } catch(e) { console.error("Media: certificates failed", e); }
+
+      try {
+        const iSnap = await getDocs(query(collection(db, "instructors"), where("schoolId", "==", adminSchoolId)));
+        iSnap.docs.forEach(d => {
+          const i = d.data();
+          const name = `${i.firstName || ''} ${i.lastName || ''}`.trim() || 'Instructor';
+          if (i.profilePhoto) items.push({ type: 'image', url: i.profilePhoto, name: `${name} (profile photo)`, source: 'Instructor' });
+          if (i.avatarUrl) items.push({ type: 'image', url: i.avatarUrl, name: `${name} (profile photo)`, source: 'Instructor' });
+          if (i.ghCardFront) items.push({ type: 'image', url: i.ghCardFront, name: `${name} (Ghana Card front)`, source: 'Instructor' });
+          if (i.ghCardBack) items.push({ type: 'image', url: i.ghCardBack, name: `${name} (Ghana Card back)`, source: 'Instructor' });
+          (Array.isArray(i.certifications) ? i.certifications : []).forEach(c => {
+            const url = c.documentUrl || c.url;
+            if (url) items.push({ type: 'document', url, name: `${name} — ${c.name || 'Certification'}`, source: 'Instructor certification' });
+          });
+        });
+      } catch(e) { console.error("Media: instructors failed", e); }
+
+      (allAdminResources && allAdminResources.length ? allAdminResources : []).forEach(cls => {
+        (cls.documents || []).forEach(docItem => {
+          items.push({ type: 'document', url: docItem.url, name: docItem.name || 'Document', source: `Class · ${cls.title || ''}` });
+        });
+      });
+
+      items.forEach(it => {
+        const ext = fileExtFromUrl(it.url);
+        if (it.type === 'document' && ['png','jpg','jpeg','gif','webp'].includes(ext)) it.type = 'image';
+      });
+
+      allMediaItems = items;
+      filteredMediaItems = [...allMediaItems];
+      mediaPage = 1;
+      renderMediaLibraryPage();
+    } catch(e) {
+      console.error("Error loading media library:", e);
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load media.</div>';
+    }
+  }
+
+  window.filterMediaLibrary = function() {
+    const search = (document.getElementById("mediaSearch")?.value || '').toLowerCase();
+    const type = document.getElementById("mediaTypeFilter")?.value || '';
+    filteredMediaItems = allMediaItems.filter(it => {
+      const matchSearch = !search || it.name.toLowerCase().includes(search) || (it.source || '').toLowerCase().includes(search);
+      const matchType = !type || it.type === type;
+      return matchSearch && matchType;
+    });
+    mediaPage = 1;
+    renderMediaLibraryPage();
+  };
+
+  function renderMediaLibraryPage() {
+    const grid = document.getElementById("mediaLibraryGrid");
+    const total = filteredMediaItems.length;
+    if (!total) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No media found.</div>';
+      document.getElementById("mediaPagination").style.display = 'none';
+      return;
+    }
+    const totalPages = Math.ceil(total / MEDIA_PAGE_SIZE) || 1;
+    if (mediaPage > totalPages) mediaPage = totalPages;
+    const start = (mediaPage - 1) * MEDIA_PAGE_SIZE;
+    const pageItems = filteredMediaItems.slice(start, start + MEDIA_PAGE_SIZE);
+
+    const iconMap = { video: 'fa-video', image: 'fa-image', document: 'fa-file' };
+
+    grid.innerHTML = pageItems.map(it => {
+      const preview = it.type === 'image'
+        ? `<div style="width:100%;aspect-ratio:16/9;background:var(--navy);background-image:url(${it.url});background-size:cover;background-position:center;border-radius:10px 10px 0 0;"></div>`
+        : `<div style="width:100%;aspect-ratio:16/9;background:var(--navy);display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0;"><i class="fas ${iconMap[it.type] || 'fa-file'}" style="font-size:28px;color:var(--gold);"></i></div>`;
+      return `<div class="stat-card" style="padding:0;overflow:hidden;">
+        ${preview}
+        <div style="padding:12px;">
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(it.name)}">${escapeHtml(it.name)}</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${escapeHtml(it.source || '')}</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <a href="${it.url}" target="_blank" class="btn btn-outline" style="flex:1;justify-content:center;padding:5px;font-size:11px;"><i class="fas fa-eye"></i> View</a>
+            <button class="btn btn-outline" style="flex:1;justify-content:center;padding:5px;font-size:11px;" onclick="forceDownloadDocument('${it.url}', '${(it.name||'file').replace(/'/g, "\\'")}')"><i class="fas fa-download"></i></button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const paginationEl = document.getElementById("mediaPagination");
+    paginationEl.style.display = 'flex';
+    document.getElementById("mediaPageInfo").textContent = `Showing ${start + 1}–${Math.min(start + MEDIA_PAGE_SIZE, total)} of ${total}`;
+    const btnsEl = document.getElementById("mediaPageBtns");
+    let html = `<button class="page-btn" onclick="goToMediaPage(${mediaPage - 1})" ${mediaPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      if (totalPages <= 7 || i === 1 || i === totalPages || (i >= mediaPage - 1 && i <= mediaPage + 1)) {
+        html += `<button class="page-btn ${i === mediaPage ? 'active' : ''}" onclick="goToMediaPage(${i})">${i}</button>`;
+      } else if (i === mediaPage - 2 || i === mediaPage + 2) {
+        html += `<span style="color:var(--text-muted);padding:0 2px;">…</span>`;
+      }
+    }
+    html += `<button class="page-btn" onclick="goToMediaPage(${mediaPage + 1})" ${mediaPage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+    btnsEl.innerHTML = html;
+  }
+
+  window.goToMediaPage = function(page) {
+    const totalPages = Math.ceil(filteredMediaItems.length / MEDIA_PAGE_SIZE) || 1;
+    if (page < 1 || page > totalPages) return;
+    mediaPage = page;
+    renderMediaLibraryPage();
+  };
+
   // Load resources when page is shown
   async function loadResourcesIfNeeded() {
     if (document.getElementById("page-resources")?.classList.contains("active")) {
@@ -9242,6 +9434,7 @@ window.showBusyResources = showBusyResources;
     await loadClasses();
   } else if (name === "resources") {
     await loadAdminResources();
+    if (resourcesTab === 'media') await loadMediaLibrary();
   } else if (name === "vehicles") {
     // Ensure classes are loaded first so busy tags appear immediately
     if (!allClasses || allClasses.length === 0) {
