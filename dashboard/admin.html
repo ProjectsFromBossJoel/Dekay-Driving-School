@@ -5364,10 +5364,11 @@ window.approveStudent = async function(uid) {
     try {
       const adminName = document.getElementById("adminName").textContent;
       
-      // Update user status
+      // Update student status – explicitly set schoolId to admin's schoolId
       await updateDoc(doc(db, "students", uid), { 
         status: "active",
-        trainingStage: 1
+        trainingStage: 1,
+        schoolId: adminSchoolId
       });
       
       // Initialize stageProgress with Stage 1 completed
@@ -5380,6 +5381,7 @@ window.approveStudent = async function(uid) {
         dvlaReady: false,
         dvlaReadyAt: null,
         updatedAt: serverTimestamp(),
+        schoolId: adminSchoolId,
         stages: {}
       };
       
@@ -5402,13 +5404,14 @@ window.approveStudent = async function(uid) {
           [`stages.1.completedAt`]: serverTimestamp(),
           [`stages.1.approvedBy`]: adminUser.uid,
           [`stages.1.approverRole`]: "admin",
-          [`stages.1.approverName`]: adminName
+          [`stages.1.approverName`]: adminName,
+          schoolId: adminSchoolId
         });
       } else {
         await setDoc(progressRef, defaultProgress);
       }
       
-       // ── SEND APPROVAL EMAIL VIA SERVERLESS FUNCTION ──
+      // ── SEND APPROVAL EMAIL ──
       const student = allStudents.find(s => s.id === uid);
       if (student && student.email) {
         fetch('https://dekay-driving-school.vercel.app/api/send-approval-email', {
@@ -5433,8 +5436,17 @@ window.approveStudent = async function(uid) {
       }
       
       showToast("Student approved ✓", "success");
-      await loadStudents();
-      buildOverview();
+      
+      // Refresh the UI without reloading the page
+      // Small delay to ensure Firestore has updated
+      await new Promise(r => setTimeout(r, 500));
+      
+      await loadStudents();   // this re‑renders both pending and active tables
+      buildOverview();        // updates dashboard stats
+      
+      // Close any open modal (student detail modal)
+      closeModal("studentDetailModal");
+      
     } catch(e) {
       console.error(e);
       showToast("Approval failed. Try again.", "error");
