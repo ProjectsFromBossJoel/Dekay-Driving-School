@@ -1252,7 +1252,7 @@
         return;
       }
 
-      const snap = await getDoc(doc(db, "users", user.uid));
+      const snap = await getDoc(doc(db, "students", user.uid));
 
       if (!snap.exists()) {
         await signOut(auth);
@@ -2178,9 +2178,7 @@
     if (!allWatched) return;
 
     try {
-      await updateDoc(doc(db, "users", currentUser.uid), { 
-        trainingStage: 3
-      });
+      await updateDoc(doc(db, "students", currentUser.uid), {  trainingStage: 3 });
 
       const progressRef = doc(db, "stageProgress", currentUser.uid);
       const studentName = `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim();
@@ -2391,7 +2389,7 @@
     }
     
     try {
-      await updateDoc(doc(db, "users", currentUser.uid), { firstName: first, lastName: last, phone });
+      await updateDoc(doc(db, "students", currentUser.uid), { firstName: first, lastName: last, phone });
       showToast("Profile saved ✓", "success");
       document.getElementById("studentNameGreet").textContent = first || "Student";
     } catch(e) { 
@@ -2414,7 +2412,7 @@
       const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
       const data = await res.json();
       const url  = data.secure_url;
-      await updateDoc(doc(db, "users", currentUser.uid), { avatarUrl: url });
+      await updateDoc(doc(db, "students", currentUser.uid), { avatarUrl: url });
       window.currentAvatarUrl = url;
       document.getElementById("profileAvatarBig").style.backgroundImage = `url(${url})`;
       document.getElementById("profileAvatarBig").style.backgroundSize  = "cover";
@@ -2432,7 +2430,7 @@
       avatarBtn.textContent = "";
 
       if ((studentData.trainingStage || 1) === 1) {
-        await updateDoc(doc(db, "users", currentUser.uid), { trainingStage: 2 });
+        await updateDoc(doc(db, "students", currentUser.uid), { trainingStage: 2 });
         studentData.trainingStage = 2;
         
         const progressRef = doc(db, "stageProgress", currentUser.uid);
@@ -2505,7 +2503,7 @@
     document.getElementById("topbarTitle").textContent = titles[name] || "Portal";
 
     if (name === "dashboard") {
-      getDoc(doc(db, "users", currentUser.uid)).then(snap => {
+      getDoc(doc(db, "students", currentUser.uid)).then(snap => {
         if (snap.exists()) {
           studentData = snap.data();
         }
@@ -2516,7 +2514,7 @@
     if (name === "quizzes") { loadQuizzes(); }
     if (name === "attendance") { loadAttendance(studentData.trainingStage || 1); }
     if (name === "progress") {
-      getDoc(doc(db, "users", currentUser.uid)).then(snap => {
+      getDoc(doc(db, "students", currentUser.uid)).then(snap => {
         if (snap.exists()) {
           studentData = snap.data();
           buildPipelines(studentData.trainingStage || 1, studentData);
@@ -3263,7 +3261,7 @@
       const currentStage = studentData.trainingStage || 1;
       const nextStage = Math.min(currentStage + 1, 6);
       
-      await updateDoc(doc(db, "users", currentUser.uid), { trainingStage: nextStage });
+      await updateDoc(doc(db, "students", currentUser.uid), { trainingStage: nextStage });
       studentData.trainingStage = nextStage;
       
       const stage = nextStage;

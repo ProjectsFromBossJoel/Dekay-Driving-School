@@ -524,15 +524,15 @@
     import { getFirestore, doc, setDoc, serverTimestamp, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, deleteUser, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    const firebaseConfig = {
-    apiKey: "AIzaSyA5TnyzHJpcHcM2N-77gkyAaj7yRru3-V0",
-    authDomain: "marvini-smart-driving-school.firebaseapp.com",
-    projectId: "marvini-smart-driving-school",
-    storageBucket: "marvini-smart-driving-school.firebasestorage.app",
-    messagingSenderId: "750557352716",
-    appId: "1:750557352716:web:dcae14b3dacaea88a4ef29",
-    measurementId: "G-RHRMJLDLDK"
-  };
+      const firebaseConfig = {
+        apiKey: "AIzaSyA5TnyzHJpcHcM2N-77gkyAaj7yRru3-V0",
+        authDomain: "marvini-smart-driving-school.firebaseapp.com",
+        projectId: "marvini-smart-driving-school",
+        storageBucket: "marvini-smart-driving-school.firebasestorage.app",
+        messagingSenderId: "750557352716",
+        appId: "1:750557352716:web:dcae14b3dacaea88a4ef29",
+        measurementId: "G-RHRMJLDLDK"
+      };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -696,7 +696,7 @@
 
         // Sign in with the newly created account so we can write to Firestore
         const userCred = await signInWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", uid), {
+        await setDoc(doc(db, "students", uid), {
           firstName,
           lastName,
           email,
@@ -785,7 +785,7 @@
         const user = result.user;
 
         // Check if user already exists in Firestore
-        const snap = await getDoc(doc(db, "users", user.uid));
+        const snap = await getDoc(doc(db, "students", user.uid));
         if (snap.exists()) {
           // Already registered – delete the new auth user and show error
           await deleteUser(user);
@@ -799,7 +799,7 @@
         const nameParts = (user.displayName || "").split(" ");
         const firstName = nameParts[0] || "";
         const lastName  = nameParts.slice(1).join(" ") || "";
-        await setDoc(doc(db, "users", user.uid), {
+        await setDoc(doc(db, "students", user.uid), {
           firstName,
           lastName,
           email: user.email,

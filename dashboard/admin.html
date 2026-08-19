@@ -3244,7 +3244,7 @@ const firebaseConfig = {
 
       // Keep each student's courseType in sync with this course assignment
       await Promise.all(assignedStudents.map(sid =>
-        updateDoc(doc(db, "users", sid), { courseType: name }).catch(() => {})
+        updateDoc(doc(db, "students", sid), { courseType: name }).catch(() => {})
       ));
 
       // ── RECIPROCAL SYNC: keep each instructor's assignedCourses in sync with this course ──
@@ -3315,10 +3315,9 @@ const firebaseConfig = {
 
     async function loadStudents() {
     try {
-      const snaps = await getDocs(query(collection(db, "users"), where("schoolId", "==", adminSchoolId)));
+      const snaps = await getDocs(query(collection(db, "students"), where("schoolId", "==", adminSchoolId)));
       allStudents = snaps.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .filter(s => s.role === "student");
+        .map(d => ({ id: d.id, ...d.data() }));
 
       const attSel = document.getElementById("attStudentSelect");
       attSel.innerHTML = '<option value="">Select student…</option>';
@@ -5171,7 +5170,7 @@ async function populateInstructorCheckboxes() {
     if (!(await showConfirm("Update Stage", `Set student to Stage ${targetStage}?`))) return;
 
     try {
-      await updateDoc(doc(db, "users", studentId), { trainingStage: targetStage });
+      await updateDoc(doc(db, "students", studentId), { trainingStage: targetStage });
 
       // Update local array immediately
       const idx = allStudents.findIndex(s => s.id === studentId);
@@ -5226,8 +5225,8 @@ async function populateInstructorCheckboxes() {
 
     try {
       
-            // Update users collection
-      await updateDoc(doc(db, "users", uid), {
+            // Update students collection
+      await updateDoc(doc(db, "students", uid), {
         firstName, lastName, phone, ghCardNumber, branch, dob,
         courseType, courseTypes, trainingStage,
         status, instructor: primaryInstructor, instructors
@@ -5316,7 +5315,7 @@ async function populateInstructorCheckboxes() {
   window.deleteStudentById = async function(uid) {
     if (!(await showConfirm("Delete student", "Delete this student? This cannot be undone."))) return;
     try {
-      await deleteDoc(doc(db, "users", uid));
+      await deleteDoc(doc(db, "students", uid));
       await loadStudents(); buildOverview();
       showToast("Student deleted.", "success");
     } catch(e) { showToast("Delete failed.", "error"); }
@@ -5334,7 +5333,7 @@ window.approveStudent = async function(uid) {
       const adminName = document.getElementById("adminName").textContent;
       
       // Update user status
-      await updateDoc(doc(db, "users", uid), { 
+      await updateDoc(doc(db, "students", uid), { 
         status: "active",
         trainingStage: 1
       });
@@ -5414,7 +5413,7 @@ window.approveStudent = async function(uid) {
   window.disapproveStudent = async function(uid) {
     if (!(await showConfirm("Disapprove student", "Disapprove this student? Their account will be removed."))) return;
     try {
-      await deleteDoc(doc(db, "users", uid));
+      await deleteDoc(doc(db, "students", uid));
       showToast("Student disapproved and removed.", "success");
       await loadStudents();
       buildOverview();
@@ -5478,7 +5477,7 @@ window.approveStudent = async function(uid) {
       const uid = data.localId;
 
       // 2. Write the Firestore document (admin is still signed in – allowed by rules)
-      await setDoc(doc(db, "users", uid), {
+      await setDoc(doc(db, "students", uid), {
         firstName: first,
         lastName: last,
         email,
@@ -7219,7 +7218,7 @@ window.approveStudent = async function(uid) {
     
     try {
       // Fetch student document to get their course(s)
-      const studentDoc = await getDoc(doc(db, "users", studentId));
+      const studentDoc = await getDoc(doc(db, "students", studentId));
       if (!studentDoc.exists()) {
         courseSelect.innerHTML = '<option value="">Student not found</option>';
         return;
@@ -9354,10 +9353,9 @@ window.showBusyResources = showBusyResources;
       
       if (!studentsToUse || studentsToUse.length === 0) {
         // Direct fetch from Firestore as admin
-        const snaps = await getDocs(query(collection(db, "users"), where("schoolId", "==", adminSchoolId)));
+        const snaps = await getDocs(query(collection(db, "students"), where("schoolId", "==", adminSchoolId)));
         studentsToUse = snaps.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter(s => s.role === "student");
+          .map(d => ({ id: d.id, ...d.data() }));
       }
       
       if (!studentsToUse || studentsToUse.length === 0) {
@@ -9828,7 +9826,7 @@ window.showBusyResources = showBusyResources;
     
     try {
       // Get student data
-      const studentSnap = await getDoc(doc(db, "users", studentId));
+      const studentSnap = await getDoc(doc(db, "students", studentId));
       if (!studentSnap.exists()) {
         showToast("Student not found.", "error");
         return;
@@ -9848,8 +9846,8 @@ window.showBusyResources = showBusyResources;
         schoolId: adminSchoolId
       });
       
-      // 2. Update user to DVLA Ready
-      await updateDoc(doc(db, "users", studentId), {
+      // 2. Update student to DVLA Ready
+      await updateDoc(doc(db, "students", studentId), {
         trainingStage: 6,
         status: "dvla",
         dvlaReady: true,

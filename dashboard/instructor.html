@@ -1128,8 +1128,7 @@
         let q;
         try {
           q = query(
-            collection(db, "users"),
-            where("role", "==", "student"),
+            collection(db, "students"),
             where("instructors", "array-contains", instructorFullName),
             where("schoolId", "==", SCHOOL_ID)
           );
@@ -1138,8 +1137,7 @@
         } catch(e) {
           // Fallback: try old field "instructor"
           const oldQ = query(
-            collection(db, "users"),
-            where("role", "==", "student"),
+            collection(db, "students"),
             where("instructor", "==", instructorFullName),
             where("schoolId", "==", SCHOOL_ID)
           );
@@ -2169,7 +2167,7 @@
       if (!instrStageStudentId) return;
       const stageToSave = Math.min(Math.max(instrCurrentStage, 1), 5);
       try {
-        await updateDoc(doc(db, "users", instrStageStudentId), { trainingStage: stageToSave });
+        await updateDoc(doc(db, "students", instrStageStudentId), { trainingStage: stageToSave });
         const localStudent = myStudents.find(s => s.id === instrStageStudentId);
         if (localStudent) localStudent.trainingStage = stageToSave;
         closeModal("instrStageModal");
