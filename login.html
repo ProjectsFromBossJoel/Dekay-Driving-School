@@ -768,7 +768,7 @@
       el.classList.toggle("show", !!msg);
     }
 
-      async function handleLogin() {
+            async function handleLogin() {
   const email = document.getElementById("loginEmail").value.trim();
   const pass  = document.getElementById("loginPassword").value;
   setError("emailError", ""); setError("passError", "");
@@ -779,89 +779,68 @@
   const btn = document.getElementById("loginBtn");
   btn.disabled = true; btn.classList.add("loading");
 
+  // STEP 1: Authenticate FIRST. Firebase Auth doesn't need Firestore rules,
+  // so this must happen before any Firestore read (rules require isAuthenticated()).
+  let cred;
   try {
-    // 1. Find user document by email across collections
-    let userDoc = null;
-    let collectionName = null;
-    let userData = null;
-
-    // Check students first (most common)
-    const studentQuery = query(collection(db, "students"), where("email", "==", email));
-    const studentSnap = await getDocs(studentQuery);
-    if (!studentSnap.empty) {
-      userDoc = studentSnap.docs[0];
-      collectionName = "students";
-      userData = userDoc.data();
+    cred = await window._signIn(window._firebaseAuth, email, pass);
+  } catch (err) {
+    btn.disabled = false; btn.classList.remove("loading");
+    const code = err.code || err.message || "";
+    if (code.includes("too-many-requests")) {
+      setError("passError", "Too many failed attempts. Please wait a moment.");
+    } else if (code.includes("wrong-password") || code.includes("invalid-credential") || code.includes("user-not-found")) {
+      setError("passError", "Invalid email or password. Please try again.");
+      showToast("Invalid credentials", "error");
     } else {
-      // Check users (admins)
-      const userQuery = query(collection(db, "users"), where("email", "==", email));
-      const userSnap = await getDocs(userQuery);
-      if (!userSnap.empty) {
-        userDoc = userSnap.docs[0];
-        collectionName = "users";
-        userData = userDoc.data();
-      } else {
-        // Check instructors
-        const instrQuery = query(collection(db, "instructors"), where("email", "==", email));
-        const instrSnap = await getDocs(instrQuery);
-        if (!instrSnap.empty) {
-          userDoc = instrSnap.docs[0];
-          collectionName = "instructors";
-          userData = userDoc.data();
-        }
-      }
+      setError("passError", "Sign in failed. Check your connection and try again.");
     }
+    return;
+  }
 
-    // If no user found at all
+  // STEP 2: Now authenticated — look up the account by UID (permitted by rules),
+  // never by email query (which is blocked pre-auth and even post-auth for
+  // non-admin/non-instructor accounts under your current rules).
+  try {
+    const uid = cred.user.uid;
+    let userDoc = null, collectionName = null, userData = null;
+
+    let snap = await getDoc(doc(db, "students", uid));
+    if (snap.exists()) { userDoc = snap; collectionName = "students"; userData = snap.data(); }
+
     if (!userDoc) {
-      throw new Error("account-not-found");
+      snap = await getDoc(doc(db, "users", uid));
+      if (snap.exists()) { userDoc = snap; collectionName = "users"; userData = snap.data(); }
     }
 
-    // 2. Check locked status
+    if (!userDoc) {
+      snap = await getDoc(doc(db, "instructors", uid));
+      if (snap.exists()) { userDoc = snap; collectionName = "instructors"; userData = snap.data(); }
+    }
+
+    if (!userDoc) throw new Error("account-not-found");
+
+    // Locked check
     if (userData.locked === true) {
       await window._firebaseAuth.signOut();
       setError("passError", "Account locked due to too many failed attempts. Contact administrator.");
-      btn.disabled = false; btn.classList.remove("loading");
       showToast("Account locked", "error");
       return;
     }
 
-    // 3. Check login attempts (>= 3 locks the account immediately)
-    const attempts = userData.loginAttempts || 0;
-    if (attempts >= 3) {
-      // Lock the account
-      await updateDoc(userDoc.ref, { locked: true, loginAttempts: 0 });
-      await window._firebaseAuth.signOut();
-      setError("passError", "Account locked due to too many failed attempts. Contact administrator.");
-      btn.disabled = false; btn.classList.remove("loading");
-      showToast("Account locked", "error");
-      return;
-    }
-
-    // 4. Attempt sign‑in
-    const cred = await window._signIn(window._firebaseAuth, email, pass);
-
-    // 5. Success – reset attempts and locked (if any)
-    await updateDoc(userDoc.ref, { loginAttempts: 0, locked: false });
-
-    // 6. Now perform role checks and redirect
     let redirectUrl = null;
     const role = userData.role || (collectionName === "instructors" ? "instructor" : "");
 
-    // --- NEW: SuperAdmin bypasses school check ---
     if (role === "superAdmin") {
       redirectUrl = "/dashboard/admin";
     } else {
-      // --- For everyone else, check schoolId ---
       if (userData.schoolId !== SCHOOL_ID) {
         await window._firebaseAuth.signOut();
         setError("passError", "You are not authorized to access this school's portal.");
-        btn.disabled = false; btn.classList.remove("loading");
         showToast("Access denied", "error");
         return;
       }
 
-      // Role mismatch guards
       if (currentRole === "admin" && role !== "admin" && role !== "superAdmin") {
         throw new Error("not-admin");
       }
@@ -872,60 +851,39 @@
         throw new Error("not-instructor");
       }
 
-      // Block pending/disabled
+      // Pending/disabled check happens BEFORE any Firestore write
       if (userData.status === "pending" || userData.status === "disabled") {
         await window._firebaseAuth.signOut();
         setError("passError", "Your account is pending approval.");
-        btn.disabled = false; btn.classList.remove("loading");
         showToast("Account pending approval", "error");
         return;
       }
 
-      if (!redirectUrl) {
-        if (role === "admin" || role === "superAdmin") {
-          redirectUrl = "/dashboard/admin";
-        } else if (role === "student") {
-          redirectUrl = "/dashboard/student";
-        } else if (role === "instructor") {
-          redirectUrl = "/dashboard/instructor.html";
-        } else {
-          throw new Error("account-not-found");
-        }
+      if (role === "admin" || role === "superAdmin") {
+        redirectUrl = "/dashboard/admin";
+      } else if (role === "student") {
+        redirectUrl = "/dashboard/student";
+      } else if (role === "instructor") {
+        redirectUrl = "/dashboard/instructor.html";
+      } else {
+        throw new Error("account-not-found");
       }
     }
 
     if (!redirectUrl) throw new Error("account-not-found");
+
+    // Success — safe to write now (account is active/approved)
+    await updateDoc(userDoc.ref, { loginAttempts: 0, locked: false });
 
     showToast("Signed in! Redirecting…");
     setTimeout(() => {
       window.location.href = redirectUrl;
     }, 800);
 
-  } catch(err) {
-    btn.disabled = false; btn.classList.remove("loading");
-    const code = err.code || err.message;
-
-    // Handle wrong‑password specifically – we already checked attempts before sign-in,
-    // but if the sign-in fails due to wrong password (the only reason after we've checked),
-    // we need to increment attempts.
-    if (code.includes("wrong-password") || code.includes("invalid-credential")) {
-      // Increment attempts if we have a userDoc
-      if (userDoc) {
-        const currentAttempts = (userData?.loginAttempts || 0) + 1;
-        if (currentAttempts >= 3) {
-          await updateDoc(userDoc.ref, { locked: true, loginAttempts: 0 });
-          setError("passError", "Account locked due to too many failed attempts. Contact administrator.");
-          showToast("Account locked", "error");
-        } else {
-          await updateDoc(userDoc.ref, { loginAttempts: currentAttempts });
-          setError("passError", "Invalid email or password. Please try again.");
-          showToast("Invalid credentials", "error");
-        }
-      } else {
-        setError("passError", "Invalid email or password. Please try again.");
-        showToast("Invalid credentials", "error");
-      }
-    } else if (code === "account-not-found") {
+  } catch (err) {
+    await window._firebaseAuth.signOut().catch(() => {});
+    const code = err.code || err.message || "";
+    if (code === "account-not-found") {
       setError("passError", "Account not found. Please register first or contact the school.");
       showToast("Account not found", "error");
     } else if (code === "not-admin") {
@@ -934,16 +892,13 @@
       setError("passError", "Please select the Student role to log in.");
     } else if (code === "not-instructor") {
       setError("passError", "Please select the Instructor role to log in.");
-    } else if (code === "role-mismatch-instructor") {
-      setError("passError", "This is an instructor account. Please select the Instructor role.");
-    } else if (code.includes("too-many-requests")) {
-      setError("passError", "Too many failed attempts. Please wait a moment.");
+    } else if (code.includes("permission-denied")) {
+      setError("passError", "Your account is pending approval. Contact your administrator.");
+      showToast("Account pending approval", "error");
     } else {
       setError("passError", "Sign in failed. Check your connection and try again.");
     }
-    // Note: We don't set btn.disabled or remove loading here because we already did at top of catch.
   } finally {
-    // Ensure button is always re-enabled
     btn.disabled = false;
     btn.classList.remove("loading");
   }
