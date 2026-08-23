@@ -834,7 +834,7 @@
       <div class="card">
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead><tr><th>Instructor</th><th>Email</th><th>Branch</th><th>Experience</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Instructor</th><th>Email</th><th>Branch</th><th>Course Assigned</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="instructorsTable">
               <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading instructors…</td></tr>
             </tbody>
@@ -1356,7 +1356,7 @@
       <div class="card">
         <div style="overflow-x:auto">
           <table class="data-table">
-            <thead><tr><th>Course</th><th>Category</th><th>Duration</th><th>Price</th><th>Enrolled</th><th>Students</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Course</th><th>Category</th><th>Duration</th><th>Price</th><th>Enrolled</th><th>Staffing</th><th>Actions</th></tr></thead>
             <tbody id="adminCoursesTable">
               <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">Loading courses…</td></tr>
             </tbody>
@@ -2887,7 +2887,7 @@ function hideLoading() {
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
-    collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, limit
+    collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, limit, arrayUnion, arrayRemove
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   // const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
@@ -3006,13 +3006,39 @@ const firebaseConfig = {
         counts[course] = (counts[course] || 0) + 1;
       });
 
+      // Determine the largest student/instructor count across all courses so bar widths are comparable
+      const maxAssignedCount = Math.max(
+        1,
+        ...courses.map(c => Math.max((c.assignedStudents || []).length, (c.assignedInstructors || []).length))
+      );
+
       tbody.innerHTML = courses.map(course => {
         const name = course.name || course.title || '—';
         const enrolledCount = counts[name] || 0;
-        const enrolledStudents = allStudents.filter(s => (s.courseType || 'Manual') === name);
-        const studentNames = enrolledStudents.length
-          ? enrolledStudents.map(s => `${s.firstName || ''} ${s.lastName || ''}`).join(', ')
-          : 'No students';
+        const studentCount = (course.assignedStudents || []).length;
+        const instructorCount = (course.assignedInstructors || []).length;
+        const studentPct = Math.round((studentCount / maxAssignedCount) * 100);
+        const instructorPct = Math.round((instructorCount / maxAssignedCount) * 100);
+
+        const staffingHtml = (studentCount === 0 && instructorCount === 0)
+          ? '<span style="color:var(--text-muted);font-size:12px;">Unassigned</span>'
+          : `
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:120px;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:var(--text-muted);width:14px;flex-shrink:0;"><i class="fas fa-user-graduate"></i></span>
+                <div style="flex:1;height:6px;background:var(--navy-light);border-radius:50px;overflow:hidden;">
+                  <div style="height:100%;width:${studentPct}%;background:var(--gold);border-radius:50px;"></div>
+                </div>
+                <span style="font-size:11px;font-weight:600;color:var(--gold);width:16px;text-align:right;flex-shrink:0;">${studentCount}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;color:var(--text-muted);width:14px;flex-shrink:0;"><i class="fas fa-chalkboard-teacher"></i></span>
+                <div style="flex:1;height:6px;background:var(--navy-light);border-radius:50px;overflow:hidden;">
+                  <div style="height:100%;width:${instructorPct}%;background:var(--info);border-radius:50px;"></div>
+                </div>
+                <span style="font-size:11px;font-weight:600;color:var(--info);width:16px;text-align:right;flex-shrink:0;">${instructorCount}</span>
+              </div>
+            </div>`;
 
         return `<tr>
           <td>
@@ -3028,7 +3054,7 @@ const firebaseConfig = {
           <td style="color:var(--text-muted)">${course.duration || '—'}</td>
           <td style="color:var(--gold); font-weight:600;">GH₵ ${course.price || '—'}</td>
           <td style="font-weight:600;">${enrolledCount}</td>
-          <td style="font-size:12px; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${studentNames}">${studentNames}</td>
+          <td>${staffingHtml}</td>
           <td>
             <button class="btn btn-icon btn-outline" onclick="openEditCourseModal('${course.id}')"><i class="fas fa-eye"></i></button>
             <button class="btn btn-icon btn-danger" onclick="deleteCourse('${course.id}')"><i class="fas fa-trash"></i></button>
@@ -3139,6 +3165,8 @@ const firebaseConfig = {
             </label>`;
           }).join('')
         : '<div style="color:var(--text-muted);font-size:12px;">No students found.</div>';
+      // Show currently assigned students as badges immediately, without waiting on the dropdown open/instructor fetch
+      updateCourseStudentUI();
     }
 
     // ── Populate assigned instructors checkboxes ──
@@ -3167,7 +3195,6 @@ const firebaseConfig = {
     }
 
     setTimeout(() => {
-      updateCourseStudentUI();
       updateCourseInstructorUI();
     }, 50);
 
@@ -5344,9 +5371,17 @@ async function populateInstructorCheckboxes() {
     }
   };
 
+  async function removeStudentFromAllCourses(studentId) {
+    try {
+      const snaps = await getDocs(query(collection(db, "courses"), where("assignedStudents", "array-contains", studentId)));
+      await Promise.all(snaps.docs.map(d => updateDoc(doc(db, "courses", d.id), { assignedStudents: arrayRemove(studentId) })));
+    } catch(e) { console.error("Could not clean up student from courses:", e); }
+  }
+
   window.deleteStudentById = async function(uid) {
     if (!(await showConfirm("Delete student", "Delete this student? This cannot be undone."))) return;
     try {
+      await removeStudentFromAllCourses(uid);
       await deleteDoc(doc(db, "students", uid));
       await loadStudents(); buildOverview();
       showToast("Student deleted.", "success");
@@ -5534,6 +5569,20 @@ window.approveStudent = async function(uid) {
         enrolDate: new Date().toLocaleDateString('en-GB'),
         schoolId: adminSchoolId
       });
+
+      // 2b. Sync into the course's staffing lists so it appears on the Courses page graph
+      try {
+        const courseSnap = await getDocs(query(collection(db, "courses"), where("name", "==", course)));
+        if (!courseSnap.empty) {
+          const courseDoc = courseSnap.docs[0];
+          await updateDoc(doc(db, "courses", courseDoc.id), {
+            assignedStudents: arrayUnion(uid),
+            assignedStudentNames: arrayUnion(`${first} ${last}`.trim())
+          });
+        }
+      } catch(syncErr) {
+        console.error("Could not sync new student into course staffing:", syncErr);
+      }
 
       // 3. Success
       closeModal("addStudentModal");
@@ -6699,11 +6748,22 @@ window.approveStudent = async function(uid) {
     tbody.innerHTML = instructors.map(i => {
       const pill = `<span class="pill pill-${i.status === 'active' ? 'active' : 'inactive'}">${i.status || 'active'}</span>`;
       const email = i.email || '';
+      let assignedCoursesList = i.assignedCourses || [];
+      if (assignedCoursesList && typeof assignedCoursesList === 'object' && !Array.isArray(assignedCoursesList)) {
+        assignedCoursesList = Object.values(assignedCoursesList);
+      }
+      if (!Array.isArray(assignedCoursesList)) assignedCoursesList = [];
+      assignedCoursesList = assignedCoursesList.filter(c => c && typeof c === 'string' && c.trim());
+      const courseAssignedDisplay = assignedCoursesList.length
+        ? (assignedCoursesList.length >= 3
+            ? assignedCoursesList.slice(0, 2).map(c => `<span class="stage-pill" style="margin:2px;"><i class="fas fa-book" style="font-size:9px"></i> ${escapeHtml(c)}</span>`).join('') + `<span class="stage-pill" style="margin:2px;">...</span>`
+            : assignedCoursesList.map(c => `<span class="stage-pill" style="margin:2px;"><i class="fas fa-book" style="font-size:9px"></i> ${escapeHtml(c)}</span>`).join(''))
+        : '<span style="color:var(--text-muted);">—</span>';
       return `<tr>
         <td><div style="font-weight:600">${i.firstName || ''} ${i.lastName || ''}</div></td>
         <td style="color:var(--text-muted)">${email}</td>
         <td>${i.branch ? `<span class="stage-pill"><i class="fas fa-map-marker-alt" style="font-size:10px"></i> ${escapeHtml(i.branch)}</span>` : '—'}</td>
-        <td style="color:var(--text-muted)">${i.experience || '—'} yrs</td>
+        <td>${courseAssignedDisplay}</td>
         <td>${pill}</td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-icon btn-outline" title="View details" onclick="openInstructorDetail('${i.id}')"><i class="fas fa-eye"></i></button>
@@ -6727,17 +6787,13 @@ window.approveStudent = async function(uid) {
     const i = snap.data();
     window._currentCertifications = i.certifications;  // store for later saving
     
-    // Fetch courses for dropdown
-    let coursesOptions = '';
-    let selectedCourses = i.assignedCourses || [];
-    try {
-      const coursesSnap = await getDocs(collection(db, "courses"));
-      const allCourses = coursesSnap.docs.map(d => ({ id: d.id, name: d.data().name || d.data().title }));
-      coursesOptions = allCourses.map(course => {
-        const isSelected = selectedCourses.includes(course.name);
-        return `<option value="${escapeHtml(course.name)}" ${isSelected ? 'selected' : ''}>${escapeHtml(course.name)}</option>`;
-      }).join('');
-    } catch(e) { console.error("Error loading courses:", e); }
+    // Normalize this instructor's assigned courses (managed via the Courses page)
+    let assignedCoursesList = i.assignedCourses || [];
+    if (assignedCoursesList && typeof assignedCoursesList === 'object' && !Array.isArray(assignedCoursesList)) {
+      assignedCoursesList = Object.values(assignedCoursesList);
+    }
+    if (!Array.isArray(assignedCoursesList)) assignedCoursesList = [];
+    assignedCoursesList = assignedCoursesList.filter(c => c && typeof c === 'string' && c.trim());
     
     const fullName = `${i.firstName || ''} ${i.lastName || ''}`.trim();
     const initials = (i.firstName?.[0] || '') + (i.lastName?.[0] || '') || 'I';
@@ -6826,6 +6882,15 @@ window.approveStudent = async function(uid) {
       </div>
 
       <div class="bio-section">
+        <div class="bio-section-title">Assigned Courses <span style="font-weight:normal;color:var(--text-muted);font-size:11px;">(managed on the Courses page)</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${assignedCoursesList.length
+            ? assignedCoursesList.map(c => `<span class="stage-pill"><i class="fas fa-book" style="font-size:10px"></i> ${escapeHtml(c)}</span>`).join('')
+            : '<span style="color:var(--text-muted);font-size:13px;">No courses assigned yet.</span>'}
+        </div>
+      </div>
+
+      <div class="bio-section">
         <div class="bio-section-title">Guarantor</div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Name</label><input type="text" id="editGuarantorName" class="form-input" value="${escapeHtml(i.guarantor?.name || '')}" /></div>
@@ -6853,10 +6918,6 @@ window.approveStudent = async function(uid) {
 
     document.getElementById("instructorDetailName").textContent = `Edit Instructor: ${fullName}`;
     document.getElementById("instructorDetailBody").innerHTML = html;
-    
-    setTimeout(() => {
-      updateInstrCourseBtnText();
-    }, 100);
     
     openModal("instructorDetailModal");
   } catch(err) {
@@ -6947,7 +7008,6 @@ window.approveStudent = async function(uid) {
           firstName, lastName, phone, ghanaCardNumber, dob, branch,
           qualifications, experience,
           guarantor, references,
-          assignedCourses: assignedCourses,
           certifications: updatedCertifications
         });
         showToast("Instructor updated successfully ✓", "success");
@@ -7034,10 +7094,18 @@ window.approveStudent = async function(uid) {
     } catch(e) { showToast("Approval failed. Try again.", "error"); }
   };
 
+  async function removeInstructorFromAllCourses(instructorId) {
+    try {
+      const snaps = await getDocs(query(collection(db, "courses"), where("assignedInstructors", "array-contains", instructorId)));
+      await Promise.all(snaps.docs.map(d => updateDoc(doc(db, "courses", d.id), { assignedInstructors: arrayRemove(instructorId) })));
+    } catch(e) { console.error("Could not clean up instructor from courses:", e); }
+  }
+
   // ── DISAPPROVE INSTRUCTOR ──
   window.disapproveInstructor = async function(uid) {
     if (!(await showConfirm("Disapprove instructor", "Disapprove this instructor? Their application will be removed."))) return;
     try {
+      await removeInstructorFromAllCourses(uid);
       await deleteDoc(doc(db, "instructors", uid));
       showToast("Instructor disapproved and removed.", "success");
       loadInstructors();
@@ -7048,6 +7116,7 @@ window.approveStudent = async function(uid) {
   window.deleteInstructor = async function(uid) {
     if (!(await showConfirm("Delete instructor", "Delete this instructor? This cannot be undone."))) return;
     try {
+      await removeInstructorFromAllCourses(uid);
       await deleteDoc(doc(db, "instructors", uid));
       showToast("Instructor deleted.", "success");
       loadInstructors();

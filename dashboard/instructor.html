@@ -525,6 +525,12 @@
             <div style="text-align:center;color:var(--text-muted);font-size:13px;">No upcoming sessions scheduled.</div>
           </div>
         </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-chart-bar"></i> Student stage distribution</div></div>
+          <div class="card-body" id="stageDistributionBars">
+            <div style="text-align:center;color:var(--text-muted);font-size:13px;">Loading…</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1152,14 +1158,12 @@
         }
         tbody.innerHTML = myStudents.map(s => {
           const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email;
-          const attRate = s.attendanceRate || '—';
-          const avgQuiz = s.avgQuizScore || '—';
           return `<tr>
             <td><div style="font-weight:600">${name}</div><div style="font-size:11px;color:var(--text-muted)">${s.email}</div></td>
             <td><span class="stage-pill">${s.courseType || 'Manual'}</span></td>
             <td><span class="stage-pill">Stage ${s.trainingStage || 1}</span></td>
-            <td>${attRate}%</td>
-            <td>${avgQuiz}%</td>
+            <td>${renderMiniBar(s.attendanceRate, 'var(--gold)')}</td>
+            <td>${renderMiniBar(s.avgQuizScore, 'var(--info)')}</td>
             <td>
               <button class="btn btn-outline" style="font-size:11px;padding:5px 10px;" onclick="openInstructorStudentStageModal('${s.id}','${escapeHtml(name)}',${s.trainingStage || 1},${s.stageOneDone || s.status === 'active' ? 'true' : 'false'})">
                 <i class="fas fa-route"></i> Stages
@@ -1290,7 +1294,7 @@
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:32px;">No quiz attempts yet.</td></tr>`;
         return;
       }
-      tbody.innerHTML = quizStats.map(q => `<tr><td>${q.title}</td><td>${q.taken}</td><td>${q.avgScore}%</td><td>${q.passRate}%</td></tr>`).join('');
+      tbody.innerHTML = quizStats.map(q => `<tr><td>${q.title}</td><td>${q.taken}</td><td>${renderMiniBar(q.avgScore, 'var(--gold)')}</td><td>${renderMiniBar(q.passRate, 'var(--success)')}</td></tr>`).join('');
     }
 
     async function loadAssignedCourses() {
@@ -1339,6 +1343,50 @@
     function escapeHtml(str) {
       if (!str) return '';
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ── REUSABLE HORIZONTAL MINI BAR ──
+    function renderMiniBar(value, color) {
+      if (value === undefined || value === null || value === '') {
+        return '<span style="color:var(--text-muted);font-size:12px;">—</span>';
+      }
+      const pct = Math.max(0, Math.min(100, Math.round(value)));
+      return `
+        <div style="display:flex;align-items:center;gap:8px;min-width:100px;">
+          <div style="flex:1;height:6px;background:var(--navy-light);border-radius:50px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${color};border-radius:50px;"></div>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:${color};width:32px;text-align:right;flex-shrink:0;">${pct}%</span>
+        </div>`;
+    }
+
+    // ── STUDENT STAGE DISTRIBUTION BARS ──
+    function renderStageDistribution() {
+      const container = document.getElementById("stageDistributionBars");
+      if (!container) return;
+      if (!myStudents.length) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:12px;">No students assigned yet.</div>';
+        return;
+      }
+      const stageLabels = ['Registration','Theory lessons','Theory test','Practical','Assessment','DVLA ready'];
+      const counts = [0,0,0,0,0,0];
+      myStudents.forEach(s => {
+        const stage = Math.min(Math.max(s.trainingStage || 1, 1), 6);
+        counts[stage - 1]++;
+      });
+      const maxCount = Math.max(1, ...counts);
+      container.innerHTML = stageLabels.map((label, i) => {
+        const count = counts[i];
+        const pct = Math.round((count / maxCount) * 100);
+        return `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span style="font-size:11px;color:var(--text-muted);width:100px;flex-shrink:0;">${label}</span>
+            <div style="flex:1;height:8px;background:var(--navy-light);border-radius:50px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:var(--gold);border-radius:50px;"></div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:var(--gold);width:20px;text-align:right;flex-shrink:0;">${count}</span>
+          </div>`;
+      }).join('');
     }
 
     let allInstrLessonFolders = [];
@@ -2001,6 +2049,7 @@
       document.getElementById("statAvgScore").textContent = `${avgScore}%`;
       const avgStage = myStudents.length ? Math.round(myStudents.reduce((a,b) => a + (b.trainingStage || 1), 0) / myStudents.length) : 1;
       document.getElementById("statStageProgress").textContent = `Stage ${avgStage}`;
+      renderStageDistribution();
     }
 
     window.uploadInstructorAvatar = async function(input) {

@@ -665,7 +665,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, serverTimestamp, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, serverTimestamp, getDoc, collection, getDocs, query, where, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, deleteUser, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -743,6 +743,23 @@
       const el = document.getElementById("formError");
       el.querySelector("span").textContent = msg;
       el.classList.toggle("show", !!msg);
+    }
+
+    // ── SYNC NEW INSTRUCTOR INTO THE MATCHING COURSE'S STAFFING LISTS ──
+    async function addInstructorToCourse(courseName, uid, displayName) {
+      if (!courseName) return;
+      try {
+        const q = query(collection(db, "courses"), where("name", "==", courseName));
+        const snap = await getDocs(q);
+        if (snap.empty) return;
+        const courseDoc = snap.docs[0];
+        await updateDoc(doc(db, "courses", courseDoc.id), {
+          assignedInstructors: arrayUnion(uid),
+          assignedInstructorNames: arrayUnion(displayName)
+        });
+      } catch(e) {
+        console.error("Could not sync instructor into course staffing:", e);
+      }
     }
 
     // Preview uploaded file
@@ -971,6 +988,7 @@
           createdAt: serverTimestamp(),
           schoolId: "78BZvydj3iz8FEQMiDp5"
         });
+        await addInstructorToCourse(appliedCourse, uid, `${firstName} ${lastName}`.trim());
 
         await signOut(auth);
 
@@ -1113,9 +1131,11 @@
 
         // For Google sign-up, we don't have all the detailed fields.
         // We'll create a minimal document and the instructor can update later.
+        const googleFirstName = (user.displayName || "").split(" ")[0] || "";
+        const googleLastName = (user.displayName || "").split(" ").slice(1).join(" ") || "";
         await setDoc(doc(db, "instructors", user.uid), {
-          firstName: (user.displayName || "").split(" ")[0] || "",
-          lastName: (user.displayName || "").split(" ").slice(1).join(" ") || "",
+          firstName: googleFirstName,
+          lastName: googleLastName,
           email: user.email,
           phone: user.phoneNumber || "",
           branch: branch,
@@ -1127,6 +1147,7 @@
           fromGoogle: true,
           schoolId: "78BZvydj3iz8FEQMiDp5"
         });
+        await addInstructorToCourse(appliedCourse, user.uid, `${googleFirstName} ${googleLastName}`.trim() || user.email);
         await signOut(auth);
         showToast("Application submitted via Google! Pending approval.", "success");
       } catch (err) {

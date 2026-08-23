@@ -777,6 +777,9 @@
       <div style="margin-bottom:24px;">
         <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Quizzes</div>
         <div style="font-size:14px; color:var(--text-muted)">Complete all quizzes to advance to practical lessons.</div>
+        <div id="quizAvatarWarning" style="display:none; font-size:13px; font-weight:600; color:var(--error); margin-top:10px; display:none; align-items:center; gap:6px;">
+          <i class="fas fa-exclamation-circle"></i> Set profile picture first to access the quizzes
+        </div>
       </div>
       <div class="quiz-list" id="quizList"></div>
     </div>
@@ -979,8 +982,8 @@
           <div class="card-body">
             <div class="profile-section-title">Basic info</div>
             <div class="pf-row">
-              <div class="pf-group"><label>First name</label><input type="text" id="pfFirstName" class="pf-input" placeholder="Kwame" disabled /></div>
-              <div class="pf-group"><label>Last name</label><input type="text" id="pfLastName" class="pf-input" placeholder="Asante" disabled /></div>
+              <div class="pf-group"><label>First name</label><input type="text" id="pfFirstName" class="pf-input" placeholder="Kwame" autocomplete="given-name" disabled /></div>
+              <div class="pf-group"><label>Last name</label><input type="text" id="pfLastName" class="pf-input" placeholder="Asante" autocomplete="family-name" disabled /></div>
             </div>
             <div class="pf-row">
               <div class="pf-group"><label>Phone number</label><input type="tel" id="pfPhone" class="pf-input" placeholder="024 000 0000" disabled /></div>
@@ -1217,6 +1220,7 @@
 
   const CLOUDINARY_CLOUD = "drs2xpwho";
   const CLOUDINARY_PRESET = "student_avatars";
+  const CLOUDINARY_AVATAR_FOLDER = "students_profile_pic/dekay_driving_sch"; // TODO: derive from school doc once schoolSlug exists
 
   const SCHOOL_LAT = 5.6120526;
   const SCHOOL_LNG = -0.2969936;
@@ -1651,9 +1655,35 @@
       return;
     }
 
+    const avatarSet = !!studentData.avatarUrl;
+
     grid.innerHTML = lessons.map((l, idx) => {
       const pctWatched = progress[l.id] || 0;
       const done = pctWatched >= 80;
+
+      if (!avatarSet) {
+        return `
+          <div class="video-item" style="opacity:0.55;cursor:not-allowed;" onclick="showProfilePicRequiredForContent()">
+            <div class="video-thumb">
+              <img src="${l.thumbnailUrl || ''}" alt="${l.title}" onerror="this.style.display='none'" style="filter:grayscale(70%);" />
+              <div class="video-play-overlay" style="opacity:1;background:rgba(10,22,40,0.65);">
+                <div class="play-circle" style="background:rgba(239,83,80,0.15);border:2px solid var(--error);color:var(--error);">
+                  <i class="fas fa-lock"></i>
+                </div>
+              </div>
+            </div>
+            <div class="video-progress-strip"><div class="fill" style="width:0%;background:var(--error);"></div></div>
+            <div class="video-info">
+              <span class="video-tag">${l.category || 'Theory'}</span>
+              <div class="video-name">${l.title}</div>
+              <div class="video-meta-row">
+                <span><i class="fas fa-clock"></i> ${l.duration || '—'}</span>
+                <span style="color:var(--error)"><i class="fas fa-lock"></i> Set profile picture</span>
+              </div>
+            </div>
+          </div>`;
+      }
+
       const unlocked = isLessonUnlocked(idx, lessons);
 
       if (!unlocked) {
@@ -1734,11 +1764,32 @@
         return;
       }
 
+      const avatarSetForQuizzes = !!studentData.avatarUrl;
+
+      const quizAvatarWarning = document.getElementById("quizAvatarWarning");
+      if (quizAvatarWarning) {
+        quizAvatarWarning.style.display = avatarSetForQuizzes ? "none" : "flex";
+      }
+
       list.innerHTML = quizzes.map(q => {
         const passMark = q.passMark || 60;
         const score = results[q.id];
         const done  = score !== undefined;
         const pass  = score >= passMark;
+
+        if (!avatarSetForQuizzes) {
+          return `<div class="quiz-row" style="opacity:0.55;">
+            <div class="quiz-row-left">
+              <div class="quiz-icon" style="background:rgba(239,83,80,0.12);color:var(--error);"><i class="fas fa-lock"></i></div>
+              <div>
+                <div class="quiz-name">${q.title}</div>
+                <div class="quiz-desc">${q.questionCount || '?'} questions · Pass mark ${passMark}%</div>
+              </div>
+            </div>
+            <button class="btn-sm" style="background:rgba(239,83,80,0.12);color:var(--error);border:1px solid var(--error);" onclick="showProfilePicRequiredForContent()"><i class="fas fa-lock"></i> Locked</button>
+          </div>`;
+        }
+
         return `<div class="quiz-row">
           <div class="quiz-row-left">
             <div class="quiz-icon"><i class="fas fa-clipboard-question"></i></div>
@@ -2408,12 +2459,23 @@
     const fd = new FormData();
     fd.append("file",   file);
     fd.append("upload_preset", CLOUDINARY_PRESET);
+    fd.append("folder", CLOUDINARY_AVATAR_FOLDER);
     try {
       const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
       const data = await res.json();
       const url  = data.secure_url;
       await updateDoc(doc(db, "students", currentUser.uid), { avatarUrl: url });
       window.currentAvatarUrl = url;
+      studentData.avatarUrl = url; // keep in-memory studentData in sync so lesson/quiz locks clear immediately
+
+      // Live-refresh Lessons/Quizzes if the student is currently viewing them
+      if (currentLessonFolderPath) {
+        renderVideosForFolder(currentLessonFolderPath);
+      }
+      if (typeof loadQuizzes === "function") {
+        loadQuizzes();
+      }
+
       document.getElementById("profileAvatarBig").style.backgroundImage = `url(${url})`;
       document.getElementById("profileAvatarBig").style.backgroundSize  = "cover";
       document.getElementById("avatarInitials").style.display = "none";
@@ -2444,23 +2506,28 @@
             [`stages.1.approverName`]: `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim()
           });
         } catch(e) {
-          await setDoc(progressRef, {
-          studentId: currentUser.uid,
-          currentStage: 2,
-          dvlaReady: false,
-          dvlaReadyAt: null,
-          updatedAt: new Date().toISOString(),
-          stages: {
-            1: {
-              completed: true,
-              completedAt: new Date().toISOString(),
-              approvedBy: currentUser.uid,
-              approverRole: "student",
-              approverName: `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim()
-            }
-          },
-          schoolId: SCHOOL_ID
-        });
+          console.error("stageProgress updateDoc failed:", e);
+          try {
+            await setDoc(progressRef, {
+            studentId: currentUser.uid,
+            currentStage: 2,
+            dvlaReady: false,
+            dvlaReadyAt: null,
+            updatedAt: new Date().toISOString(),
+            stages: {
+              1: {
+                completed: true,
+                completedAt: new Date().toISOString(),
+                approvedBy: currentUser.uid,
+                approverRole: "student",
+                approverName: `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim()
+              }
+            },
+            schoolId: SCHOOL_ID
+          });
+          } catch(e2) {
+            console.error("stageProgress setDoc fallback also failed:", e2);
+          }
         }
         
         showToast("✅ Stage 1 complete! Refreshing...", "success");
@@ -2471,6 +2538,7 @@
         showToast("Photo updated ✓", "success");
       }
     } catch(e) {
+      console.error("uploadAvatar outer catch:", e);
       showToast("Upload failed. Try again.", "error");
     }
   };
@@ -2919,34 +2987,60 @@
     grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading instructors...</div>';
 
     try {
-      const instructorNames = new Set();
-      const studentCourse = studentData.courseType || '';
-      
-      // --- NEW: Add schoolId filter to attendance query ---
-      const attSnap = await getDocs(query(
-        collection(db, "attendance"),
-        where("studentId", "==", currentUser.uid),
-        where("schoolId", "==", SCHOOL_ID)
-      ));
-      attSnap.forEach(doc => {
-        const inst = doc.data().instructor;
-        if (inst && inst !== "—") instructorNames.add(inst);
-      });
-      
+      const studentCourse = (studentData.courseType || '').trim();
+
+      // ── CURRENT: instructors assigned to the SAME course as this student, via the Courses page ──
+      const currentInstructorIds = new Set();
+      if (studentCourse) {
+        try {
+          const coursesSnap = await getDocs(query(collection(db, "courses"), where("name", "==", studentCourse)));
+          coursesSnap.forEach(courseDoc => {
+            const courseData = courseDoc.data();
+            const assignedInstructors = courseData.assignedInstructors || [];
+            assignedInstructors.forEach(id => currentInstructorIds.add(id));
+          });
+        } catch(e) { console.error("Error checking course assignment:", e); }
+      }
+
+      // Legacy direct-assignment fields on the student doc (still treated as "current")
+      const currentInstructorNames = new Set();
       const assignedInstructor = studentData.instructor;
-      if (assignedInstructor && assignedInstructor !== "—") {
-        instructorNames.add(assignedInstructor);
-      }
-      
+      if (assignedInstructor && assignedInstructor !== "—") currentInstructorNames.add(assignedInstructor);
       if (studentData.instructors && Array.isArray(studentData.instructors)) {
-        studentData.instructors.forEach(inst => {
-          if (inst && inst !== "—") instructorNames.add(inst);
-        });
+        studentData.instructors.forEach(inst => { if (inst && inst !== "—") currentInstructorNames.add(inst); });
       }
+
+      // ── PAST: instructors who taught this student in a class for THIS SAME course ──
+      const pastInstructorNames = new Set();
+      try {
+        const attSnap = await getDocs(query(
+          collection(db, "attendance"),
+          where("studentId", "==", currentUser.uid),
+          where("schoolId", "==", SCHOOL_ID)
+        ));
+        const attDocs = attSnap.docs.map(d => d.data());
+        const classIds = [...new Set(attDocs.map(r => r.classId).filter(Boolean))];
+        const classCourseMap = {};
+        await Promise.all(classIds.map(async (cid) => {
+          try {
+            const classSnap = await getDoc(doc(db, "classes", cid));
+            if (classSnap.exists()) classCourseMap[cid] = (classSnap.data().courseName || '').trim();
+          } catch(e) {}
+        }));
+        attDocs.forEach(r => {
+          const inst = r.instructor;
+          if (!inst || inst === "—") return;
+          const recordCourse = r.courseName || (r.classId ? classCourseMap[r.classId] : null);
+          if (recordCourse && studentCourse && recordCourse.toLowerCase() === studentCourse.toLowerCase()) {
+            pastInstructorNames.add(inst);
+          } else if (!recordCourse && !studentCourse) {
+            pastInstructorNames.add(inst);
+          }
+        });
+      } catch(e) { console.error("Error resolving past instructors:", e); }
 
       let allInstructors = [];
       try {
-        // --- NEW: Add schoolId filter to instructors query ---
         const instrSnap = await getDocs(query(
           collection(db, "instructors"),
           where("schoolId", "==", SCHOOL_ID)
@@ -2958,49 +3052,24 @@
         return;
       }
 
-      if (studentCourse) {
-        allInstructors.forEach(inst => {
-          let courses = inst.assignedCourses || [];
-          if (courses && typeof courses === 'object' && !Array.isArray(courses)) {
-            courses = Object.values(courses);
-          }
-          if (Array.isArray(courses) && courses.includes(studentCourse)) {
-            const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim();
-            if (fullName) instructorNames.add(fullName);
-          }
-        });
-      }
-
-      if (instructorNames.size === 0) {
-        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No instructors recorded yet.</div>';
-        return;
-      }
-
-      let matchedInstructors = allInstructors.filter(inst => {
+      const matchedInstructors = allInstructors.filter(inst => {
         const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim();
-        return instructorNames.has(fullName);
+        return currentInstructorIds.has(inst.id) || currentInstructorNames.has(fullName) || pastInstructorNames.has(fullName);
       });
 
       if (matchedInstructors.length === 0) {
-        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Instructor profiles not found.</div>';
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No instructors recorded yet for your course.</div>';
         return;
       }
 
-      const activelyAssignedNames = new Set();
-      if (assignedInstructor && assignedInstructor !== "—") {
-        activelyAssignedNames.add(assignedInstructor);
-      }
-      if (studentData.instructors && Array.isArray(studentData.instructors)) {
-        studentData.instructors.forEach(inst => {
-          if (inst && inst !== "—") activelyAssignedNames.add(inst);
-        });
-      }
+      const isCurrentInstructor = (inst) => {
+        const fullName = `${inst.firstName || ''} ${inst.lastName || ''}`.trim();
+        return currentInstructorIds.has(inst.id) || currentInstructorNames.has(fullName);
+      };
 
       matchedInstructors.sort((a, b) => {
-        const aFull = `${a.firstName || ''} ${a.lastName || ''}`.trim();
-        const bFull = `${b.firstName || ''} ${b.lastName || ''}`.trim();
-        const aIsCurrent = activelyAssignedNames.has(aFull);
-        const bIsCurrent = activelyAssignedNames.has(bFull);
+        const aIsCurrent = isCurrentInstructor(a);
+        const bIsCurrent = isCurrentInstructor(b);
         if (aIsCurrent && !bIsCurrent) return -1;
         if (!aIsCurrent && bIsCurrent) return 1;
         return 0;
@@ -3015,8 +3084,10 @@
         const avatarHtml = photoUrl
           ? `<div style="width: 80px; height: 80px; border-radius: 50%; background: url(${photoUrl}) center/cover; margin: 0 auto 12px;"></div>`
           : `<div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--gold); margin: 0 auto 12px;">${initials}</div>`;
-        const isCurrent = activelyAssignedNames.has(fullName);
-        const currentBadge = isCurrent ? `<div style="display: inline-block; background: var(--gold); color: var(--navy); font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 20px; margin-bottom: 6px;">Current Instructor</div>` : '';
+        const isCurrent = isCurrentInstructor(inst);
+        const currentBadge = isCurrent
+          ? `<div style="display: inline-block; background: var(--gold); color: var(--navy); font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 20px; margin-bottom: 6px;">Current Instructor</div>`
+          : `<div style="display: inline-block; background: rgba(139,154,176,0.15); color: var(--text-muted); font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 20px; margin-bottom: 6px;">Past Instructor</div>`;
         return `
           <div class="video-item" onclick='openInstructorInfo(${JSON.stringify(inst).replace(/'/g, "&#39;")})' style="cursor:pointer; text-align:center;">
             ${avatarHtml}
@@ -3465,6 +3536,10 @@
 
   window.closeProfilePicModal = function() {
     document.getElementById("profilePicRequiredModal").classList.remove("open");
+  };
+
+  window.showProfilePicRequiredForContent = function() {
+    document.getElementById("profilePicRequiredModal").classList.add("open");
   };
 
   window.goToProfileAndClose = function() {

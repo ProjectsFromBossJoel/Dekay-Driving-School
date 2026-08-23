@@ -297,12 +297,72 @@
     }
     .modal-continue-btn:hover { background: var(--gold-light); }
 
+    /* Success Modal with animated checkmark */
+    .success-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,22,40,0.75);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 10001;
+      padding: 20px;
+    }
+    .success-modal-overlay.show { display: flex; }
+    .success-modal-box {
+      width: 100%; max-width: 360px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px 28px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      transform: scale(0.85);
+      opacity: 0;
+      animation: successPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes successPopIn {
+      to { transform: scale(1); opacity: 1; }
+    }
+    .success-checkmark-wrap {
+      width: 88px; height: 88px;
+      margin: 0 auto 22px;
+    }
+    .success-checkmark-circle {
+      stroke: var(--success);
+      stroke-width: 3;
+      stroke-dasharray: 166;
+      stroke-dashoffset: 166;
+      fill: none;
+      animation: successCircleDraw 0.5s ease-out forwards;
+    }
+    .success-checkmark-check {
+      stroke: var(--success);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+      animation: successCheckDraw 0.35s 0.5s ease-out forwards;
+    }
+    @keyframes successCircleDraw {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes successCheckDraw {
+      to { stroke-dashoffset: 0; }
+    }
+    .success-modal-title { font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+    .success-modal-text { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; padding: 0 4px; }
+
     @media (max-width: 900px) {
       .left-panel { display: none; }
       .right-panel { padding: 40px 24px; }
     }
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
+      .success-modal-box { padding: 28px 20px; max-width: 320px; }
+      .success-checkmark-wrap { width: 72px; height: 72px; margin-bottom: 18px; }
+      .success-modal-title { font-size: 16px; }
+      .success-modal-text { font-size: 13px; }
     }
   </style>
 </head>
@@ -357,14 +417,14 @@
           <label class="form-label">First name <span>*</span></label>
           <div class="input-wrap">
             <i class="fas fa-user input-icon"></i>
-            <input type="text" id="firstName" class="form-input" placeholder="Kwame" />
+            <input type="text" id="firstName" class="form-input" placeholder="Kwame" autocomplete="given-name" />
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">Last name <span>*</span></label>
           <div class="input-wrap">
             <i class="fas fa-user input-icon"></i>
-            <input type="text" id="lastName" class="form-input" placeholder="Asante" />
+            <input type="text" id="lastName" class="form-input" placeholder="Asante" autocomplete="family-name" />
           </div>
         </div>
       </div>
@@ -473,6 +533,20 @@
     </div>
   </div>
 
+  <!-- SUCCESS MODAL (animated checkmark) -->
+  <div class="success-modal-overlay" id="successModal">
+    <div class="success-modal-box">
+      <div class="success-checkmark-wrap">
+        <svg viewBox="0 0 52 52" width="100%" height="100%">
+          <circle class="success-checkmark-circle" cx="26" cy="26" r="23"/>
+          <path class="success-checkmark-check" d="M15 27l7 7 15-15"/>
+        </svg>
+      </div>
+      <div class="success-modal-title">Account Created!</div>
+      <div class="success-modal-text" id="successModalText"></div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div class="toast" id="toast">
     <i class="fas fa-check-circle"></i>
@@ -521,7 +595,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, serverTimestamp, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, serverTimestamp, getDoc, collection, getDocs, query, where, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, deleteUser, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
       const firebaseConfig = {
@@ -623,13 +697,52 @@
       t.querySelector("i").className = type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
       document.getElementById("toastMsg").textContent = msg;
       t.classList.add("show");
-      setTimeout(() => t.classList.remove("show"), 4000);
+      setTimeout(() => t.classList.remove("show"), 5500);
+    }
+
+    function showSuccessModal(msg, duration = 5500) {
+      const overlay = document.getElementById("successModal");
+      const textEl = document.getElementById("successModalText");
+      textEl.textContent = msg;
+
+      // Restart the draw animations every time the modal is shown
+      const box = overlay.querySelector(".success-modal-box");
+      const circle = overlay.querySelector(".success-checkmark-circle");
+      const check = overlay.querySelector(".success-checkmark-check");
+      [box, circle, check].forEach(el => {
+        el.style.animation = "none";
+        void el.offsetWidth; // force reflow to restart animation
+        el.style.animation = "";
+      });
+
+      overlay.classList.add("show");
+      clearTimeout(overlay._hideTimer);
+      overlay._hideTimer = setTimeout(() => {
+        overlay.classList.remove("show");
+      }, duration);
     }
 
     function setError(msg) {
       const el = document.getElementById("formError");
       el.querySelector("span").textContent = msg;
       el.classList.toggle("show", !!msg);
+    }
+
+    // ── SYNC NEW STUDENT INTO THE MATCHING COURSE'S STAFFING LISTS ──
+    async function addStudentToCourse(courseName, uid, displayName) {
+      if (!courseName) return;
+      try {
+        const q = query(collection(db, "courses"), where("name", "==", courseName));
+        const snap = await getDocs(q);
+        if (snap.empty) return;
+        const courseDoc = snap.docs[0];
+        await updateDoc(doc(db, "courses", courseDoc.id), {
+          assignedStudents: arrayUnion(uid),
+          assignedStudentNames: arrayUnion(displayName)
+        });
+      } catch(e) {
+        console.error("Could not sync student into course staffing:", e);
+      }
     }
 
     // ── Manual registration (with GH Card Number) ──
@@ -711,10 +824,11 @@
           enrolDate: new Date().toLocaleDateString('en-GB'),
           schoolId: "78BZvydj3iz8FEQMiDp5"
         });
+        await addStudentToCourse(course, uid, `${firstName} ${lastName}`.trim());
         // Immediately sign out – the student will sign in again after approval
         await signOut(auth);
 
-        showToast("Account created! You'll receive an admission email once approved. Please check your inbox regularly, including spam.", "success");
+        showSuccessModal("You'll receive an admission email once approved. Please check your inbox regularly, including spam.");
         document.querySelectorAll(".form-input, .form-select").forEach(el => el.value = "");
         document.getElementById("courseType").value = "";
         document.getElementById("branch").value = "";
@@ -815,10 +929,11 @@
           avatarUrl: user.photoURL || "",
           schoolId: "78BZvydj3iz8FEQMiDp5"
         });
+        await addStudentToCourse("Manual", user.uid, `${firstName} ${lastName}`.trim() || user.email);
 
         // Sign out so they don’t stay signed in
         await signOut(auth);
-        showToast("Account created! You'll receive an admission email once approved. Please check your inbox regularly, including spam.", "success");
+        showSuccessModal("You'll receive an admission email once approved. Please check your inbox regularly, including spam.");
       } catch (err) {
         console.error(err);
         btn.disabled = false;
