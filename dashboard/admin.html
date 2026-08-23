@@ -5328,6 +5328,7 @@ async function populateInstructorCheckboxes() {
           dvlaReady: trainingStage >= 6,
           dvlaReadyAt: trainingStage >= 6 ? serverTimestamp() : null,
           updatedAt: serverTimestamp(),
+          schoolId: adminSchoolId,
           stages: {}
         };
         for (let i = 1; i <= 6; i++) {
@@ -9396,14 +9397,14 @@ window.showBusyResources = showBusyResources;
     else loadInstructorPermissions();
   };
 
-  async function loadPermissionsDoc(type) {
-    const docId = type === 'student' ? 'student_permissions' : 'instructor_permissions';
-    try {
-      const snap = await getDoc(doc(db, "permissions", docId));
-      if (snap.exists()) return snap.data();
-      return null;
-    } catch(e) { return null; }
-  }
+async function loadPermissionsDoc(type) {
+  const docId = type === 'student' ? 'student_permissions' : 'instructor_permissions';
+  try {
+    const snap = await getDoc(doc(db, "schools", adminSchoolId, "permissions", docId));
+    if (snap.exists()) return snap.data();
+    return null;
+  } catch(e) { return null; }
+}
 
   async function loadStudentPermissions() {
     const container = document.getElementById("studentPermList");
@@ -9463,7 +9464,7 @@ window.showBusyResources = showBusyResources;
     });
 
     try {
-      await setDoc(doc(db, "permissions", docId), { ...perms, schoolId: adminSchoolId }, { merge: true });
+      await setDoc(doc(db, "schools", adminSchoolId, "permissions", docId), perms, { merge: true });
       showToast(`${type === 'student' ? 'Student' : 'Instructor'} permissions saved ✓`, "success");
     } catch(e) {
       console.error(e);

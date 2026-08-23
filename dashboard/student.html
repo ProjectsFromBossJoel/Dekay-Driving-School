@@ -1316,16 +1316,12 @@
     return endTime ? `${startTime} – ${endTime}` : startTime;
   }
 
-  async function loadStudentPermissions() {
-    try {
-      const snap = await getDoc(doc(db, "permissions", "student_permissions"));
-      if (snap.exists()) {
-        studentPermissions = snap.data();
-      }
-    } catch(e) {
-      studentPermissions = {};
-    }
-  }
+async function loadStudentPermissions() {
+  try {
+    const snap = await getDoc(doc(db, "schools", SCHOOL_ID, "permissions", "student_permissions"));
+    if (snap.exists()) { studentPermissions = snap.data(); }
+  } catch(e) { studentPermissions = {}; }
+}
 
   async function initDashboard() {
     const d = studentData;

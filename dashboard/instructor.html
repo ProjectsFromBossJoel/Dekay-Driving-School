@@ -451,8 +451,8 @@
       <button class="nav-item" onclick="showPage('students', this)"><i class="fas fa-users"></i> My Students</button>
       <button class="nav-item" onclick="showPage('lessons', this)"><i class="fas fa-play-circle"></i> Lessons</button>
       <button class="nav-item" onclick="showPage('attendance', this)"><i class="fas fa-calendar-check"></i>Student Attendance</button>
-      <button class="nav-item" onclick="showPage('myAttendance', this)"><i class="fas fa-user-check"></i> My Attendance</button>
-      <button class="nav-item" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes</button>
+      <button class="nav-item" id="navMyAttendance" onclick="showPage('myAttendance', this)"><i class="fas fa-user-check"></i> My Attendance</button>
+      <button class="nav-item" id="navQuizzes" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes</button>
       <div class="nav-section-label">Account</div>
       <button class="nav-item" onclick="showPage('notifications', this)"><i class="fas fa-bell"></i> Notifications</button>
       <button class="nav-item" onclick="showPage('settings', this)"><i class="fas fa-user-cog"></i> Settings</button>
@@ -617,7 +617,7 @@
           <div class="page-title">My Attendance</div>
           <div class="page-sub">Mark your attendance after completing a class session</div>
         </div>
-        <button class="btn btn-gold" onclick="openMyAttendanceModal()"><i class="fas fa-plus"></i> Mark Attendance</button>
+        <button class="btn btn-gold" id="markMyAttBtn" onclick="openMyAttendanceModal()"><i class="fas fa-plus"></i> Mark Attendance</button>
       </div>
 
       <!-- Stats -->
@@ -772,7 +772,7 @@
       <i class="fas fa-play-circle"></i>
       <span>Lessons</span>
     </button>
-    <button class="mobile-nav-item" data-page="myAttendance" onclick="mobileSelectTab('myAttendance')">
+    <button class="mobile-nav-item" id="mobNavMyAttendance" data-page="myAttendance" onclick="mobileSelectTab('myAttendance')">
       <i class="fas fa-user-check"></i>
       <span>My Att.</span>
     </button>
@@ -792,7 +792,7 @@
         <i class="fas fa-calendar-check"></i>
         <span>Student Att.</span>
       </div>
-      <div class="sheet-item" onclick="mobileMoreNavigate('quizzes')">
+      <div class="sheet-item" id="sheetItemQuizzes" onclick="mobileMoreNavigate('quizzes')">
         <i class="fas fa-tasks"></i>
         <span>Quizzes</span>
       </div>
@@ -989,6 +989,39 @@
     let attendanceRecords = [];
     let dashboardLoaded = false;
     let authGuardDone = false;
+    let instructorPermissions = {};
+
+    function isInstrPermEnabled(key) {
+      const p = instructorPermissions[key];
+      return !p || p.enabled !== false;
+    }
+
+    async function loadInstructorPermissions() {
+      try {
+        const snap = await getDoc(doc(db, "schools", SCHOOL_ID, "permissions", "instructor_permissions"));
+        if (snap.exists()) instructorPermissions = snap.data();
+      } catch(e) {
+        instructorPermissions = {};
+      }
+    }
+
+    function applyInstructorPermissionsToNav() {
+      const myAttOn = isInstrPermEnabled('myAttendance');
+      const quizzesOn = isInstrPermEnabled('quizzes');
+
+      const navMyAtt = document.getElementById("navMyAttendance");
+      const navQuizzes = document.getElementById("navQuizzes");
+      const mobMyAtt = document.getElementById("mobNavMyAttendance");
+      const sheetQuizzes = document.getElementById("sheetItemQuizzes");
+
+      if (navMyAtt) navMyAtt.style.display = myAttOn ? "flex" : "none";
+      if (navQuizzes) navQuizzes.style.display = quizzesOn ? "flex" : "none";
+      if (mobMyAtt) mobMyAtt.style.display = myAttOn ? "flex" : "none";
+      if (sheetQuizzes) sheetQuizzes.style.display = quizzesOn ? "flex" : "none";
+
+      const markMyAttBtn = document.getElementById("markMyAttBtn");
+      if (markMyAttBtn) markMyAttBtn.style.display = isInstrPermEnabled('checkin') ? "inline-flex" : "none";
+    }
 
         onAuthStateChanged(auth, async (user) => {
       if (authGuardDone) return;
@@ -1030,6 +1063,10 @@
 
         currentUser = user;
         instructorData = data;
+
+        await loadInstructorPermissions();
+        applyInstructorPermissionsToNav();
+
         document.getElementById("instructorName").textContent = `${instructorData.firstName || ''} ${instructorData.lastName || ''}`.trim() || "Instructor";
         document.getElementById("dashInstructorName").textContent = instructorData.firstName || "Instructor";
         document.getElementById("dashDateLine").textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -1232,21 +1269,26 @@
           const foundClass = allInstructorClasses.find(c => c.id === rec.classId);
           if (foundClass) classTitle = foundClass.title || '—';
         }
+        const actionsHtml = isInstrPermEnabled('manageAttendance')
+          ? `<button class="btn btn-icon toggle-present" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${rec.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="instructorToggleAttendance('${rec.id}', 'present')"><i class="fas fa-check"></i></button>
+             <button class="btn btn-icon toggle-absent" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${rec.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="instructorToggleAttendance('${rec.id}', 'absent')"><i class="fas fa-times"></i></button>`
+          : `<span style="color:var(--text-muted);font-size:11px;">—</span>`;
         return `<tr>
           <td><div style="font-weight:600">${sName}</div></td>
           <td>${dateTimeStr}</td>
           <td style="font-size:12px;">${escapeHtml(courseName)}</td>
           <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
           <td><span class="pill ${pillClass}">${rec.status}</span></td>
-          <td style="display:flex;gap:4px;">
-            <button class="btn btn-icon toggle-present" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${rec.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="instructorToggleAttendance('${rec.id}', 'present')"><i class="fas fa-check"></i></button>
-            <button class="btn btn-icon toggle-absent" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${rec.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="instructorToggleAttendance('${rec.id}', 'absent')"><i class="fas fa-times"></i></button>
-          </td>
+          <td style="display:flex;gap:4px;">${actionsHtml}</td>
         </tr>`;
       }).join('');
     }
 
     window.instructorToggleAttendance = async function(recordId, newStatus) {
+      if (!isInstrPermEnabled('manageAttendance')) {
+        showToast("You don't have permission to change attendance status.", "error");
+        return;
+      }
       const record = attendanceRecords.find(r => r.id === recordId);
       if (!record) return showToast("Record not found.", "error");
       const student = myStudents.find(s => s.id === record.studentId);
@@ -1682,21 +1724,26 @@
           }
         }
         const pillClass = r.status === 'present' ? 'pill-active' : 'pill-pending';
+        const myAttActionsHtml = isInstrPermEnabled('manageMyAttendance')
+          ? `<button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleMyAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
+             <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleMyAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>`
+          : `<span style="color:var(--text-muted);font-size:11px;">—</span>`;
         return `<tr>
           <td style="font-weight:500;">${dateTimeStr}</td>
           <td><span class="stage-pill">${r.sessionType || '—'}</span></td>
           <td style="color:var(--text-muted);">${r.course || '—'}</td>
           <td style="color:var(--text-muted);font-size:12px;">${r.notes || '—'}</td>
           <td><span class="pill ${pillClass}">${r.status || 'present'}</span></td>
-          <td style="display:flex;gap:4px;">
-            <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);${r.status === 'present' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Present" onclick="toggleMyAttendanceStatus('${r.id}', 'present')"><i class="fas fa-check"></i></button>
-            <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);${r.status === 'absent' ? 'opacity:1;' : 'opacity:0.35;'}" title="Mark Absent" onclick="toggleMyAttendanceStatus('${r.id}', 'absent')"><i class="fas fa-times"></i></button>
-          </td>
+          <td style="display:flex;gap:4px;">${myAttActionsHtml}</td>
         </tr>`;
       }).join('');
     }
 
     window.toggleMyAttendanceStatus = async function(recordId, newStatus) {
+      if (!isInstrPermEnabled('manageMyAttendance')) {
+        showToast("You don't have permission to change your attendance status.", "error");
+        return;
+      }
       const record = myAttendanceRecords.find(r => r.id === recordId);
       if (!record) return showToast("Record not found.", "error");
       openAttendanceConfirmModal(recordId, newStatus, record);
@@ -1715,6 +1762,10 @@
     }
 
     window.openMyAttendanceModal = function() {
+      if (!isInstrPermEnabled('checkin')) {
+        showToast("Attendance check-in has been disabled by the school admin.", "error");
+        return;
+      }
       document.getElementById("myAttDate").value = new Date().toISOString().split('T')[0];
       handleMyAttDateChange();
       openModal("myAttendanceModal");
@@ -1865,6 +1916,12 @@
       const container = document.getElementById("instructorCheckinContainer");
       if (!container) return;
 
+      if (!isInstrPermEnabled('checkin')) {
+        container.style.display = "none";
+        container.innerHTML = "";
+        return;
+      }
+
       const now = new Date();
       const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
@@ -1964,6 +2021,10 @@
     }
 
     window.markInstructorAttendance = async function(classId) {
+      if (!isInstrPermEnabled('checkin')) {
+        showToast("Attendance check-in has been disabled by the school admin.", "error");
+        return;
+      }
       const eligibleClassForCheck = allInstructorClasses.find(c => c.id === classId);
       if (eligibleClassForCheck && eligibleClassForCheck.mode === 'online') {
         doMarkInstructorAttendance(classId);
@@ -2234,6 +2295,12 @@
     };
 
     function showPage(name, btn) {
+      const pagePermissionMap = { myAttendance: 'myAttendance', quizzes: 'quizzes' };
+      const requiredPerm = pagePermissionMap[name];
+      if (requiredPerm && !isInstrPermEnabled(requiredPerm)) {
+        showToast("This section has been disabled by the school admin.", "error");
+        return;
+      }
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       document.getElementById(`page-${name}`).classList.add("active");
       
