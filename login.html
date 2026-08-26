@@ -276,8 +276,24 @@
     }
     .back-link:hover { color: var(--gold); }
 
-    /* Reset form */
-    #resetForm { display: none; }
+    /* Reset password modal */
+    #resetForm {
+      display: none;
+      position: fixed; inset: 0; background: rgba(10,22,40,0.75);
+      align-items: center; justify-content: center; padding: 20px; z-index: 999;
+    }
+    #resetForm.show { display: flex; }
+    .reset-modal-box {
+      width: 100%; max-width: 420px; background: var(--navy-mid);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 32px 28px; position: relative; max-height: 90vh; overflow-y: auto;
+    }
+    .reset-modal-close {
+      position: absolute; top: 14px; right: 14px; background: transparent;
+      border: none; color: var(--text-muted); font-size: 15px; cursor: pointer;
+      width: 30px; height: 30px; border-radius: 8px; transition: all var(--transition);
+    }
+    .reset-modal-close:hover { background: rgba(255,255,255,0.06); color: var(--gold); }
 
     .reset-info {
       display: flex; align-items: flex-start; gap: 12px;
@@ -385,15 +401,18 @@
   <div class="right-panel">
     <div class="login-box">
 
-      <!-- LOGIN FORM -->
-      <div id="loginForm">
-        <!-- School logo + name (centered, like register page) -->
-        <div style="text-align:center; margin-bottom:28px;">
-          <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 80px; margin-bottom: 12px; border-radius: 10px;" />
-          <div style="font-size: 18px; font-weight: 700; color: var(--white);">Dekay Driving School</div>
-          <div style="font-size: 11px; color: var(--gold); font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;">Ablekuma · Accra</div>
-        </div>
+      <!-- Fixed branding — stays put while the form panel swaps -->
+      <div style="text-align:center; margin-bottom:28px;">
+        <img src="img/logo2.png" alt="Dekay Driving School Logo" style="width: 80px; margin-bottom: 12px; border-radius: 10px;" />
+        <div style="font-size: 18px; font-weight: 700; color: var(--white);">Dekay Driving School</div>
+        <div style="font-size: 11px; color: var(--gold); font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;">Ablekuma · Accra</div>
+      </div>
 
+      <div id="loginFormsWrapper" style="position:relative; overflow:hidden;">
+      <div id="loginFormsTrack" style="display:flex; width:200%; transition: transform 0.4s cubic-bezier(0.65,0,0.35,1);">
+
+      <!-- LOGIN FORM (Student / Instructor) -->
+      <div id="loginForm" style="width:50%; flex-shrink:0;">
         <div class="login-title">Welcome back</div>
         <p class="login-sub">Sign in to continue to your portal</p>
 
@@ -404,8 +423,8 @@
           <button class="role-btn" id="instructorRoleBtn" onclick="setRole('instructor')">
             <i class="fas fa-chalkboard-teacher"></i> Instructor
           </button>
-          <button class="role-btn" id="adminRoleBtn" onclick="setRole('admin')">
-            <i class="fas fa-shield-alt"></i> Admin
+          <button class="role-btn" id="staffRoleBtn" onclick="showStaffLogin()">
+            <i class="fas fa-user-tie"></i> Staff
           </button>
         </div>
 
@@ -458,14 +477,58 @@
         </div>
       </div>
 
-      <!-- RESET PASSWORD FORM -->
-      <div id="resetForm">
+      <!-- STAFF LOGIN FORM (CEO / Branch Manager / Administrative Assistant) -->
+      <div id="staffLoginForm" style="width:50%; flex-shrink:0;">
+        <div class="login-title">Staff sign in</div>
+        <p class="login-sub">CEO, Branch Manager &amp; Administrative Assistant accounts</p>
+
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <div class="input-wrap">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="staffLoginEmail" class="form-input" placeholder="you@example.com" />
+          </div>
+          <div class="error-msg" id="staffEmailError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Password
+            <a href="#" onclick="showReset(); return false;">Forgot password?</a>
+          </label>
+          <div class="input-wrap">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="staffLoginPassword" class="form-input" placeholder="••••••••" />
+            <button class="input-toggle" onclick="togglePass('staffLoginPassword', this)" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="error-msg" id="staffPassError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+        </div>
+
+        <button class="submit-btn" id="staffLoginBtn" onclick="handleStaffLogin()">
+          <span class="btn-text"><i class="fas fa-sign-in-alt"></i> Sign in</span>
+          <div class="spinner"></div>
+        </button>
+
+        <a href="#" class="back-link" onclick="backToMainLogin(); return false;" style="margin-top:24px;">
+          <i class="fas fa-arrow-left"></i> Back to Student / Instructor sign in
+        </a>
+      </div>
+
+      </div><!-- /loginFormsTrack -->
+      </div><!-- /loginFormsWrapper -->
+
+      <!-- RESET PASSWORD MODAL -->
+      <div id="resetForm" onclick="if(event.target===this) showLogin();">
+      <div class="reset-modal-box">
+        <button type="button" class="reset-modal-close" onclick="showLogin()"><i class="fas fa-times"></i></button>
         <div class="login-title">Reset password</div>
         <p class="login-sub">We'll send a reset link to your email address</p>
 
         <div class="reset-info">
           <i class="fas fa-info-circle"></i>
-          Enter the email address linked to your Dekay student account. Check your inbox — including your spam folder.
+          Enter the email address linked to your Dekay account. Check your inbox — including your spam folder.
         </div>
 
         <div class="form-group">
@@ -483,22 +546,19 @@
         </button>
 
         <a href="#" class="back-link" onclick="showLogin(); return false;">
-          <i class="fas fa-arrow-left"></i> Back to sign in
+          <i class="fas fa-arrow-left"></i> Cancel
         </a>
-
-        <br>
-      <p>
-        <div style="font-size: 14px; color: var(--text-muted); flex: 1; text-align: center;">
-          Powered by 
-          <a href="https://myportfolio-theta-topaz-43.vercel.app/" target="_blank" style="color: var(--gold); text-decoration: none; transition: color 0.3s ease; font-weight: 600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">TrevorMiles</a>
-        </div>
-      </p>
-      
+      </div>
       </div>
 
       <a href="index.html" class="back-link" style="margin-top:32px;">
         <i class="fas fa-home"></i> Back to website
       </a>
+
+      <div style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 20px;">
+        Powered by
+        <a href="https://myportfolio-theta-topaz-43.vercel.app/" target="_blank" style="color: var(--gold); text-decoration: none; font-weight: 600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">TrevorMiles</a>
+      </div>
     </div>
   </div>
 
@@ -546,6 +606,7 @@
     window._resetPass    = sendPasswordResetEmail;
     window._updateDoc    = updateDoc;
     window.loginInProgress = false;
+    window.staffLoginInProgress = false;
 
         
         // Google Sign-In handler
@@ -649,10 +710,65 @@
       }
     };
 
+    // Staff Sign-In handler (CEO / Branch Manager / Administrative Assistant)
+    window.handleStaffLogin = async function() {
+      const email = document.getElementById("staffLoginEmail").value.trim();
+      const pass  = document.getElementById("staffLoginPassword").value;
+      setError("staffEmailError", ""); setError("staffPassError", "");
+
+      if (!email) return setError("staffEmailError", "Email address is required.");
+      if (!pass)  return setError("staffPassError",  "Password is required.");
+
+      window.staffLoginInProgress = true;
+      const btn = document.getElementById("staffLoginBtn");
+      btn.disabled = true; btn.classList.add("loading");
+
+      try {
+        const cred = await window._signIn(window._firebaseAuth, email, pass);
+        await cred.user.getIdToken(true);
+
+        const staffSnap = await window._firebaseGetDoc(
+          window._firebaseDoc(window._firebaseDb, "schools", SCHOOL_ID, "staff", cred.user.uid)
+        );
+
+        if (!staffSnap.exists()) {
+          await window._firebaseAuth.signOut();
+          setError("staffPassError", "This account is not registered as staff for this school.");
+          showToast("Not a staff account", "error");
+          return;
+        }
+
+        const staffData = staffSnap.data();
+        if (staffData.status === "inactive") {
+          await window._firebaseAuth.signOut();
+          setError("staffPassError", "Your staff account is inactive. Contact the school administrator.");
+          showToast("Account inactive", "error");
+          return;
+        }
+
+        showToast("Signed in! Redirecting…");
+        setTimeout(() => { window.location.href = "/dashboard/admin"; }, 800);
+      } catch (err) {
+        const code = err.code || err.message || "";
+        if (code.includes("too-many-requests")) {
+          setError("staffPassError", "Too many failed attempts. Please wait a moment.");
+        } else if (code.includes("wrong-password") || code.includes("invalid-credential") || code.includes("user-not-found")) {
+          setError("staffPassError", "Invalid email or password. Please try again.");
+          showToast("Invalid credentials", "error");
+        } else {
+          setError("staffPassError", "Sign in failed. Check your connection and try again.");
+        }
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove("loading");
+        window.staffLoginInProgress = false;
+      }
+    };
+
         // Redirect if already signed in
     onAuthStateChanged(auth, async (user) => {
       if (!user) return;
-      if (window.loginInProgress) return; // handleLogin() already owns this sign-in
+      if (window.loginInProgress || window.staffLoginInProgress) return; // handleLogin()/handleStaffLogin() already own this sign-in
       try {
         // First check users collection (students/admins)
         const userSnap = await getDoc(doc(db, "users", user.uid));
@@ -718,6 +834,17 @@
           return;
         }
 
+        // Not a student/admin/instructor – check this school's staff subcollection
+        const staffSnap = await getDoc(doc(db, "schools", SCHOOL_ID, "staff", user.uid));
+        if (staffSnap.exists()) {
+          if (staffSnap.data().status === "inactive") {
+            await signOut(auth);
+            return;
+          }
+          window.location.href = "/dashboard/admin";
+          return;
+        }
+
         // No valid account – sign out
         await signOut(auth);
       } catch(e) { /* stay on page */ }
@@ -731,7 +858,21 @@
       currentRole = role;
       document.getElementById("studentRoleBtn").classList.toggle("active", role === "student");
       document.getElementById("instructorRoleBtn").classList.toggle("active", role === "instructor");
-      document.getElementById("adminRoleBtn").classList.toggle("active", role === "admin");
+      document.getElementById("staffRoleBtn").classList.remove("active");
+    }
+
+    function showStaffLogin() {
+      document.getElementById("loginFormsTrack").style.transform = "translateX(-50%)";
+      document.getElementById("studentRoleBtn").classList.remove("active");
+      document.getElementById("instructorRoleBtn").classList.remove("active");
+      document.getElementById("staffRoleBtn").classList.add("active");
+      setError("staffEmailError", "");
+      setError("staffPassError", "");
+    }
+
+    function backToMainLogin() {
+      document.getElementById("loginFormsTrack").style.transform = "translateX(0)";
+      setRole(currentRole === "instructor" ? "instructor" : "student");
     }
 
     function togglePass(id, btn) {
@@ -747,13 +888,11 @@
     }
 
     function showReset() {
-      document.getElementById("loginForm").style.display = "none";
-      document.getElementById("resetForm").style.display = "block";
+      document.getElementById("resetForm").classList.add("show");
     }
 
     function showLogin() {
-      document.getElementById("loginForm").style.display = "block";
-      document.getElementById("resetForm").style.display = "none";
+      document.getElementById("resetForm").classList.remove("show");
     }
 
     function showToast(msg, type = "success") {
@@ -935,7 +1074,7 @@
     // Enter key support
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
-      const resetVisible = document.getElementById("resetForm").style.display === "block";
+      const resetVisible = document.getElementById("resetForm").classList.contains("show");
       if (resetVisible) handleReset();
       else handleLogin();
     });

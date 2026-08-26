@@ -1,4 +1,4 @@
-<!-- Dekay - Admin Portal -->
+<!-- Dekay Driving School - Admin Portal -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -811,7 +811,7 @@
           <div class="page-title">Instructors</div>
           <div class="page-sub">Review and manage instructor applications.</div>
         </div>
-        <button class="btn btn-gold" onclick="openAddInstructorModal()"><i class="fas fa-user-plus"></i> Add instructor</button>
+        <button class="btn btn-gold" id="addInstructorBtn" onclick="openAddInstructorModal()"><i class="fas fa-user-plus"></i> Add instructor</button>
       </div>
 
       <!-- PENDING INSTRUCTOR APPROVALS -->
@@ -949,7 +949,7 @@
           <!-- Injected by JS -->
         </div>
         <div class="modal-footer">
-          <button class="btn btn-gold" onclick="saveInstructorDetails()"><i class="fas fa-save"></i> Save changes</button>
+          <button class="btn btn-gold" id="instrDetailSaveBtn" onclick="saveInstructorDetails()"><i class="fas fa-save"></i> Save changes</button>
           <button class="btn btn-outline" onclick="closeModal('instructorDetailModal')">Close</button>
         </div>
       </div>
@@ -969,7 +969,7 @@
           <div class="page-title">Students</div>
           <div class="page-sub">Manage all enrolled students, their stages, and course details.</div>
         </div>
-        <button class="btn btn-gold" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Add student</button>
+        <button class="btn btn-gold" id="addStudentBtn" onclick="openAddStudentModal()"><i class="fas fa-user-plus"></i> Add student</button>
       </div>
 
       <div class="filter-bar">
@@ -1031,7 +1031,7 @@
           <div class="page-title">Attendance Records</div>
           <div class="page-sub">View and manage all student session attendance.</div>
         </div>
-        <button class="btn btn-gold" onclick="openMarkAttendanceModal()"><i class="fas fa-plus"></i> Mark session</button>
+        <button class="btn btn-gold" id="markSessionBtn" onclick="openMarkAttendanceModal()"><i class="fas fa-plus"></i> Mark session</button>
       </div>
 
       <div class="filter-bar">
@@ -1568,7 +1568,7 @@
           <div class="page-title">Classes</div>
           <div class="page-sub">Schedule and manage class sessions for each course.</div>
         </div>
-        <button class="btn btn-gold" onclick="openAddClassModal()"><i class="fas fa-plus"></i> Schedule class</button>
+                  <button class="btn btn-gold" id="scheduleClassBtn" onclick="openAddClassModal()"><i class="fas fa-plus"></i> Schedule class</button>
       </div>
 
       <div class="filter-bar">
@@ -1912,8 +1912,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-danger" onclick="deleteClassById(document.getElementById('editClassId').value)"><i class="fas fa-trash"></i> Delete</button>
-          <button class="btn btn-gold" onclick="updateClass()"><i class="fas fa-save"></i> Save changes</button>
+          <button class="btn btn-danger" id="editClassDeleteFooterBtn" onclick="deleteClassById(document.getElementById('editClassId').value)"><i class="fas fa-trash"></i> Delete</button>
+          <button class="btn btn-gold" id="editClassSaveFooterBtn" onclick="updateClass()"><i class="fas fa-save"></i> Save changes</button>
         </div>
       </div>
     </div>
@@ -2017,7 +2017,7 @@
           <div class="page-title">Vehicles</div>
           <div class="page-sub">Manage the school's fleet of training vehicles.</div>
         </div>
-        <button class="btn btn-gold" onclick="openAddVehicleModal()"><i class="fas fa-plus"></i> Add vehicle</button>
+        <button class="btn btn-gold" id="addVehicleBtn" onclick="openAddVehicleModal()"><i class="fas fa-plus"></i> Add vehicle</button>
       </div>
 
       <div class="stat-grid" id="vehiclesGrid" style="grid-template-columns:repeat(4,1fr);">
@@ -2890,7 +2890,7 @@ function hideLoading() {
     collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, limit, arrayUnion, arrayRemove
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
+  const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
 
   // ── FIREBASE CONFIG ──
 const firebaseConfig = {
@@ -2913,6 +2913,26 @@ const firebaseConfig = {
 
   // ── STATE ──
   let adminUser = null; let adminSchoolId = null;
+
+  // window.adminPermissions is null for full admin/superAdmin (unrestricted).
+  // For staff, it's the { pageKey: {create,read,update,delete} } matrix loaded
+  // from the central "roles" collection, keyed by the staff member's role.
+  window.adminPermissions = null;
+  window.canDo = function(pageKey, action) {
+    if (!window.adminPermissions) return true; // full admin/superAdmin
+    const perm = window.adminPermissions[pageKey];
+    if (!perm) return true; // pages not covered by the matrix stay open (e.g. lessons/quizzes)
+    return perm[action] === true;
+  };
+  // Page-level visibility (sidebar), distinct from the create/read/update/delete
+  // data actions above. Falls back to the page's "read" flag for roles saved
+  // before "Page Access" existed.
+  window.canSeePage = function(pageKey) {
+    if (!window.adminPermissions) return true; // full admin/superAdmin
+    const perm = window.adminPermissions[pageKey];
+    if (!perm) return true;
+    return (perm.access !== undefined ? perm.access : perm.read) === true;
+  };
   let allStudents = [];
   let allAttendance = [];
   let allLessonFolders = [];
@@ -2939,8 +2959,24 @@ const firebaseConfig = {
       const snap = await getDoc(doc(db, "users", user.uid));
       console.log("📄 User doc exists?", snap.exists(), "Role:", snap.data()?.role);
 
-      if (!snap.exists() || snap.data().role !== "admin") {
-        console.warn("⛔ Not an admin – signing out");
+      let d = null;
+      let isStaffAccount = false;
+
+      if (snap.exists() && (snap.data().role === "admin" || snap.data().role === "superAdmin")) {
+        d = snap.data();
+      } else {
+        // Not a regular admin – check this school's staff subcollection
+        // (CEO / Branch Manager / Administrative Assistant)
+        const staffSnap = await getDoc(doc(db, "schools", SCHOOL_ID, "staff", user.uid));
+        if (staffSnap.exists() && staffSnap.data().status !== "inactive") {
+          d = staffSnap.data();
+          d.schoolId = SCHOOL_ID;
+          isStaffAccount = true;
+        }
+      }
+
+      if (!d) {
+        console.warn("⛔ Not an admin or active staff – signing out");
         await signOut(auth);
         window.location.href = "/login";
         return;
@@ -2948,7 +2984,22 @@ const firebaseConfig = {
 
       // ✅ Authorised – load admin data and avatar
       adminUser = user;
-      const d = snap.data(); adminSchoolId = d.schoolId;
+      adminSchoolId = d.schoolId;
+      window.adminIsStaff = isStaffAccount;
+      window.adminStaffRole = isStaffAccount ? (d.role || null) : null;
+
+      // Load the staff member's permission matrix from the central "roles" collection.
+      // Regular admins/superAdmins keep adminPermissions = null (unrestricted).
+      window.adminPermissions = null;
+      if (isStaffAccount && d.role) {
+        try {
+          const roleSnap = await getDoc(doc(db, "roles", d.role));
+          window.adminPermissions = roleSnap.exists() ? (roleSnap.data().pages || {}) : {};
+        } catch (permErr) {
+          console.error("Could not load staff role permissions:", permErr);
+          window.adminPermissions = {}; // fail closed – no pages readable
+        }
+      }
       const name = `${d.firstName || 'Admin'} ${d.lastName || ''}`.trim();
       document.getElementById("adminName").textContent = name;
       document.getElementById("settingsName").value = name;
@@ -2979,6 +3030,7 @@ const firebaseConfig = {
       }
 
       loadAll();
+      applySidebarPermissions();
     } catch (err) {
       console.error("❌ Admin guard failed:", err);
       await signOut(auth).catch(() => {});
@@ -3486,8 +3538,8 @@ const firebaseConfig = {
         <td>${pill}</td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-icon btn-outline" onclick="openStudentDetail('${s.id}')"><i class="fas fa-eye"></i></button>
-          <button class="btn btn-icon" style="background:transparent;border:1px solid var(--border);color:var(--gold);" title="Reset password" onclick="resetStudentPassword('${s.id}','${s.email}')"><i class="fas fa-key"></i></button>
-          <button class="btn btn-icon btn-danger" onclick="deleteStudentById('${s.id}')"><i class="fas fa-trash"></i></button>
+          ${window.canDo('students','update') ? `<button class="btn btn-icon" style="background:transparent;border:1px solid var(--border);color:var(--gold);" title="Reset password" onclick="resetStudentPassword('${s.id}','${s.email}')"><i class="fas fa-key"></i></button>` : ''}
+          ${window.canDo('students','delete') ? `<button class="btn btn-icon btn-danger" onclick="deleteStudentById('${s.id}')"><i class="fas fa-trash"></i></button>` : ''}
         </td>
       </tr>`;
     }).join('');
@@ -3521,8 +3573,8 @@ const firebaseConfig = {
         <td style="font-size:11px;color:var(--text-muted);">${escapeHtml(s.ghCardNumber || '—')}${s.branch ? `<br/><span class="stage-pill" style="margin-top:4px;"><i class="fas fa-map-marker-alt" style="font-size:9px"></i> ${escapeHtml(s.branch)}</span>` : ''}</td>
         <td style="color:var(--text-muted);font-size:12px">${date}</td>
         <td style="display:flex; gap:6px;">
-          <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);" title="Approve" onclick="approveStudent('${s.id}')"><i class="fas fa-check"></i></button>
-          <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);" title="Disapprove" onclick="disapproveStudent('${s.id}')"><i class="fas fa-times"></i></button>
+          ${window.canDo('students','update') ? `<button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);" title="Approve" onclick="approveStudent('${s.id}')"><i class="fas fa-check"></i></button>` : ''}
+          ${window.canDo('students','delete') ? `<button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);" title="Disapprove" onclick="disapproveStudent('${s.id}')"><i class="fas fa-times"></i></button>` : ''}
         </td>
       </tr>`;
     }).join('');
@@ -5053,6 +5105,13 @@ async function populateInstructorCheckboxes() {
     document.getElementById("studentDetailBody").innerHTML = html;
     document.getElementById("studentDetailModal")._editUid = uid;
     setTimeout(() => { updateCourseBtnText(); }, 50);
+
+    // Gate the Save/Delete footer buttons per the staff role's permission matrix.
+    const studentDeleteBtn = document.querySelector('#studentDetailModal .btn-danger');
+    const studentSaveBtn = document.querySelector('#studentDetailModal .btn-gold');
+    if (studentDeleteBtn) studentDeleteBtn.style.display = window.canDo('students','delete') ? '' : 'none';
+    if (studentSaveBtn) studentSaveBtn.style.display = window.canDo('students','update') ? '' : 'none';
+
     openModal("studentDetailModal");
   } finally {
     hideLoading();
@@ -6732,9 +6791,9 @@ window.approveStudent = async function(uid) {
         <td style="color:var(--text-muted)">${i.experience || '—'} yrs</td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-icon btn-outline" title="View details" onclick="openInstructorDetail('${i.id}')"><i class="fas fa-eye"></i></button>
-          <button class="btn btn-icon" style="background:transparent;border:1px solid var(--border);color:var(--gold);" title="Reset password" onclick="resetInstructorPassword('${i.id}', '${escapeHtml(i.email || '')}', '${escapeHtml(i.firstName || 'Instructor')}')"><i class="fas fa-key"></i></button>
-          <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);" title="Approve" onclick="approveInstructor('${i.id}')"><i class="fas fa-check"></i></button>
-          <button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);" title="Disapprove" onclick="disapproveInstructor('${i.id}')"><i class="fas fa-times"></i></button>
+          ${window.canDo('instructors','update') ? `<button class="btn btn-icon" style="background:transparent;border:1px solid var(--border);color:var(--gold);" title="Reset password" onclick="resetInstructorPassword('${i.id}', '${escapeHtml(i.email || '')}', '${escapeHtml(i.firstName || 'Instructor')}')"><i class="fas fa-key"></i></button>
+          <button class="btn btn-icon" style="background:rgba(76,175,80,0.15);border:1px solid var(--success);color:var(--success);" title="Approve" onclick="approveInstructor('${i.id}')"><i class="fas fa-check"></i></button>` : ''}
+          ${window.canDo('instructors','delete') ? `<button class="btn btn-icon" style="background:rgba(239,83,80,0.15);border:1px solid var(--error);color:var(--error);" title="Disapprove" onclick="disapproveInstructor('${i.id}')"><i class="fas fa-times"></i></button>` : ''}
         </td>
       </tr>
     `).join('');
@@ -6768,8 +6827,8 @@ window.approveStudent = async function(uid) {
         <td>${pill}</td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-icon btn-outline" title="View details" onclick="openInstructorDetail('${i.id}')"><i class="fas fa-eye"></i></button>
-          <button class="btn btn-icon" style="background:transparent;border:1px solid var(--border);color:var(--gold);" title="Reset password" onclick="resetInstructorPassword('${i.id}', '${escapeHtml(email)}', '${escapeHtml(i.firstName || 'Instructor')}')"><i class="fas fa-key"></i></button>
-          <button class="btn btn-icon btn-danger" title="Delete" onclick="deleteInstructor('${i.id}')"><i class="fas fa-trash"></i></button>
+          ${window.canDo('instructors','update') ? `<button class="btn btn-icon" style="background:transparent;border:1px solid var(--border);color:var(--gold);" title="Reset password" onclick="resetInstructorPassword('${i.id}', '${escapeHtml(email)}', '${escapeHtml(i.firstName || 'Instructor')}')"><i class="fas fa-key"></i></button>` : ''}
+          ${window.canDo('instructors','delete') ? `<button class="btn btn-icon btn-danger" title="Delete" onclick="deleteInstructor('${i.id}')"><i class="fas fa-trash"></i></button>` : ''}
         </td>
       </tr>`;
     }).join('');
@@ -6919,7 +6978,10 @@ window.approveStudent = async function(uid) {
 
     document.getElementById("instructorDetailName").textContent = `Edit Instructor: ${fullName}`;
     document.getElementById("instructorDetailBody").innerHTML = html;
-    
+
+    const instrSaveBtn = document.getElementById("instrDetailSaveBtn");
+    if (instrSaveBtn) instrSaveBtn.style.display = window.canDo('instructors','update') ? '' : 'none';
+
     openModal("instructorDetailModal");
   } catch(err) {
     console.error(err);
@@ -7570,7 +7632,7 @@ window.approveStudent = async function(uid) {
     const preview = document.getElementById("vehicleImgPreview");
     if (v.imageUrl) { preview.src = v.imageUrl; preview.style.display = 'block'; document.getElementById("vehicleImgText").textContent = 'Change photo'; }
     else { preview.style.display = 'none'; document.getElementById("vehicleImgText").textContent = 'Tap to upload a photo'; }
-    document.getElementById("vehicleDeleteBtn").style.display = 'inline-flex';
+    document.getElementById("vehicleDeleteBtn").style.display = window.canDo('vehicles','delete') ? 'inline-flex' : 'none';
     document.getElementById("vehicleModal")._imageUrl = v.imageUrl || null;
 
     // --- POPULATE SCHEDULE SECTION WITH PAGINATION ---
@@ -7734,7 +7796,7 @@ renderVehicleSchedulePage();
       <td>${classStatusPill(status)}</td>
       <td style="display:flex;gap:6px;">
         <button class="btn btn-icon btn-outline" title="View / Edit" onclick="openEditClassModal('${cls.id}')"><i class="fas fa-eye"></i></button>
-        <button class="btn btn-icon btn-danger" title="Delete" onclick="deleteClassById('${cls.id}')"><i class="fas fa-trash"></i></button>
+        ${window.canDo('classes','delete') ? `<button class="btn btn-icon btn-danger" title="Delete" onclick="deleteClassById('${cls.id}')"><i class="fas fa-trash"></i></button>` : ''}
       </td>
     </tr>`;
   }).join('');
@@ -8883,6 +8945,11 @@ window.showBusyResources = showBusyResources;
       summaryList.innerHTML = '<div style="color:var(--error);font-size:13px;">Could not load attendance.</div>';
     }
 
+    const classDeleteFooterBtn = document.getElementById("editClassDeleteFooterBtn");
+    const classSaveFooterBtn = document.getElementById("editClassSaveFooterBtn");
+    if (classDeleteFooterBtn) classDeleteFooterBtn.style.display = window.canDo('classes','delete') ? '' : 'none';
+    if (classSaeFooterBtn) classSaveFooterBtn.style.display = window.canDo('classes','update') ? '' : 'none';
+
     openModal("editClassModal");
   } finally {
     hideLoading();
@@ -9530,6 +9597,40 @@ async function loadPermissionsDoc(type) {
 
   if (window.innerWidth < 900) document.getElementById("sidebar").classList.remove("open");
 }
+
+  // Hides sidebar nav items the signed-in staff member's role doesn't have
+  // "read" access to, per the central roles permission matrix. No-op for
+  // full admin/superAdmin (window.adminPermissions stays null for them).
+  function applySidebarPermissions() {
+    if (!window.adminPermissions) return;
+    const navPageKeyMap = {
+      overview: 'dashboard', students: 'students', instructors: 'instructors',
+      attendance: 'attendance', classes: 'classes', vehicles: 'vehicles',
+      certificates: 'certificates', notifications: 'notifications',
+      enquiries: 'enquiries', permissions: 'permissions', settings: 'settings'
+    };
+    document.querySelectorAll('.sidebar-nav .nav-item[onclick*="showPage"]').forEach(btn => {
+      const match = btn.getAttribute('onclick').match(/showPage\('([^']+)'/);
+      if (!match) return;
+      const permKey = navPageKeyMap[match[1]];
+      if (permKey && !window.canSeePage(permKey)) {
+        btn.style.display = 'none';
+      }
+    });
+
+    // Hide top-level "create" buttons the staff role's matrix doesn't grant.
+    const createButtonMap = {
+      addStudentBtn: 'students',
+      addInstructorBtn: 'instructors',
+      scheduleClassBtn: 'classes',
+      addVehicleBtn: 'vehicles',
+      markSessionBtn: 'attendance'
+    };
+    Object.entries(createButtonMap).forEach(([btnId, pageKey]) => {
+      const el = document.getElementById(btnId);
+      if (el && !window.canDo(pageKey, 'create')) el.style.display = 'none';
+    });
+  }
 
   function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
 
