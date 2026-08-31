@@ -2373,14 +2373,14 @@
                 <span id="adminAvatarInitials">AD</span>
               </div>
               <div>
-                <button class="btn btn-outline btn-sm" onclick="document.getElementById('adminAvatarUpload').click()"><i class="fas fa-camera"></i> Change photo</button>
+                <button class="btn btn-outline btn-sm" id="adminChangePhotoBtn" onclick="document.getElementById('adminAvatarUpload').click()"><i class="fas fa-camera"></i> Change photo</button>
                 <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">JPEG or PNG, max 5MB</div>
               </div>
               <input type="file" id="adminAvatarUpload" accept="image/*" style="display:none" onchange="uploadAdminAvatar(this)" />
             </div>
             <div class="form-group"><label class="form-label">Display name</label><input type="text" id="settingsName" class="form-input" /></div>
             <div class="form-group"><label class="form-label">Email</label><input type="email" id="settingsEmail" class="form-input" disabled /></div>
-            <button class="btn btn-outline" onclick="updateAdminProfile()"><i class="fas fa-save"></i> Update profile</button>
+            <button class="btn btn-outline" id="adminUpdateProfileBtn" onclick="updateAdminProfile()"><i class="fas fa-save"></i> Update profile</button>
           </div>
         </div>
       </div>
@@ -2991,17 +2991,20 @@ const firebaseConfig = {
       // Load the staff member's permission matrix from the central "roles" collection.
       // Regular admins/superAdmins keep adminPermissions = null (unrestricted).
       window.adminPermissions = null;
+      window.adminStaffRoleLabel = null;
       if (isStaffAccount && d.role) {
         try {
           const roleSnap = await getDoc(doc(db, "roles", d.role));
           window.adminPermissions = roleSnap.exists() ? (roleSnap.data().pages || {}) : {};
+          window.adminStaffRoleLabel = roleSnap.exists() ? (roleSnap.data().label || d.role) : d.role;
         } catch (permErr) {
           console.error("Could not load staff role permissions:", permErr);
           window.adminPermissions = {}; // fail closed – no pages readable
+          window.adminStaffRoleLabel = d.role;
         }
       }
       const name = `${d.firstName || 'Admin'} ${d.lastName || ''}`.trim();
-      document.getElementById("adminName").textContent = name;
+      document.getElementById("adminName").textContent = isStaffAccount ? (window.adminStaffRoleLabel || 'Staff') : name;
       document.getElementById("settingsName").value = name;
       document.getElementById("settingsEmail").value = user.email;
       document.getElementById("overviewDate").textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -6475,6 +6478,10 @@ window.approveStudent = async function(uid) {
 
     // ── ADMIN AVATAR UPLOAD ──
   window.uploadAdminAvatar = async function(input) {
+    if (!window.canDo('settings','update')) {
+      showToast("You don't have permission to update the admin profile.", "error");
+      return;
+    }
     const file = input.files[0];
     if (!file) return;
     showToast("Uploading photo…", "success");
@@ -6508,6 +6515,10 @@ window.approveStudent = async function(uid) {
 
     // ── ADMIN PROFILE UPDATE ──
   window.updateAdminProfile = async function() {
+    if (!window.canDo('settings','update')) {
+      showToast("You don't have permission to update the admin profile.", "error");
+      return;
+    }
     const newName = document.getElementById("settingsName").value.trim();
     if (!newName) {
       showToast("Display name cannot be empty.", "error");
@@ -9630,6 +9641,15 @@ async function loadPermissionsDoc(type) {
       const el = document.getElementById(btnId);
       if (el && !window.canDo(pageKey, 'create')) el.style.display = 'none';
     });
+
+    if (!window.canDo('settings', 'update')) {
+      const settingsNameInput = document.getElementById('settingsName');
+      const updateProfileBtn = document.getElementById('adminUpdateProfileBtn');
+      const changePhotoBtn = document.getElementById('adminChangePhotoBtn');
+      if (settingsNameInput) settingsNameInput.disabled = true;
+      if (updateProfileBtn) updateProfileBtn.style.display = 'none';
+      if (changePhotoBtn) changePhotoBtn.style.display = 'none';
+    }
   }
 
   function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
