@@ -671,6 +671,22 @@
       .activity-item > div:last-child { min-width: 0; overflow: hidden; }
       .activity-dot { width: 26px; height: 26px; font-size: 11px; }
     }
+    #systemLogoutOverlay {
+      position: fixed; inset: 0; z-index: 99999;
+      background: rgba(10,22,40,0.72);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 18px;
+    }
+    #systemLogoutOverlay .slo-spinner {
+      width: 54px; height: 54px; border-radius: 50%;
+      border: 4px solid rgba(245,166,35,0.25); border-top-color: var(--gold);
+      animation: sloSpin 0.9s linear infinite;
+    }
+    #systemLogoutOverlay .slo-text {
+      color: var(--white); font-size: 15px; font-weight: 600; text-align: center; padding: 0 24px;
+    }
+    @keyframes sloSpin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -2821,6 +2837,10 @@
   <!-- TOAST -->
   <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
 
+  <div id="systemLogoutOverlay">
+    <div class="slo-spinner"></div>
+    <div class="slo-text">Auto logging out due to system update…</div>
+  </div>
   <!-- ── MOBILE BOTTOM NAV ── -->
   <nav class="mobile-bottom-nav" id="mobileBottomNav">
     <button class="mobile-nav-btn active" id="mob-nav-overview" onclick="switchMobileTab('overview', this)"><i class="fas fa-th-large"></i><span>Home</span></button>
@@ -2887,9 +2907,8 @@ function hideLoading() {
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
-    collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, limit, arrayUnion, arrayRemove
+    collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, limit, arrayUnion, arrayRemove, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
   const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
 
   // ── FIREBASE CONFIG ──
@@ -2953,6 +2972,19 @@ const firebaseConfig = {
       if (!user) {
         window.location.href = "/login";
         return;
+      }
+
+      // ── SCHOOL STATUS CHECK ──
+      try {
+        const schoolSnap = await getDoc(doc(db, "schools", SCHOOL_ID));
+        if (schoolSnap.exists() && schoolSnap.data().status === "inactive") {
+          await signOut(auth);
+          alert("This school's portal has been deactivated. Please contact the platform administrator.");
+          window.location.href = "/login";
+          return;
+        }
+      } catch (schoolCheckErr) {
+        console.error("Could not verify school status:", schoolCheckErr);
       }
 
       console.log("🔍 Admin guard: fetching user doc for", user.uid);
@@ -3034,12 +3066,33 @@ const firebaseConfig = {
 
       loadAll();
       applySidebarPermissions();
+      watchSchoolStatus();
     } catch (err) {
       console.error("❌ Admin guard failed:", err);
       await signOut(auth).catch(() => {});
       window.location.href = "/login";
     }
   });
+
+  let schoolStatusUnsub = null;
+  function showSystemLogoutOverlay() {
+    const ov = document.getElementById("systemLogoutOverlay");
+    if (ov) ov.style.display = "flex";
+  }
+  async function forceSystemLogout() {
+    showSystemLogoutOverlay();
+    if (schoolStatusUnsub) { try { schoolStatusUnsub(); } catch(e) {} }
+    try { await signOut(auth); } catch(e) {}
+    setTimeout(() => { window.location.replace("/login"); }, 1400);
+  }
+  function watchSchoolStatus() {
+    if (schoolStatusUnsub) return;
+    schoolStatusUnsub = onSnapshot(doc(db, "schools", SCHOOL_ID), (snap) => {
+      if (snap.exists() && snap.data().status === "inactive") {
+        forceSystemLogout();
+      }
+    }, (err) => console.error("School status watch failed:", err));
+  }
 
 
     // ── LOAD COURSES (Admin) ──
