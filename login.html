@@ -577,7 +577,7 @@
   <!-- FIREBASE SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, deleteUser }
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, deleteUser, signOut }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs, updateDoc }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -614,6 +614,19 @@
     window.loginInProgress = false;
     window.staffLoginInProgress = false;
 
+    // Returns true if the school is active. Fails closed: any read error is
+    // treated as inactive, so we never let someone in without proof the school is live.
+    window.checkSchoolActive = async function() {
+      try {
+        const schoolSnap = await getDoc(doc(db, "schools", SCHOOL_ID));
+        if (schoolSnap.exists() && schoolSnap.data().status === "inactive") return false;
+        return true;
+      } catch (e) {
+        console.error("School status check failed:", e);
+        return false;
+      }
+    };
+
         
         // Google Sign-In handler
       window.handleGoogleLogin = async function() {
@@ -629,6 +642,15 @@
         if (snap.exists()) {
           const userData = snap.data();
           const role = userData.role;
+
+          if (role !== "superAdmin" && !(await window.checkSchoolActive())) {
+            await signOut(auth);
+            await deleteUser(user);
+            showToast("This school's portal has been deactivated. Please contact the platform administrator.", "error");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            return;
+          }
 
           if (role !== "superAdmin" && userData.schoolId !== SCHOOL_ID) {
             await signOut(auth);
@@ -658,6 +680,15 @@
         if (studentSnap.exists()) {
           const studentData = studentSnap.data();
 
+          if (!(await window.checkSchoolActive())) {
+            await signOut(auth);
+            await deleteUser(user);
+            showToast("This school's portal has been deactivated. Please contact the platform administrator.", "error");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            return;
+          }
+
           if (studentData.schoolId !== SCHOOL_ID) {
             await signOut(auth);
             await deleteUser(user);
@@ -684,6 +715,14 @@
         // 3. Check instructors collection
         const instructorSnap = await getDoc(doc(db, "instructors", user.uid));
         if (instructorSnap.exists() && instructorSnap.data().status === "active") {
+          if (!(await window.checkSchoolActive())) {
+            await signOut(auth);
+            await deleteUser(user);
+            showToast("This school's portal has been deactivated. Please contact the platform administrator.", "error");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            return;
+          }
           if (instructorSnap.data().schoolId !== SCHOOL_ID) {
             await signOut(auth);
             await deleteUser(user);
@@ -732,6 +771,13 @@
       try {
         const cred = await window._signIn(window._firebaseAuth, email, pass);
         await cred.user.getIdToken(true);
+
+        if (!(await window.checkSchoolActive())) {
+          await window._firebaseAuth.signOut();
+          setError("staffPassError", "This school's portal has been deactivated. Please contact the platform administrator.");
+          showToast("Portal deactivated", "error");
+          return;
+        }
 
         const staffSnap = await window._firebaseGetDoc(
           window._firebaseDoc(window._firebaseDb, "schools", SCHOOL_ID, "staff", cred.user.uid)
@@ -788,6 +834,12 @@
             return;
           }
 
+          // --- School status gate — before schoolId/status checks ---
+          if (!(await window.checkSchoolActive())) {
+            await signOut(auth);
+            return;
+          }
+
           // --- For everyone else, check schoolId ---
           if (userData.schoolId !== window.SCHOOL_ID) {
             await signOut(auth);
@@ -814,6 +866,10 @@
         const studentSnap = await getDoc(doc(db, "students", user.uid));
         if (studentSnap.exists()) {
           const studentData = studentSnap.data();
+          if (!(await window.checkSchoolActive())) {
+            await signOut(auth);
+            return;
+          }
           if (studentData.schoolId !== SCHOOL_ID) {
             await signOut(auth);
             alert("You are not authorized to access this school's portal.");
@@ -830,6 +886,10 @@
         // Not a student/admin – check instructors collection
         const instructorSnap = await getDoc(doc(db, "instructors", user.uid));
         if (instructorSnap.exists() && instructorSnap.data().status === "active") {
+          if (!(await window.checkSchoolActive())) {
+            await signOut(auth);
+            return;
+          }
           // Check if instructor belongs to this school
           if (instructorSnap.data().schoolId !== SCHOOL_ID) {
             await signOut(auth);
@@ -847,10 +907,13 @@
             await signOut(auth);
             return;
           }
+          if (!(await window.checkSchoolActive())) {
+            await signOut(auth);
+            return;
+          }
           window.location.href = "/dashboard/admin";
           return;
         }
-
         // No valid account – sign out
         await signOut(auth);
       } catch(e) { /* stay on page */ }
@@ -985,6 +1048,13 @@
     if (role === "superAdmin") {
       redirectUrl = "/dashboard/admin";
     } else {
+      if (!(await window.checkSchoolActive())) {
+        await window._firebaseAuth.signOut();
+        setError("passError", "This school's portal has been deactivated. Please contact the platform administrator.");
+        showToast("Portal deactivated", "error");
+        return;
+      }
+
       if (userData.schoolId !== window.SCHOOL_ID) {
         await window._firebaseAuth.signOut();
         setError("passError", "You are not authorized to access this school's portal.");
@@ -1084,6 +1154,23 @@
       if (resetVisible) handleReset();
       else handleLogin();
     });
+
+    // Surface a redirect error from a dashboard auth guard (e.g. ?error=school_inactive)
+    (function showRedirectError() {
+      const params = new URLSearchParams(window.location.search);
+      const err = params.get("error");
+      const messages = {
+        school_inactive: "This school's portal has been deactivated. Please contact the platform administrator.",
+        not_authorized: "You are not authorized to access this school's portal.",
+        pending_approval: "Your account is pending approval.",
+        not_registered: "Your account is not registered with this school.",
+        verify_failed: "Could not verify your account. Please try again.",
+        session_error: "Something went wrong. Please sign in again."
+      };
+      if (err && messages[err]) {
+        showToast(messages[err], "error");
+      }
+    })();
   </script>
 </body>
 </html>

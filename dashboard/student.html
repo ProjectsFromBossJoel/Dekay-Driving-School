@@ -617,9 +617,29 @@
       color: var(--white); font-size: 15px; font-weight: 600; text-align: center; padding: 0 24px;
     }
     @keyframes sloSpin { to { transform: rotate(360deg); } }
+    #authGuardOverlay {
+      position: fixed; inset: 0; z-index: 100000;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    #authGuardOverlay .ag-spinner {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 4px solid rgba(245,166,35,0.25); border-top-color: var(--gold);
+      animation: sloSpin 0.9s linear infinite;
+    }
+    #authGuardOverlay .ag-text {
+      color: var(--text-muted); font-size: 13px; font-weight: 500;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ── AUTH GUARD OVERLAY (hides the portal until access is verified) ── -->
+  <div id="authGuardOverlay">
+    <div class="ag-spinner"></div>
+    <div class="ag-text">Verifying access…</div>
+  </div>
 
   <!-- ── SIDEBAR (DESKTOP) ── -->
   <aside class="sidebar" id="sidebar">
@@ -1267,6 +1287,11 @@
 
   let authGuardDone = false;
 
+  function hideAuthGuardOverlay() {
+    const ov = document.getElementById("authGuardOverlay");
+    if (ov) ov.style.display = "none";
+  }
+
   onAuthStateChanged(auth, async (user) => {
     if (authGuardDone) return;
     authGuardDone = true;
@@ -1282,41 +1307,48 @@
         const schoolSnap = await getDoc(doc(db, "schools", SCHOOL_ID));
         if (schoolSnap.exists() && schoolSnap.data().status === "inactive") {
           await signOut(auth);
-          alert("This school's portal has been deactivated. Please contact the platform administrator.");
-          window.location.href = "/login";
+          sessionStorage.setItem("loginError", "This school's portal has been deactivated. Please contact the platform administrator.");
+          window.location.replace("/login");
           return;
         }
       } catch (schoolCheckErr) {
         console.error("Could not verify school status:", schoolCheckErr);
+        await signOut(auth);
+        sessionStorage.setItem("loginError", "Could not verify school status. Please try again.");
+        window.location.replace("/login");
+        return;
       }
 
       const snap = await getDoc(doc(db, "students", user.uid));
 
       if (!snap.exists()) {
         await signOut(auth);
-        window.location.href = "/login";
+        sessionStorage.setItem("loginError", "Your student account is not registered. Please contact the school.");
+        window.location.replace("/login");
         return;
       }
 
       const userData = snap.data();
 
-      // --- NEW: Check if user belongs to this school ---
+      // --- Check if user belongs to this school ---
       if (userData.schoolId !== SCHOOL_ID) {
         await signOut(auth);
-        alert("You are not authorized to access this school's portal.");
-        window.location.href = "/login";
+        sessionStorage.setItem("loginError", "You are not authorized to access this school's portal.");
+        window.location.replace("/login");
         return;
       }
 
       if (userData.role !== "student") {
         await signOut(auth);
-        window.location.href = "/login";
+        sessionStorage.setItem("loginError", "This account is not registered as a student.");
+        window.location.replace("/login");
         return;
       }
 
       if (userData.status === "pending" || userData.status === "disabled") {
         await signOut(auth);
-        window.location.href = "/login";
+        sessionStorage.setItem("loginError", "Your account is not active yet. Please contact the school.");
+        window.location.replace("/login");
         return;
       }
 
@@ -1324,10 +1356,12 @@
       studentData = userData;
       initDashboard();
       watchSchoolStatus();
+      hideAuthGuardOverlay();
     } catch (err) {
       console.error("Student guard failed:", err);
       await signOut(auth).catch(() => {});
-      window.location.href = "/login";
+      sessionStorage.setItem("loginError", "An error occurred. Please sign in again.");
+      window.location.replace("/login");
     }
   });
 
@@ -1546,38 +1580,55 @@ async function loadStudentPermissions() {
     }
   }
 
-  async function loadLessons() {
-    try {
-      const [lessonSnaps, folderSnaps] = await Promise.all([
-        getDocs(collection(db, "lessons")),
-        getDocs(collection(db, "lessonFolders"))
-      ]);
-      allLessonsFlat = lessonSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
+  let lessonFoldersUnsub = null;
+  let lessonsUnsub = null;
+  let _rawFolderDocs = [];
+  let _rawLessonDocs = [];
 
-      const customFolders = folderSnaps.docs.map(d => {
-        const data = d.data();
+  function rebuildStudentLessons(){
+    allLessonsFlat = _rawLessonDocs;
+
+    const customFolders = _rawFolderDocs
+      .filter(data => Array.isArray(data.allowedSchoolIds) && data.allowedSchoolIds.includes(SCHOOL_ID))
+      .map(data => {
         const parentPath = data.parentPath || null;
         const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
-        return { id: d.id, name: data.name, description: data.description || '', parentPath, path };
+        return { id: data.id, name: data.name, description: data.description || '', parentPath, path };
       });
-      const dedupedFolders = customFolders.sort((a,b) => a.name.localeCompare(b.name));
+    const dedupedFolders = customFolders.sort((a,b) => a.name.localeCompare(b.name));
 
-      const studentCourse = (studentData.courseType || (Array.isArray(studentData.courseTypes) && studentData.courseTypes[0]) || '').trim().toLowerCase();
-      allLessonFolders = studentCourse
-        ? dedupedFolders.filter(f => f.path.split('/')[0].trim().toLowerCase() === studentCourse)
-        : dedupedFolders;
+    const studentCourse = (studentData.courseType || (Array.isArray(studentData.courseTypes) && studentData.courseTypes[0]) || '').trim().toLowerCase();
+    allLessonFolders = studentCourse
+      ? dedupedFolders.filter(f => f.path.split('/')[0].trim().toLowerCase() === studentCourse)
+      : dedupedFolders;
 
+    const progress = window._lessonProgress || {};
+    const courseLessons = studentCourse
+      ? allLessonsFlat.filter(l => (l.folder || '').split('/')[0].trim().toLowerCase() === studentCourse)
+      : allLessonsFlat;
+    const watched = courseLessons.filter(l => (progress[l.id] || 0) >= 80).length;
+    document.getElementById("dashLessons").textContent = `${watched}/${courseLessons.length || 0}`;
+
+    renderLessonFolderView();
+  }
+
+  async function loadLessons() {
+    try {
       const progressSnap = await getDoc(doc(db, "lessonProgress", currentUser.uid));
       window._lessonProgress = progressSnap.exists() ? progressSnap.data() : {};
 
-      const courseLessons = studentCourse
-        ? allLessonsFlat.filter(l => (l.folder || '').split('/')[0].trim().toLowerCase() === studentCourse)
-        : allLessonsFlat;
-      const watched = courseLessons.filter(l => (window._lessonProgress[l.id] || 0) >= 80).length;
-      const total   = courseLessons.length || 0;
-      document.getElementById("dashLessons").textContent = `${watched}/${total}`;
-
-      renderLessonFolderView();
+      if (!lessonFoldersUnsub) {
+        lessonFoldersUnsub = onSnapshot(collection(db, "lessonFolders"), (snap) => {
+          _rawFolderDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          rebuildStudentLessons();
+        }, (e) => console.error(e));
+      }
+      if (!lessonsUnsub) {
+        lessonsUnsub = onSnapshot(collection(db, "lessons"), (snap) => {
+          _rawLessonDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          rebuildStudentLessons();
+        }, (e) => console.error(e));
+      }
     } catch(e) { console.error(e); }
   }
 
@@ -1785,19 +1836,48 @@ async function loadStudentPermissions() {
     }).join('');
   }
 
-  async function loadQuizzes() {
+  let quizCategoriesUnsub = null;
+  let quizzesUnsub = null;
+  let _rawQuizCategoryDocs = [];
+  let _rawQuizDocs = [];
+
+  function rebuildStudentQuizzes(){
+    const visibleCategoryPaths = new Set(
+      _rawQuizCategoryDocs
+        .filter(data => Array.isArray(data.allowedSchoolIds) && data.allowedSchoolIds.includes(SCHOOL_ID))
+        .map(data => data.path || (data.parentPath ? `${data.parentPath}/${data.name}` : data.name))
+    );
+
+    let quizzes = _rawQuizDocs.filter(q => visibleCategoryPaths.has(q.categoryPath));
+
+    let studentCourse = (studentData.courseType || '').trim().toLowerCase();
+    if (!studentCourse && Array.isArray(studentData.courseTypes) && studentData.courseTypes.length > 0) {
+      studentCourse = (studentData.courseTypes[0] || '').trim().toLowerCase();
+    }
+    if (studentCourse) {
+      quizzes = quizzes.filter(q => (q.courseName || (q.categoryPath || '').split('/')[0] || '').trim().toLowerCase() === studentCourse);
+    }
+
+    finishLoadQuizzes(quizzes);
+  }
+
+  function loadQuizzes() {
+    if (!quizCategoriesUnsub) {
+      quizCategoriesUnsub = onSnapshot(collection(db, "quizCategories"), (snap) => {
+        _rawQuizCategoryDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        rebuildStudentQuizzes();
+      }, (e) => console.error(e));
+    }
+    if (!quizzesUnsub) {
+      quizzesUnsub = onSnapshot(collection(db, "quizzes"), (snap) => {
+        _rawQuizDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        rebuildStudentQuizzes();
+      }, (e) => console.error(e));
+    }
+  }
+
+  async function finishLoadQuizzes(quizzes) {
     try {
-      const snaps  = await getDocs(collection(db, "quizzes"));
-      let quizzes = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      let studentCourse = (studentData.courseType || '').trim().toLowerCase();
-      if (!studentCourse && Array.isArray(studentData.courseTypes) && studentData.courseTypes.length > 0) {
-        studentCourse = (studentData.courseTypes[0] || '').trim().toLowerCase();
-      }
-      if (studentCourse) {
-        quizzes = quizzes.filter(q => (q.courseName || (q.categoryPath || '').split('/')[0] || '').trim().toLowerCase() === studentCourse);
-      }
-
       const resultsSnap = await getDoc(doc(db, "quizResults", currentUser.uid));
       const results = resultsSnap.exists() ? resultsSnap.data() : {};
 

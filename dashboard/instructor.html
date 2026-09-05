@@ -444,9 +444,29 @@
       color: var(--white); font-size: 15px; font-weight: 600; text-align: center; padding: 0 24px;
     }
     @keyframes sloSpin { to { transform: rotate(360deg); } }
+    #authGuardOverlay {
+      position: fixed; inset: 0; z-index: 100000;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    #authGuardOverlay .ag-spinner {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 4px solid rgba(245,166,35,0.25); border-top-color: var(--gold);
+      animation: sloSpin 0.9s linear infinite;
+    }
+    #authGuardOverlay .ag-text {
+      color: var(--text-muted); font-size: 13px; font-weight: 500;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ── AUTH GUARD OVERLAY (hides the panel until access is verified) ── -->
+  <div id="authGuardOverlay">
+    <div class="ag-spinner"></div>
+    <div class="ag-text">Verifying access…</div>
+  </div>
 
   <!-- SIDEBAR (DESKTOP) -->
   <aside class="sidebar" id="sidebar">
@@ -1012,6 +1032,10 @@
     let authGuardDone = false;
     let instructorPermissions = {};
 
+    function hideAuthGuardOverlay() {
+      const ov = document.getElementById("authGuardOverlay");
+      if (ov) ov.style.display = "none";
+    }
     function isInstrPermEnabled(key) {
       const p = instructorPermissions[key];
       return !p || p.enabled !== false;
@@ -1059,20 +1083,23 @@
         const schoolSnap = await getDoc(doc(db, "schools", SCHOOL_ID));
         if (schoolSnap.exists() && schoolSnap.data().status === "inactive") {
           await signOut(auth);
-          alert("This school's portal has been deactivated. Please contact the platform administrator.");
-          window.location.href = "/login";
+          sessionStorage.setItem("loginError", "This school's portal has been deactivated. Please contact the platform administrator.");
+          window.location.replace("/login");
           return;
         }
       } catch (schoolCheckErr) {
         console.error("Could not verify school status:", schoolCheckErr);
+        await signOut(auth);
+        sessionStorage.setItem("loginError", "Could not verify school status. Please try again.");
+        window.location.replace("/login");
+        return;
       }
-
       const snap = await getDoc(doc(db, "instructors", user.uid));
 
         if (!snap.exists()) {
-          showToast("Your instructor account is not registered. Please contact the school.", "error");
           await signOut(auth);
-          window.location.href = "/login";
+          sessionStorage.setItem("loginError", "Your instructor account is not registered. Please contact the school.");
+          window.location.replace("/login");
           return;
         }
 
@@ -1081,15 +1108,15 @@
         // --- NEW: Check if instructor belongs to this school ---
         if (data.schoolId !== SCHOOL_ID) {
           await signOut(auth);
-          alert("You are not authorized to access this school's portal.");
-          window.location.href = "/login";
+          sessionStorage.setItem("loginError", "You are not authorized to access this school's portal.");
+          window.location.replace("/login");
           return;
         }
 
         if (data.status !== "active") {
-          showToast("Your account is pending approval. Please wait for the admin to activate it.", "error");
           await signOut(auth);
-          window.location.href = "/login";
+          sessionStorage.setItem("loginError", "Your account is pending approval. Please wait for the admin to activate it.");
+          window.location.replace("/login");
           return;
         }
 
@@ -1193,6 +1220,7 @@
         } finally {
           dashboardLoaded = true;
           watchSchoolStatus();
+          hideAuthGuardOverlay();
         }
       } catch (err) {
         console.error("Critical error in auth guard:", err);
@@ -1500,38 +1528,55 @@
       return assignedCourses.map(c => (c || '').trim().toLowerCase()).filter(Boolean);
     }
 
-    async function loadInstructorLessons() {
-      try {
-        const assignedCourses = getInstrAssignedCourseNames();
+    let instrLessonFoldersUnsub = null;
+    let instrLessonsUnsub = null;
+    let _instrRawFolderDocs = [];
+    let _instrRawLessonDocs = [];
 
-        const [lessonSnaps, folderSnaps, progressSnaps] = await Promise.all([
-          getDocs(collection(db, "lessons")),
-          getDocs(collection(db, "lessonFolders")),
-          getDocs(collection(db, "lessonProgress"))
-        ]);
+    function rebuildInstructorLessons(){
+      const assignedCourses = getInstrAssignedCourseNames();
 
-        const studentIds = new Set(myStudents.map(s => s.id));
-        instrLessonProgressMap = {};
-        progressSnaps.docs.forEach(d => {
-          if (studentIds.has(d.id)) instrLessonProgressMap[d.id] = d.data();
-        });
+      const studentIds = new Set(myStudents.map(s => s.id));
+      instrLessonProgressMap = {};
+      (window._instrProgressDocs || []).forEach(d => {
+        if (studentIds.has(d.id)) instrLessonProgressMap[d.id] = d.data;
+      });
 
-        const allLessons = lessonSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
-        allInstrLessonsFlat = assignedCourses.length
-          ? allLessons.filter(l => assignedCourses.includes((l.folder || '').split('/')[0].trim().toLowerCase()))
-          : allLessons;
+      allInstrLessonsFlat = assignedCourses.length
+        ? _instrRawLessonDocs.filter(l => assignedCourses.includes((l.folder || '').split('/')[0].trim().toLowerCase()))
+        : _instrRawLessonDocs;
 
-        const allFolders = folderSnaps.docs.map(d => {
-          const data = d.data();
+      const visibleFolders = _instrRawFolderDocs
+        .filter(data => Array.isArray(data.allowedSchoolIds) && data.allowedSchoolIds.includes(SCHOOL_ID))
+        .map(data => {
           const parentPath = data.parentPath || null;
           const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
-          return { id: d.id, name: data.name, description: data.description || '', parentPath, path };
+          return { id: data.id, name: data.name, description: data.description || '', parentPath, path };
         });
-        allInstrLessonFolders = assignedCourses.length
-          ? allFolders.filter(f => assignedCourses.includes(f.path.split('/')[0].trim().toLowerCase()))
-          : allFolders;
+      allInstrLessonFolders = assignedCourses.length
+        ? visibleFolders.filter(f => assignedCourses.includes(f.path.split('/')[0].trim().toLowerCase()))
+        : visibleFolders;
 
-        renderInstrLessonFolderView();
+      renderInstrLessonFolderView();
+    }
+
+    async function loadInstructorLessons() {
+      try {
+        const progressSnaps = await getDocs(collection(db, "lessonProgress"));
+        window._instrProgressDocs = progressSnaps.docs.map(d => ({ id: d.id, data: d.data() }));
+
+        if (!instrLessonFoldersUnsub) {
+          instrLessonFoldersUnsub = onSnapshot(collection(db, "lessonFolders"), (snap) => {
+            _instrRawFolderDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            rebuildInstructorLessons();
+          }, (e) => console.error(e));
+        }
+        if (!instrLessonsUnsub) {
+          instrLessonsUnsub = onSnapshot(collection(db, "lessons"), (snap) => {
+            _instrRawLessonDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            rebuildInstructorLessons();
+          }, (e) => console.error(e));
+        }
       } catch(e) {
         console.error("Error loading instructor lessons:", e);
         const grid = document.getElementById("instrLessonFoldersGrid");

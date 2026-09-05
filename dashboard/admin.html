@@ -687,9 +687,29 @@
       color: var(--white); font-size: 15px; font-weight: 600; text-align: center; padding: 0 24px;
     }
     @keyframes sloSpin { to { transform: rotate(360deg); } }
+    #authGuardOverlay {
+      position: fixed; inset: 0; z-index: 100000;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    #authGuardOverlay .ag-spinner {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 4px solid rgba(245,166,35,0.25); border-top-color: var(--gold);
+      animation: sloSpin 0.9s linear infinite;
+    }
+    #authGuardOverlay .ag-text {
+      color: var(--text-muted); font-size: 13px; font-weight: 500;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ── AUTH GUARD OVERLAY (hides the panel until access is verified) ── -->
+  <div id="authGuardOverlay">
+    <div class="ag-spinner"></div>
+    <div class="ag-text">Verifying access…</div>
+  </div>
 
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar" id="sidebar">
@@ -2933,6 +2953,11 @@ const firebaseConfig = {
   // ── STATE ──
   let adminUser = null; let adminSchoolId = null;
 
+  function hideAuthGuardOverlay() {
+    const ov = document.getElementById("authGuardOverlay");
+    if (ov) ov.style.display = "none";
+  }
+
   // window.adminPermissions is null for full admin/superAdmin (unrestricted).
   // For staff, it's the { pageKey: {create,read,update,delete} } matrix loaded
   // from the central "roles" collection, keyed by the staff member's role.
@@ -2979,12 +3004,16 @@ const firebaseConfig = {
         const schoolSnap = await getDoc(doc(db, "schools", SCHOOL_ID));
         if (schoolSnap.exists() && schoolSnap.data().status === "inactive") {
           await signOut(auth);
-          alert("This school's portal has been deactivated. Please contact the platform administrator.");
-          window.location.href = "/login";
+          sessionStorage.setItem("loginError", "This school's portal has been deactivated. Please contact the platform administrator.");
+          window.location.replace("/login");
           return;
         }
       } catch (schoolCheckErr) {
         console.error("Could not verify school status:", schoolCheckErr);
+        await signOut(auth);
+        sessionStorage.setItem("loginError", "Could not verify school status. Please try again.");
+        window.location.replace("/login");
+        return;
       }
 
       console.log("🔍 Admin guard: fetching user doc for", user.uid);
@@ -3010,7 +3039,8 @@ const firebaseConfig = {
       if (!d) {
         console.warn("⛔ Not an admin or active staff – signing out");
         await signOut(auth);
-        window.location.href = "/login";
+        sessionStorage.setItem("loginError", "You are not authorized to access this admin panel.");
+        window.location.replace("/login");
         return;
       }
 
@@ -3067,10 +3097,12 @@ const firebaseConfig = {
       loadAll();
       applySidebarPermissions();
       watchSchoolStatus();
+      hideAuthGuardOverlay();
     } catch (err) {
       console.error("❌ Admin guard failed:", err);
       await signOut(auth).catch(() => {});
-      window.location.href = "/login";
+      sessionStorage.setItem("loginError", "An error occurred. Please sign in again.");
+      window.location.replace("/login");
     }
   });
 
@@ -3905,45 +3937,53 @@ window.filterRecipientsByCourse = function() {
 
   const DEFAULT_LESSON_FOLDERS = ['Motorcycle','Driving Polishing','Automatic','Manual','Intensive Lessons'];
 
+  let lessonFoldersUnsub = null;
+  let lessonsUnsub = null;
+  let _rawFolderDocs = [];
+  let _rawLessonDocs = [];
+
+  function rebuildAdminLessonsAndFolders(){
+    allLessonsFlat = _rawLessonDocs;
+    allLessonsFlat.forEach(l => {
+      const watchers = [];
+      Object.entries(window._allLessonProgress || {}).forEach(([studentId, progressMap]) => {
+        if (progressMap && progressMap[l.id] !== undefined) watchers.push({ studentId, pct: progressMap[l.id] });
+      });
+      l.avgCompletion = watchers.length ? Math.round(watchers.reduce((sum, w) => sum + w.pct, 0) / watchers.length) : 0;
+      l.watchers = watchers;
+    });
+    window._allLessons = allLessonsFlat;
+
+    allLessonFolders = _rawFolderDocs
+      .filter(data => Array.isArray(data.allowedSchoolIds) && data.allowedSchoolIds.includes(adminSchoolId))
+      .map(data => {
+        const parentPath = data.parentPath || null;
+        const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
+        return { id: data.id, name: data.name, description: data.description || '', parentPath, path };
+      })
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    renderLessonFolderView();
+  }
+
   async function loadLessons() {
     try {
-      const [lessonSnaps, folderSnaps, progressSnaps] = await Promise.all([
-        getDocs(collection(db, "lessons")),
-        getDocs(collection(db, "lessonFolders")),
-        getDocs(query(collection(db, "lessonProgress"), where("schoolId", "==", adminSchoolId)))
-      ]);
-      allLessonsFlat = lessonSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      // Map studentId -> { lessonId: pct }
+      const progressSnaps = await getDocs(query(collection(db, "lessonProgress"), where("schoolId", "==", adminSchoolId)));
       window._allLessonProgress = {};
       progressSnaps.docs.forEach(d => { window._allLessonProgress[d.id] = d.data(); });
 
-      // Attach avgCompletion + per-student watcher list to each lesson
-      allLessonsFlat.forEach(l => {
-        const watchers = [];
-        Object.entries(window._allLessonProgress).forEach(([studentId, progressMap]) => {
-          if (progressMap && progressMap[l.id] !== undefined) {
-            watchers.push({ studentId, pct: progressMap[l.id] });
-          }
-        });
-        l.avgCompletion = watchers.length
-          ? Math.round(watchers.reduce((sum, w) => sum + w.pct, 0) / watchers.length)
-          : 0;
-        l.watchers = watchers;
-      });
-
-      window._allLessons = allLessonsFlat;
-
-      const customFolders = folderSnaps.docs.map(d => {
-        const data = d.data();
-        const parentPath = data.parentPath || null;
-        const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
-        return { id: d.id, name: data.name, description: data.description || '', parentPath, path };
-      });
-
-      allLessonFolders = customFolders.sort((a,b) => a.name.localeCompare(b.name));
-
-      renderLessonFolderView();
+      if (!lessonFoldersUnsub) {
+        lessonFoldersUnsub = onSnapshot(collection(db, "lessonFolders"), (snap) => {
+          _rawFolderDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          rebuildAdminLessonsAndFolders();
+        }, (e) => console.error(e));
+      }
+      if (!lessonsUnsub) {
+        lessonsUnsub = onSnapshot(collection(db, "lessons"), (snap) => {
+          _rawLessonDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          rebuildAdminLessonsAndFolders();
+        }, (e) => console.error(e));
+      }
     } catch(e) { console.error(e); }
   }
 
@@ -4127,7 +4167,7 @@ window.filterRecipientsByCourse = function() {
       return;
     }
     try {
-      await addDoc(collection(db, "lessonFolders"), { name, description, parentPath, path, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "lessonFolders"), { name, description, parentPath, path, allowedSchoolIds: [adminSchoolId], createdAt: serverTimestamp() });
       closeModal("addFolderModal");
       showToast("Folder created ✓", "success");
       await loadLessons();
@@ -4225,21 +4265,41 @@ window.filterRecipientsByCourse = function() {
   let currentQuizQuestions = [];
   const QUIZ_IMAGE_PRESET = "quiz_images_upload";
 
-  async function loadQuizzes() {
-    try {
-      const [catSnaps, quizSnaps] = await Promise.all([
-        getDocs(collection(db, "quizCategories")),
-        getDocs(collection(db, "quizzes"))
-      ]);
-      allQuizCategories = catSnaps.docs.map(d => {
-        const data = d.data();
+  let quizCategoriesUnsub = null;
+  let quizzesUnsub = null;
+  let _rawQuizCategoryDocs = [];
+  let _rawQuizDocs = [];
+
+  function rebuildAdminQuizzes(){
+    allQuizCategories = _rawQuizCategoryDocs
+      .filter(data => Array.isArray(data.allowedSchoolIds) && data.allowedSchoolIds.includes(adminSchoolId))
+      .map(data => {
         const parentPath = data.parentPath || null;
         const path = data.path || (parentPath ? `${parentPath}/${data.name}` : data.name);
-        return { id: d.id, name: data.name, description: data.description || '', parentPath, path };
-      }).sort((a,b) => a.name.localeCompare(b.name));
-      allQuizzesFlat = quizSnaps.docs.map(d => ({ id: d.id, ...d.data() }));
-      window._allQuizzes = allQuizzesFlat;
-      renderQuizFolderView();
+        return { id: data.id, name: data.name, description: data.description || '', parentPath, path };
+      })
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    const visiblePaths = new Set(allQuizCategories.map(f => f.path));
+    allQuizzesFlat = _rawQuizDocs.filter(q => visiblePaths.has(q.categoryPath));
+    window._allQuizzes = allQuizzesFlat;
+    renderQuizFolderView();
+  }
+
+  async function loadQuizzes() {
+    try {
+      if (!quizCategoriesUnsub) {
+        quizCategoriesUnsub = onSnapshot(collection(db, "quizCategories"), (snap) => {
+          _rawQuizCategoryDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          rebuildAdminQuizzes();
+        }, (e) => console.error(e));
+      }
+      if (!quizzesUnsub) {
+        quizzesUnsub = onSnapshot(collection(db, "quizzes"), (snap) => {
+          _rawQuizDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          rebuildAdminQuizzes();
+        }, (e) => console.error(e));
+      }
     } catch(e) { console.error(e); }
   }
 
@@ -4512,13 +4572,13 @@ window.filterRecipientsByCourse = function() {
       showToast("A folder with that name already exists here.", "error");
       return;
     }
-    try {
-      await addDoc(collection(db, "quizCategories"), { name, description, parentPath, path, createdAt: serverTimestamp() });
-      closeModal("addQuizCategoryModal");
-      showToast("Folder created ✓", "success");
-      await loadQuizzes();
-    } catch(e) { showToast("Could not create folder.", "error"); }
-  };
+  try {
+    await addDoc(collection(db, "quizCategories"), { name, description, parentPath, path, allowedSchoolIds: [adminSchoolId], createdAt: serverTimestamp() });
+    closeModal("addQuizCategoryModal");
+    showToast("Folder created ✓", "success");
+    await loadQuizzes();
+  } catch(e) { showToast("Could not create folder.", "error"); }
+};
 
   // ── QUIZ TABLE ──
   function renderQuizzesTableForCategory(path) {
