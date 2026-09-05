@@ -646,7 +646,7 @@
           if (role !== "superAdmin" && !(await window.checkSchoolActive())) {
             await signOut(auth);
             await deleteUser(user);
-            showToast("This school's portal has been deactivated. Please contact the platform administrator.", "error");
+            showToast(" Log in issues please contact school administrator to resolve.", "error");
             btn.disabled = false;
             btn.style.opacity = "1";
             return;
@@ -683,7 +683,7 @@
           if (!(await window.checkSchoolActive())) {
             await signOut(auth);
             await deleteUser(user);
-            showToast("This school's portal has been deactivated. Please contact the platform administrator.", "error");
+            showToast(" Log in issues please contact school administrator to resolve.", "error");
             btn.disabled = false;
             btn.style.opacity = "1";
             return;
@@ -718,7 +718,7 @@
           if (!(await window.checkSchoolActive())) {
             await signOut(auth);
             await deleteUser(user);
-            showToast("This school's portal has been deactivated. Please contact the platform administrator.", "error");
+            showToast(" Log in issues please contact school administrator to resolve.", "error");
             btn.disabled = false;
             btn.style.opacity = "1";
             return;
@@ -774,7 +774,7 @@
 
         if (!(await window.checkSchoolActive())) {
           await window._firebaseAuth.signOut();
-          setError("staffPassError", "This school's portal has been deactivated. Please contact the platform administrator.");
+          setError("staffPassError", " Log in issues please contact school administrator to resolve.");
           showToast("Portal deactivated", "error");
           return;
         }
@@ -1050,7 +1050,7 @@
     } else {
       if (!(await window.checkSchoolActive())) {
         await window._firebaseAuth.signOut();
-        setError("passError", "This school's portal has been deactivated. Please contact the platform administrator.");
+        setError("passError", " Log in issues please contact school administrator to resolve.");
         showToast("Portal deactivated", "error");
         return;
       }
@@ -1160,7 +1160,7 @@
       const params = new URLSearchParams(window.location.search);
       const err = params.get("error");
       const messages = {
-        school_inactive: "This school's portal has been deactivated. Please contact the platform administrator.",
+        school_inactive: " Log in issues please contact school administrator to resolve.",
         not_authorized: "You are not authorized to access this school's portal.",
         pending_approval: "Your account is pending approval.",
         not_registered: "Your account is not registered with this school.",

@@ -1083,7 +1083,7 @@
         const schoolSnap = await getDoc(doc(db, "schools", SCHOOL_ID));
         if (schoolSnap.exists() && schoolSnap.data().status === "inactive") {
           await signOut(auth);
-          sessionStorage.setItem("loginError", "This school's portal has been deactivated. Please contact the platform administrator.");
+          sessionStorage.setItem("loginError", " Log in issues please contact school administrator to resolve.");
           window.location.replace("/login");
           return;
         }
