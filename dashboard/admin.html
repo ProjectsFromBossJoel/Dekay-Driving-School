@@ -1139,7 +1139,7 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-outline" id="lessonBackBtn" onclick="lessonFolderGoUp()" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
-          <button class="btn btn-outline" onclick="openAddFolderModal()"><i class="fas fa-folder-plus"></i> New folder</button>
+          <button class="btn btn-outline" id="lessonNewFolderBtn" onclick="openAddFolderModal()"><i class="fas fa-folder-plus"></i> New folder</button>
           <button class="btn btn-gold" id="lessonAddLessonBtn" onclick="openLessonQuizPrompt()" style="display:none;"><i class="fas fa-plus"></i> Add lesson</button>
         </div>
       </div>
@@ -1171,7 +1171,7 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-outline" id="quizBackBtn" onclick="quizFolderGoUp()" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
-          <button class="btn btn-outline" onclick="openAddQuizCategoryModal()"><i class="fas fa-folder-plus"></i> New category</button>
+          <button class="btn btn-outline" id="quizNewCategoryBtn" onclick="openAddQuizCategoryModal()"><i class="fas fa-folder-plus"></i> New category</button>
           <button class="btn btn-gold" id="quizAddQuizBtn" onclick="openAddQuizModal()" style="display:none;"><i class="fas fa-plus"></i> Add quiz</button>
         </div>
       </div>
@@ -3056,9 +3056,25 @@ const firebaseConfig = {
       window.adminStaffRoleLabel = null;
       if (isStaffAccount && d.role) {
         try {
-          const roleSnap = await getDoc(doc(db, "roles", d.role));
-          window.adminPermissions = roleSnap.exists() ? (roleSnap.data().pages || {}) : {};
-          window.adminStaffRoleLabel = roleSnap.exists() ? (roleSnap.data().label || d.role) : d.role;
+          await new Promise((resolve) => {
+            let firstSnapshotResolved = false;
+            window.__roleUnsub = onSnapshot(doc(db, "roles", d.role), (roleSnap) => {
+              window.adminPermissions = roleSnap.exists() ? (roleSnap.data().pages || {}) : {};
+              window.adminStaffRoleLabel = roleSnap.exists() ? (roleSnap.data().label || d.role) : d.role;
+              if (!firstSnapshotResolved) { firstSnapshotResolved = true; resolve(); }
+              else {
+                // Live permission change: re-render the current page and sidebar
+                // so buttons appear/disappear without a manual refresh.
+                applySidebarPermissions();
+                if (typeof refreshCurrentAdminPage === "function") refreshCurrentAdminPage();
+              }
+            }, (permErr) => {
+              console.error("Could not load staff role permissions:", permErr);
+              window.adminPermissions = {}; // fail closed – no pages readable
+              window.adminStaffRoleLabel = d.role;
+              if (!firstSnapshotResolved) { firstSnapshotResolved = true; resolve(); }
+            });
+          });
         } catch (permErr) {
           console.error("Could not load staff role permissions:", permErr);
           window.adminPermissions = {}; // fail closed – no pages readable
@@ -4010,6 +4026,9 @@ window.filterRecipientsByCourse = function() {
     const breadcrumbEl = document.getElementById("lessonBreadcrumb");
     const tableCard = document.getElementById("lessonTableCard");
 
+    const newFolderBtn = document.getElementById("lessonNewFolderBtn");
+    if (newFolderBtn) newFolderBtn.style.display = window.canDo('lessons','create') ? "inline-flex" : "none";
+
     if (!path) {
       titleEl.textContent = "Video Lessons";
       subEl.textContent = "Select a course folder to manage its video lessons.";
@@ -4022,7 +4041,7 @@ window.filterRecipientsByCourse = function() {
       titleEl.textContent = segments[segments.length - 1];
       subEl.textContent = `Videos and subfolders inside "${path}".`;
       backBtn.style.display = "inline-flex";
-      addLessonBtn.style.display = "inline-flex";
+      addLessonBtn.style.display = window.canDo('lessons','create') ? "inline-flex" : "none";
       breadcrumbEl.style.display = "block";
       breadcrumbEl.innerHTML = renderLessonBreadcrumb(path);
       tableCard.style.display = "block";
@@ -4041,10 +4060,10 @@ window.filterRecipientsByCourse = function() {
       const videoCount = allLessonsFlat.filter(l => (l.folder || '') === f.path).length;
       const subfolderCount = allLessonFolders.filter(sf => (sf.parentPath || null) === f.path).length;
       const count = videoCount + subfolderCount;
-      const deleteBtn = f.id
+      const deleteBtn = (f.id && window.canDo('lessons','delete'))
         ? `<button class="btn btn-icon btn-danger" title="Delete folder" style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();deleteLessonFolder('${f.id}','${f.path.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>`
         : '';
-      const editFolderBtn = f.id
+      const editFolderBtn = (f.id && window.canDo('lessons','update'))
         ? `<button class="btn btn-icon btn-outline" title="Edit folder" style="position:absolute;top:10px;right:44px;" onclick="event.stopPropagation();openEditFolderModal('${f.id}')"><i class="fas fa-eye"></i></button>`
         : '';
       return `
@@ -4117,8 +4136,8 @@ window.filterRecipientsByCourse = function() {
         return `<div>${dateStr}</div><div style="font-size:10px;">${hours}:${minutes} ${ampm}</div>`;
       })()}</td>
       <td style="display:flex;gap:6px;">
-        <button class="btn btn-icon btn-outline" title="View / Edit" onclick="openEditLessonModal('${l.id}')"><i class="fas fa-eye"></i></button>
-        <button class="btn btn-icon btn-danger" onclick="deleteLesson('${l.id}')"><i class="fas fa-trash"></i></button>
+        ${window.canDo('lessons','update') ? `<button class="btn btn-icon btn-outline" title="View / Edit" onclick="openEditLessonModal('${l.id}')"><i class="fas fa-eye"></i></button>` : ''}
+        ${window.canDo('lessons','delete') ? `<button class="btn btn-icon btn-danger" onclick="deleteLesson('${l.id}')"><i class="fas fa-trash"></i></button>` : ''}
       </td>
     </tr>`).join('');
   }
@@ -4353,6 +4372,9 @@ window.filterRecipientsByCourse = function() {
     const tableCard = document.getElementById("quizTableCard");
     const isLeaf = path && path.split('/').length >= 2; // course/category = leaf, show quizzes
 
+    const newCategoryBtn = document.getElementById("quizNewCategoryBtn");
+    if (newCategoryBtn) newCategoryBtn.style.display = window.canDo('quizzes','create') ? "inline-flex" : "none";
+
     if (!path) {
       titleEl.textContent = "Quizzes";
       subEl.textContent = "Select a course folder to manage its quiz categories.";
@@ -4367,7 +4389,7 @@ window.filterRecipientsByCourse = function() {
       backBtn.style.display = "inline-flex";
       breadcrumbEl.style.display = "block";
       breadcrumbEl.innerHTML = renderQuizBreadcrumb(path);
-      addQuizBtn.style.display = isLeaf ? "inline-flex" : "none";
+      addQuizBtn.style.display = (isLeaf && window.canDo('quizzes','create')) ? "inline-flex" : "none";
       tableCard.style.display = isLeaf ? "block" : "none";
       if (isLeaf) renderQuizzesTableForCategory(path);
     }
@@ -4386,8 +4408,12 @@ window.filterRecipientsByCourse = function() {
       const quizCount = allQuizzesFlat.filter(q => (q.categoryPath || '') === f.path).length;
       const subfolderCount = allQuizCategories.filter(sf => (sf.parentPath || null) === f.path).length;
       const count = quizCount + subfolderCount;
-      const deleteBtn = `<button class="btn btn-icon btn-danger" title="Delete" style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();deleteQuizCategory('${f.id}','${f.path.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>`;
-      const editBtn = `<button class="btn btn-icon btn-outline" title="Edit" style="position:absolute;top:10px;right:44px;" onclick="event.stopPropagation();openEditQuizCategoryModal('${f.id}')"><i class="fas fa-eye"></i></button>`;
+      const deleteBtn = window.canDo('quizzes','delete')
+        ? `<button class="btn btn-icon btn-danger" title="Delete" style="position:absolute;top:10px;right:10px;" onclick="event.stopPropagation();deleteQuizCategory('${f.id}','${f.path.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>`
+        : '';
+      const editBtn = window.canDo('quizzes','update')
+        ? `<button class="btn btn-icon btn-outline" title="Edit" style="position:absolute;top:10px;right:44px;" onclick="event.stopPropagation();openEditQuizCategoryModal('${f.id}')"><i class="fas fa-eye"></i></button>`
+        : '';
       return `
         <div class="stat-card" style="cursor:pointer;position:relative;" onclick="openQuizFolder('${f.path.replace(/'/g, "\\'")}')">
           ${editBtn}${deleteBtn}
@@ -4595,8 +4621,8 @@ window.filterRecipientsByCourse = function() {
       <td style="color:var(--gold)">${q.avgScore != null ? q.avgScore + '%' : '—'}</td>
       <td style="color:var(--text-muted)">${q.completionPct != null ? q.completionPct + '%' : '—'}</td>
       <td style="display:flex;gap:6px;">
-        <button class="btn btn-icon btn-outline" title="Manage" onclick="openEditQuizModal('${q.id}')"><i class="fas fa-eye"></i></button>
-        <button class="btn btn-icon btn-danger" onclick="deleteQuiz('${q.id}')"><i class="fas fa-trash"></i></button>
+        ${window.canDo('quizzes','update') ? `<button class="btn btn-icon btn-outline" title="Manage" onclick="openEditQuizModal('${q.id}')"><i class="fas fa-eye"></i></button>` : ''}
+        ${window.canDo('quizzes','delete') ? `<button class="btn btn-icon btn-danger" onclick="deleteQuiz('${q.id}')"><i class="fas fa-trash"></i></button>` : ''}
       </td>
     </tr>`).join('');
   }
@@ -9671,7 +9697,15 @@ async function loadPermissionsDoc(type) {
     // ══════════════════════════════════════
   // PAGE NAVIGATION & UI HELPERS (from the old regular script)
   // ══════════════════════════════════════
+  let currentAdminPage = 'overview';
+  window.refreshCurrentAdminPage = function() {
+    // Re-runs the active page's own load+render logic so its buttons
+    // reflect the latest permissions, without navigating away.
+    showPage(currentAdminPage, document.querySelector(`.nav-item[onclick*="showPage('${currentAdminPage}'"]`));
+  };
+
   async function showPage(name, btn) {
+  currentAdminPage = name;
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(`page-${name}`).classList.add("active");
   document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
@@ -9731,7 +9765,8 @@ async function loadPermissionsDoc(type) {
       overview: 'dashboard', students: 'students', instructors: 'instructors',
       attendance: 'attendance', classes: 'classes', vehicles: 'vehicles',
       certificates: 'certificates', notifications: 'notifications',
-      enquiries: 'enquiries', permissions: 'permissions', settings: 'settings'
+      enquiries: 'enquiries', permissions: 'permissions', settings: 'settings',
+      lessons: 'lessons', quizzes: 'quizzes'
     };
     document.querySelectorAll('.sidebar-nav .nav-item[onclick*="showPage"]').forEach(btn => {
       const match = btn.getAttribute('onclick').match(/showPage\('([^']+)'/);
