@@ -485,7 +485,8 @@
       <div class="nav-section-label">Main</div>
       <button class="nav-item active" onclick="showPage('dashboard', this)"><i class="fas fa-th-large"></i> Dashboard</button>
       <button class="nav-item" onclick="showPage('students', this)"><i class="fas fa-users"></i> My Students</button>
-      <button class="nav-item" onclick="showPage('lessons', this)"><i class="fas fa-play-circle"></i> Lessons</button>
+      <button class="nav-item" id="navLessons" onclick="showPage('lessons', this)"><i class="fas fa-play-circle"></i> Lessons</button>
+      <button class="nav-item" id="navCourses" onclick="showPage('courses', this)"><i class="fas fa-book"></i> Courses</button>
       <button class="nav-item" onclick="showPage('attendance', this)"><i class="fas fa-calendar-check"></i>Student Attendance</button>
       <button class="nav-item" id="navMyAttendance" onclick="showPage('myAttendance', this)"><i class="fas fa-user-check"></i> My Attendance</button>
       <button class="nav-item" id="navQuizzes" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes</button>
@@ -611,6 +612,17 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- ═══ COURSES ═══ -->
+    <div class="page" id="page-courses">
+      <div class="page-header">
+        <div class="page-title">Courses</div>
+        <div class="page-sub">Courses assigned to you.</div>
+      </div>
+      <div class="stat-grid" id="instrCoursesGrid" style="grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading courses…</div>
       </div>
     </div>
 
@@ -804,7 +816,7 @@
       <i class="fas fa-users"></i>
       <span>Students</span>
     </button>
-    <button class="mobile-nav-item" data-page="lessons" onclick="mobileSelectTab('lessons')">
+    <button class="mobile-nav-item" id="mobNavLessons" data-page="lessons" onclick="mobileSelectTab('lessons')">
       <i class="fas fa-play-circle"></i>
       <span>Lessons</span>
     </button>
@@ -831,6 +843,10 @@
       <div class="sheet-item" id="sheetItemQuizzes" onclick="mobileMoreNavigate('quizzes')">
         <i class="fas fa-tasks"></i>
         <span>Quizzes</span>
+      </div>
+      <div class="sheet-item" id="sheetItemCourses" onclick="mobileMoreNavigate('courses')">
+        <i class="fas fa-book"></i>
+        <span>Courses</span>
       </div>
       <div class="sheet-item" onclick="mobileMoreNavigate('notifications')">
         <i class="fas fa-bell"></i>
@@ -1041,28 +1057,47 @@
       return !p || p.enabled !== false;
     }
 
-    async function loadInstructorPermissions() {
-      try {
-        const snap = await getDoc(doc(db, "schools", SCHOOL_ID, "permissions", "instructor_permissions"));
-        if (snap.exists()) instructorPermissions = snap.data();
-      } catch(e) {
-        instructorPermissions = {};
-      }
+    let instructorPermissionsUnsub = null;
+    function loadInstructorPermissions() {
+      return new Promise((resolve) => {
+        let firstLoaded = false;
+        if (instructorPermissionsUnsub) { resolve(); return; } // listener already running
+        const roleKey = instructorData.roleKey || 'Standard';
+        instructorPermissionsUnsub = onSnapshot(doc(db, "instructorRoles", roleKey), (snap) => {
+          instructorPermissions = snap.exists() ? (snap.data().pages || {}) : {};
+          if (!firstLoaded) { firstLoaded = true; resolve(); }
+          else applyInstructorPermissionsToNav();
+        }, (err) => {
+          console.error("Could not load instructor role permissions:", err);
+          instructorPermissions = {};
+          if (!firstLoaded) { firstLoaded = true; resolve(); }
+        });
+      });
     }
 
     function applyInstructorPermissionsToNav() {
       const myAttOn = isInstrPermEnabled('myAttendance');
       const quizzesOn = isInstrPermEnabled('quizzes');
+      const lessonsOn = isInstrPermEnabled('lessons');
+      const coursesOn = isInstrPermEnabled('courses');
 
       const navMyAtt = document.getElementById("navMyAttendance");
       const navQuizzes = document.getElementById("navQuizzes");
+      const navLessons = document.getElementById("navLessons");
+      const navCourses = document.getElementById("navCourses");
       const mobMyAtt = document.getElementById("mobNavMyAttendance");
+      const mobNavLessons = document.getElementById("mobNavLessons");
       const sheetQuizzes = document.getElementById("sheetItemQuizzes");
+      const sheetCourses = document.getElementById("sheetItemCourses");
 
       if (navMyAtt) navMyAtt.style.display = myAttOn ? "flex" : "none";
       if (navQuizzes) navQuizzes.style.display = quizzesOn ? "flex" : "none";
+      if (navLessons) navLessons.style.display = lessonsOn ? "flex" : "none";
+      if (navCourses) navCourses.style.display = coursesOn ? "flex" : "none";
       if (mobMyAtt) mobMyAtt.style.display = myAttOn ? "flex" : "none";
+      if (mobNavLessons) mobNavLessons.style.display = lessonsOn ? "flex" : "none";
       if (sheetQuizzes) sheetQuizzes.style.display = quizzesOn ? "flex" : "none";
+      if (sheetCourses) sheetCourses.style.display = coursesOn ? "flex" : "none";
 
       const markMyAttBtn = document.getElementById("markMyAttBtn");
       if (markMyAttBtn) markMyAttBtn.style.display = isInstrPermEnabled('checkin') ? "inline-flex" : "none";
@@ -1462,6 +1497,35 @@
       } catch(e) {
         console.error("Error loading assigned courses:", e);
         container.innerHTML = '<div style="text-align:center; color: var(--error); padding:12px; font-size:12px;">Error loading courses.</div>';
+      }
+    }
+
+    async function loadInstructorCoursesPage() {
+      const grid = document.getElementById("instrCoursesGrid");
+      if (!grid) return;
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Loading courses…</div>';
+      try {
+        const assignedCourseNames = getInstrAssignedCourseNames();
+        if (!assignedCourseNames.length) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">No courses assigned to you yet.</div>';
+          return;
+        }
+        const coursesSnap = await getDocs(collection(db, "courses"));
+        const allCoursesData = coursesSnap.docs.map(d => d.data());
+        const matched = allCoursesData.filter(c => assignedCourseNames.includes((c.name || c.title || '').trim().toLowerCase()));
+        if (!matched.length) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:32px;">Course details not available yet.</div>';
+          return;
+        }
+        grid.innerHTML = matched.map(c => `
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:rgba(245,166,35,0.1)"><i class="fas ${c.icon || 'fa-car'}" style="color:var(--gold)"></i></div>
+            <div class="stat-card-value" style="font-size:16px;">${escapeHtml(c.name || c.title || '')}</div>
+            <div class="stat-card-label">${escapeHtml(c.category || 'personal')} · ${escapeHtml(c.duration || '—')}</div>
+          </div>`).join('');
+      } catch(e) {
+        console.error(e);
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--error);padding:32px;">Could not load courses.</div>';
       }
     }
 
@@ -2395,7 +2459,7 @@
     };
 
     function showPage(name, btn) {
-      const pagePermissionMap = { myAttendance: 'myAttendance', quizzes: 'quizzes' };
+      const pagePermissionMap = { myAttendance: 'myAttendance', quizzes: 'quizzes', lessons: 'lessons', courses: 'courses' };
       const requiredPerm = pagePermissionMap[name];
       if (requiredPerm && !isInstrPermEnabled(requiredPerm)) {
         showToast("This section has been disabled by the school admin.", "error");
@@ -2417,6 +2481,7 @@
         dashboard: "Dashboard", 
         students: "My Students", 
         lessons: "Lessons", 
+        courses: "Courses",
         attendance: "Attendance", 
         myAttendance: "My Attendance", 
         quizzes: "Quizzes", 
@@ -2427,6 +2492,7 @@
       
       if (name === "students") loadMyStudents().then(() => updateDashboardStats());
       if (name === "lessons") { currentInstrLessonFolderPath = null; loadInstructorLessons(); }
+      if (name === "courses") { loadInstructorCoursesPage(); }
       if (name === "attendance") loadAttendanceRecords();
       if (name === "myAttendance") loadMyAttendance();
       if (name === "notifications") loadNotifications();

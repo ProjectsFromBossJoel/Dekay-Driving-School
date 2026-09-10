@@ -656,13 +656,14 @@
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
       <button class="nav-item active" onclick="showPage('dashboard', this)"><i class="fas fa-th-large"></i> Dashboard</button>
-      <button class="nav-item" onclick="showPage('lessons', this)"><i class="fas fa-play-circle"></i> Video Lessons</button>
-      <button class="nav-item" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes <span class="badge" id="quizBadge">2</span></button>
+      <button class="nav-item" id="navLessons" onclick="showPage('lessons', this)"><i class="fas fa-play-circle"></i> Video Lessons</button>
+      <button class="nav-item" id="navQuizzes" onclick="showPage('quizzes', this)"><i class="fas fa-tasks"></i> Quizzes <span class="badge" id="quizBadge">2</span></button>
       <button class="nav-item" onclick="showPage('attendance', this)"><i class="fas fa-calendar-check"></i> Attendance</button>
       <button class="nav-item" onclick="showPage('progress', this)"><i class="fas fa-route"></i> My Progress</button>
       <button class="nav-item" onclick="showPage('classes', this)"><i class="fas fa-chalkboard"></i> My Classes</button>
       <button class="nav-item" onclick="showPage('resources', this)"><i class="fas fa-folder-open"></i> Resources</button>
       <button class="nav-item" onclick="showPage('instructors', this)"><i class="fas fa-chalkboard-teacher"></i> My Instructors</button>
+      <button class="nav-item" id="navCourses" onclick="showPage('courses', this)"><i class="fas fa-book"></i> Courses</button>
       <button class="nav-item" onclick="showPage('certificates', this)"><i class="fas fa-certificate"></i> My Certificates</button>
 
       <div class="nav-section-label">Account</div>
@@ -961,6 +962,17 @@
       </div>
     </div>
 
+    <!-- ═══ COURSES PAGE ═══ -->
+    <div class="page" id="page-courses">
+      <div style="margin-bottom:24px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Courses</div>
+        <div style="font-size:14px; color:var(--text-muted)">Details about your enrolled course.</div>
+      </div>
+      <div class="video-grid" id="studentCoursesGrid">
+        <div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading course details…</div>
+      </div>
+    </div>
+
     <!-- ═══ MY CERTIFICATES PAGE ═══ -->
     <div class="page" id="page-certificates">
       <div class="page-header">
@@ -1053,11 +1065,11 @@
       <i class="fas fa-th-large"></i>
       <span>Dashboard</span>
     </button>
-    <button class="mobile-nav-item" data-page="lessons" onclick="mobileSelectTab('lessons')">
+    <button class="mobile-nav-item" id="mobNavLessons" data-page="lessons" onclick="mobileSelectTab('lessons')">
       <i class="fas fa-play-circle"></i>
       <span>Lessons</span>
     </button>
-    <button class="mobile-nav-item" data-page="quizzes" onclick="mobileSelectTab('quizzes')">
+    <button class="mobile-nav-item" id="mobNavQuizzes" data-page="quizzes" onclick="mobileSelectTab('quizzes')">
       <i class="fas fa-tasks"></i>
       <span>Quizzes</span>
     </button>
@@ -1092,6 +1104,10 @@
       <div class="sheet-item" onclick="mobileMoreNavigate('instructors')">
         <i class="fas fa-chalkboard-teacher"></i>
         <span>Instructors</span>
+      </div>
+      <div class="sheet-item" id="mobSheetCourses" onclick="mobileMoreNavigate('courses')">
+        <i class="fas fa-book"></i>
+        <span>Courses</span>
       </div>
       <div class="sheet-item" onclick="mobileMoreNavigate('certificates')">
         <i class="fas fa-certificate"></i>
@@ -1405,16 +1421,54 @@
     return endTime ? `${startTime} – ${endTime}` : startTime;
   }
 
-async function loadStudentPermissions() {
-  try {
-    const snap = await getDoc(doc(db, "schools", SCHOOL_ID, "permissions", "student_permissions"));
-    if (snap.exists()) { studentPermissions = snap.data(); }
-  } catch(e) { studentPermissions = {}; }
+let studentPermissionsUnsub = null;
+function loadStudentPermissions() {
+  return new Promise((resolve) => {
+    let firstLoaded = false;
+    if (studentPermissionsUnsub) { resolve(); return; } // listener already running
+    const roleKey = studentData.roleKey || 'Standard';
+    studentPermissionsUnsub = onSnapshot(doc(db, "studentRoles", roleKey), (snap) => {
+      studentPermissions = snap.exists() ? (snap.data().pages || {}) : {};
+      if (!firstLoaded) { firstLoaded = true; resolve(); }
+      else applyStudentPermissionsToNav();
+    }, (err) => {
+      console.error("Could not load student role permissions:", err);
+      studentPermissions = {};
+      if (!firstLoaded) { firstLoaded = true; resolve(); }
+    });
+  });
 }
+
+function isStudentPermEnabled(key) {
+  const p = studentPermissions[key];
+  return !p || p.enabled !== false;
+}
+
+function applyStudentPermissionsToNav() {
+  const lessonsOn = isStudentPermEnabled('lessons');
+  const quizzesOn = isStudentPermEnabled('quizzes');
+  const coursesOn = isStudentPermEnabled('courses');
+
+  const navLessons = document.getElementById("navLessons");
+  const navQuizzes = document.getElementById("navQuizzes");
+  const navCourses = document.getElementById("navCourses");
+  const mobNavLessons = document.getElementById("mobNavLessons");
+  const mobNavQuizzes = document.getElementById("mobNavQuizzes");
+  const mobSheetCourses = document.getElementById("mobSheetCourses");
+
+  if (navLessons) navLessons.style.display = lessonsOn ? "flex" : "none";
+  if (navQuizzes) navQuizzes.style.display = quizzesOn ? "flex" : "none";
+  if (navCourses) navCourses.style.display = coursesOn ? "flex" : "none";
+  if (mobNavLessons) mobNavLessons.style.display = lessonsOn ? "flex" : "none";
+  if (mobNavQuizzes) mobNavQuizzes.style.display = quizzesOn ? "flex" : "none";
+  if (mobSheetCourses) mobSheetCourses.style.display = coursesOn ? "flex" : "none";
+}
+window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
 
   async function initDashboard() {
     const d = studentData;
     await loadStudentPermissions();
+    applyStudentPermissionsToNav();
     const displayName = `${d.firstName || ''} ${d.lastName || ''}`.trim() || "Student";
     const initials    = (d.firstName?.[0] || '') + (d.lastName?.[0] || '') || "S";
 
@@ -2680,6 +2734,12 @@ async function loadStudentPermissions() {
   };
 
   function showPage(name, btn) {
+    const studentPagePermissionMap = { lessons: 'lessons', quizzes: 'quizzes', courses: 'courses' };
+    const requiredStudentPerm = studentPagePermissionMap[name];
+    if (requiredStudentPerm && !isStudentPermEnabled(requiredStudentPerm)) {
+      showToast("This section has been disabled by the school admin.", "error");
+      return;
+    }
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     document.getElementById(`page-${name}`).classList.add("active");
 
@@ -2697,7 +2757,7 @@ async function loadStudentPermissions() {
       attendance: "Attendance", progress: "My Progress",
       notifications: "Notifications", profile: "Profile",
       classes: "My Classes", resources: "Resources", instructors: "My Instructors",
-      certificates: "My Certificates"
+      certificates: "My Certificates", courses: "Courses"
     };
     document.getElementById("topbarTitle").textContent = titles[name] || "Portal";
 
@@ -2725,6 +2785,7 @@ async function loadStudentPermissions() {
     if (name === "resources" && typeof loadResources === "function") { loadResources(); }
     if (name === "instructors" && typeof loadInstructors === "function") { loadInstructors(); }
     if (name === "certificates") { loadStudentCertificates(); }
+    if (name === "courses") { loadStudentCoursesPage(); }
 
     if (window.innerWidth < 900 && document.getElementById("sidebar").classList.contains("open")) {
       document.getElementById("sidebar").classList.remove("open");
@@ -3233,6 +3294,38 @@ async function loadStudentPermissions() {
     } catch (err) {
       console.error("Unexpected error loading instructors:", err);
       grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Could not load instructors. Please try again later.</div>';
+    }
+  }
+
+  async function loadStudentCoursesPage() {
+    const grid = document.getElementById("studentCoursesGrid");
+    if (!grid) return;
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Loading course details…</div>';
+    try {
+      const studentCourse = (studentData.courseType || '').trim();
+      if (!studentCourse) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No course assigned to your account.</div>';
+        return;
+      }
+      const coursesSnap = await getDocs(query(collection(db, "courses"), where("name", "==", studentCourse)));
+      if (coursesSnap.empty) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Course details for "${escapeHtml(studentCourse)}" are not available yet.</div>`;
+        return;
+      }
+      const course = coursesSnap.docs[0].data();
+      grid.innerHTML = `
+        <div class="video-item" style="cursor:default; text-align:center; padding:24px 14px;">
+          <div style="width:56px;height:56px;border-radius:14px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:24px;margin:0 auto 14px;">
+            <i class="fas ${course.icon || 'fa-car'}"></i>
+          </div>
+          <div style="font-weight:700;font-size:16px;">${escapeHtml(course.name || studentCourse)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">${escapeHtml(course.category || 'personal')} · ${escapeHtml(course.duration || '—')}</div>
+          ${course.description ? `<div style="font-size:12px;color:var(--text-light);margin-top:10px;line-height:1.5;">${escapeHtml(course.description)}</div>` : ''}
+          <div style="font-size:13px;color:var(--gold);font-weight:600;margin-top:10px;">GH₵ ${course.price != null ? course.price : '—'}</div>
+        </div>`;
+    } catch(e) {
+      console.error(e);
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--error); padding:40px;">Could not load course details.</div>';
     }
   }
 
