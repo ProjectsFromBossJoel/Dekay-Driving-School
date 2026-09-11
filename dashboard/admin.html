@@ -1386,7 +1386,7 @@
           <div class="page-title">Courses</div>
           <div class="page-sub">Manage course listings and view enrolled students.</div>
         </div>
-        <button class="btn btn-gold" onclick="openAddCourseModal()"><i class="fas fa-plus"></i> Add course</button>
+        <button class="btn btn-gold" id="addCourseBtn" onclick="openAddCourseModal()"><i class="fas fa-plus"></i> Add course</button>
       </div>
 
       <div class="card">
@@ -3212,8 +3212,8 @@ const firebaseConfig = {
           <td style="font-weight:600;">${enrolledCount}</td>
           <td>${staffingHtml}</td>
           <td>
-            <button class="btn btn-icon btn-outline" onclick="openEditCourseModal('${course.id}')"><i class="fas fa-eye"></i></button>
-            <button class="btn btn-icon btn-danger" onclick="deleteCourse('${course.id}')"><i class="fas fa-trash"></i></button>
+            ${window.canDo('courses','update') ? `<button class="btn btn-icon btn-outline" onclick="openEditCourseModal('${course.id}')"><i class="fas fa-eye"></i></button>` : ''}
+            ${window.canDo('courses','delete') ? `<button class="btn btn-icon btn-danger" onclick="deleteCourse('${course.id}')"><i class="fas fa-trash"></i></button>` : ''}
           </td>
         </tr>`;
       }).join('');
@@ -3410,6 +3410,10 @@ const firebaseConfig = {
 
   // ── UPDATE COURSE ──
   window.updateCourse = async function() {
+    if (!window.canDo('courses','update')) {
+      showToast("You don't have permission to update courses.", "error");
+      return;
+    }
     const id = document.getElementById("editCourseId").value;
     const editSelectVal = document.getElementById("editCourseName").value;
     const name = editSelectVal === "__custom__"
@@ -9098,7 +9102,7 @@ window.showBusyResources = showBusyResources;
     const classDeleteFooterBtn = document.getElementById("editClassDeleteFooterBtn");
     const classSaveFooterBtn = document.getElementById("editClassSaveFooterBtn");
     if (classDeleteFooterBtn) classDeleteFooterBtn.style.display = window.canDo('classes','delete') ? '' : 'none';
-    if (classSaeFooterBtn) classSaveFooterBtn.style.display = window.canDo('classes','update') ? '' : 'none';
+    if (classSaveFooterBtn) classSaveFooterBtn.style.display = window.canDo('classes','update') ? '' : 'none';
 
     openModal("editClassModal");
   } finally {
@@ -9766,7 +9770,7 @@ async function loadPermissionsDoc(type) {
       attendance: 'attendance', classes: 'classes', vehicles: 'vehicles',
       certificates: 'certificates', notifications: 'notifications',
       enquiries: 'enquiries', permissions: 'permissions', settings: 'settings',
-      lessons: 'lessons', quizzes: 'quizzes'
+      lessons: 'lessons', quizzes: 'quizzes', courses: 'courses'
     };
     document.querySelectorAll('.sidebar-nav .nav-item[onclick*="showPage"]').forEach(btn => {
       const match = btn.getAttribute('onclick').match(/showPage\('([^']+)'/);
@@ -9783,7 +9787,8 @@ async function loadPermissionsDoc(type) {
       addInstructorBtn: 'instructors',
       scheduleClassBtn: 'classes',
       addVehicleBtn: 'vehicles',
-      markSessionBtn: 'attendance'
+      markSessionBtn: 'attendance',
+      addCourseBtn: 'courses'
     };
     Object.entries(createButtonMap).forEach(([btnId, pageKey]) => {
       const el = document.getElementById(btnId);
