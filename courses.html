@@ -465,7 +465,7 @@
     <!-- FIREBASE & DYNAMIC COURSES -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA5TnyzHJpcHcM2N-77gkyAaj7yRru3-V0",
@@ -482,13 +482,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function loadCourses() {
-      const snaps = await getDocs(query(collection(db, "courses"), where("schoolId", "==", SCHOOL_ID)));
-      const courses = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+    function loadCourses() {
+      onSnapshot(query(collection(db, "courses"), where("schoolId", "==", SCHOOL_ID)), (snaps) => {
+        const courses = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      renderCourseCards(courses);
-      renderCompareTable(courses);
-      initFilters(courses);   // filter buttons now work with dynamic data
+        renderCourseCards(courses);
+        renderCompareTable(courses);
+      });
+      initFilters();   // attached once — reads the DOM live at click-time, doesn't need `courses`
     }
 
     function renderCourseCards(courses) {
@@ -593,7 +594,7 @@
       }).join('');
     }
 
-    function initFilters(courses) {
+    function initFilters() {
       const filterBtns = document.querySelectorAll('.filter-btn');
       const cards = document.querySelectorAll('.course-detail-card');
 
