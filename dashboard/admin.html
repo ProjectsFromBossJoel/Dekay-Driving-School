@@ -772,8 +772,62 @@
     <!-- ═══ OVERVIEW ═══ -->
     <div class="page active" id="page-overview">
       <div class="page-header">
-        <div class="page-title">School Overview</div>
+        <div class="page-title">Welcome back, <span id="overviewAdminName" style="color:var(--gold)">Admin</span> 👋</div>
         <div class="page-sub" id="overviewDate">Loading…</div>
+      </div>
+
+      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
+        <div class="card" id="topPerformerCard" style="flex:1; min-width:260px; border-color:rgba(76,175,80,0.35);">
+          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:18px 20px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:rgba(76,175,80,0.15);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:16px;flex-shrink:0;">
+              <i class="fas fa-arrow-trend-up"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Top performer</div>
+              <div id="topPerformerName" style="font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+              <div id="topPerformerMeta" style="font-size:11px;color:var(--text-muted);margin-top:2px;">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="needsSupportCard" style="flex:1; min-width:260px; border-color:rgba(239,83,80,0.35);">
+          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:18px 20px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:rgba(239,83,80,0.15);display:flex;align-items:center;justify-content:center;color:var(--error);font-size:16px;flex-shrink:0;">
+              <i class="fas fa-arrow-trend-down"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Needs support</div>
+              <div id="needsSupportName" style="font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+              <div id="needsSupportMeta" style="font-size:11px;color:var(--text-muted);margin-top:2px;">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
+        <div class="card" id="quizTopPerformerCard" style="flex:1; min-width:260px; border-color:rgba(76,175,80,0.35);">
+          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:18px 20px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:rgba(76,175,80,0.15);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:16px;flex-shrink:0;">
+              <i class="fas fa-award"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Top performer <span style="opacity:.6;">· quiz avg.</span></div>
+              <div id="quizTopPerformerName" style="font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+              <div id="quizTopPerformerMeta" style="font-size:11px;color:var(--text-muted);margin-top:2px;">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="quizNeedsSupportCard" style="flex:1; min-width:260px; border-color:rgba(239,83,80,0.35);">
+          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:18px 20px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:rgba(239,83,80,0.15);display:flex;align-items:center;justify-content:center;color:var(--error);font-size:16px;flex-shrink:0;">
+              <i class="fas fa-book-open"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Needs support <span style="opacity:.6;">· quiz avg.</span></div>
+              <div id="quizNeedsSupportName" style="font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+              <div id="quizNeedsSupportMeta" style="font-size:11px;color:var(--text-muted);margin-top:2px;">—</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="stat-grid">
@@ -3083,6 +3137,8 @@ const firebaseConfig = {
       }
       const name = `${d.firstName || 'Admin'} ${d.lastName || ''}`.trim();
       document.getElementById("adminName").textContent = isStaffAccount ? (window.adminStaffRoleLabel || 'Staff') : name;
+      const overviewNameEl = document.getElementById("overviewAdminName");
+      if (overviewNameEl) overviewNameEl.textContent = d.firstName || name || 'Admin';
       document.getElementById("settingsName").value = name;
       document.getElementById("settingsEmail").value = user.email;
       document.getElementById("overviewDate").textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -5135,6 +5191,85 @@ async function populateInstructorCheckboxes() {
         <div class="prog-bar-label"><span>${c}</span><span>${n} student${n>1?'s':''}</span></div>
         <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${(n/maxC)*100}%"></div></div>
       </div>`).join('');
+
+    renderTopBottomPerformers();
+  }
+
+  // Ranks active students by training stage to surface a top performer and
+  // a student who may need extra support — mirrors the central admin's
+  // school-overview cards, scoped to this one school.
+  function renderTopBottomPerformers(){
+    const active = allStudents.filter(s => s.status === 'active');
+    const nameEl = (id) => document.getElementById(id);
+    if (active.length < 2) {
+      nameEl("topPerformerName").textContent = '—';
+      nameEl("topPerformerMeta").textContent = 'Not enough active students yet';
+      nameEl("needsSupportName").textContent = '—';
+      nameEl("needsSupportMeta").textContent = 'Not enough active students yet';
+    } else {
+      const sorted = [...active].sort((a,b) => (Number(b.trainingStage)||1) - (Number(a.trainingStage)||1));
+      const top = sorted[0];
+      const bottom = sorted[sorted.length - 1];
+      const fmtName = (s) => `${s.firstName||''} ${s.lastName||''}`.trim() || s.email || '—';
+      nameEl("topPerformerName").textContent = fmtName(top);
+      nameEl("topPerformerMeta").textContent = `Stage ${top.trainingStage || 1} · ${top.courseType || '—'}`;
+      nameEl("needsSupportName").textContent = fmtName(bottom);
+      nameEl("needsSupportMeta").textContent = `Stage ${bottom.trainingStage || 1} · ${bottom.courseType || '—'}`;
+    }
+    renderQuizPerformers(active);
+  }
+
+  // Ranks active students by their average quiz score — pulled from
+  // quizResults/{studentId} docs, where each field is quizId -> score
+  // (the 'schoolId' field is skipped). Fetches in parallel and populates
+  // the "quiz avg." top performer / needs support cards.
+  async function renderQuizPerformers(active){
+    const nameEl = (id) => document.getElementById(id);
+    if (!nameEl("quizTopPerformerName")) return; // cards not on this page yet
+    if (active.length < 2) {
+      nameEl("quizTopPerformerName").textContent = '—';
+      nameEl("quizTopPerformerMeta").textContent = 'Not enough active students yet';
+      nameEl("quizNeedsSupportName").textContent = '—';
+      nameEl("quizNeedsSupportMeta").textContent = 'Not enough active students yet';
+      return;
+    }
+
+    const fmtName = (s) => `${s.firstName||''} ${s.lastName||''}`.trim() || s.email || '—';
+
+    try {
+      const withAvg = await Promise.all(active.map(async (s) => {
+        let avgQuiz = null;
+        try {
+          const snap = await getDoc(doc(db, 'quizResults', s.id));
+          if (snap.exists()) {
+            const scores = Object.entries(snap.data())
+              .filter(([key, v]) => key !== 'schoolId' && typeof v === 'number' && !isNaN(v))
+              .map(([, v]) => v);
+            if (scores.length) avgQuiz = Math.round(scores.reduce((sum, v) => sum + v, 0) / scores.length);
+          }
+        } catch(e) { /* non-fatal — student just won't be eligible for ranking */ }
+        return { ...s, avgQuiz };
+      }));
+
+      const ranked = withAvg.filter(s => s.avgQuiz !== null);
+      if (ranked.length < 2) {
+        nameEl("quizTopPerformerName").textContent = '—';
+        nameEl("quizTopPerformerMeta").textContent = 'Not enough quiz data yet';
+        nameEl("quizNeedsSupportName").textContent = '—';
+        nameEl("quizNeedsSupportMeta").textContent = 'Not enough quiz data yet';
+        return;
+      }
+
+      const sorted = [...ranked].sort((a,b) => b.avgQuiz - a.avgQuiz);
+      const top = sorted[0];
+      const bottom = sorted[sorted.length - 1];
+      nameEl("quizTopPerformerName").textContent = fmtName(top);
+      nameEl("quizTopPerformerMeta").textContent = `Avg quiz: ${top.avgQuiz}% · ${top.courseType || '—'}`;
+      nameEl("quizNeedsSupportName").textContent = fmtName(bottom);
+      nameEl("quizNeedsSupportMeta").textContent = `Avg quiz: ${bottom.avgQuiz}% · ${bottom.courseType || '—'}`;
+    } catch(e) {
+      console.error("Could not compute quiz performers:", e);
+    }
   }
 
 
