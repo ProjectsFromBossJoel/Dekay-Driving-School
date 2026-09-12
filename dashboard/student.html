@@ -1940,7 +1940,11 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
       document.getElementById("quizBadge").style.display = pending ? '' : 'none';
 
       let avgSum = 0, avgCount = 0;
-      Object.values(results).forEach(s => { avgSum += s; avgCount++; });
+      Object.entries(results).forEach(([key, val]) => {
+        if (key === 'schoolId') return;
+        if (typeof val !== 'number' || isNaN(val)) return;
+        avgSum += val; avgCount++;
+      });
       document.getElementById("dashQuizAvg").textContent = avgCount > 0 ? `${Math.round(avgSum/avgCount)}%` : '—';
 
       const list = document.getElementById("quizList");
@@ -2597,7 +2601,19 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
       [aq.quiz.id]: score, 
       schoolId: SCHOOL_ID
     }, { merge: true });
-          } catch(e) {}
+        // Full history — every attempt, forever. The student portal never
+        // reads this; it's for admin auditing only. The field above (which
+        // this write also updates) remains the single "current mark" the UI shows.
+        await addDoc(collection(db, "quizResults", currentUser.uid, "attempts"), {
+          quizId: aq.quiz.id,
+          quizTitle: aq.quiz.title || '',
+          score,
+          passMark,
+          pass,
+          schoolId: SCHOOL_ID,
+          attemptedAt: serverTimestamp()
+        });
+      } catch(e) {}
 
       document.getElementById("quizModalBody").innerHTML = `
         <div class="quiz-result">
@@ -2606,12 +2622,12 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
           <div class="quiz-result-msg" style="background:${pass ? 'rgba(76,175,80,0.1)' : 'rgba(239,83,80,0.1)'}; color:${pass ? 'var(--success)' : 'var(--error)'}">
             ${pass ? '✓ Passed! You can now continue to the next module.' : `✗ Below ${passMark}%. Review the lessons and try again.`}
           </div>
-          <button class="btn-sm btn-sm-gold" style="margin-top:20px" onclick="closeQuizModal(); loadQuizzes()">
+          <button class="btn-sm btn-sm-gold" style="margin-top:20px" onclick="closeQuizModal(); window.refreshQuizList()">
             <i class="fas fa-check"></i> Done
           </button>
         </div>`;
 
-      loadQuizzes();
+      window.refreshQuizList();
       showToast(pass ? `Quiz passed: ${score}%! 🎉` : `Score: ${score}%. Try again after reviewing.`, pass ? "success" : "error");
     }
   };
@@ -2841,6 +2857,11 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
   window.showToast = showToast;
   window.closeQuizModal = closeQuizModal;
   window.loadQuizzes = loadQuizzes;
+  // Re-renders the quiz list from a fresh Firestore read of quizResults —
+  // loadQuizzes() alone won't refetch scores once its listeners already exist.
+  window.refreshQuizList = function(){
+    if (window._quizzesData) finishLoadQuizzes(window._quizzesData);
+  };
 
   window.openLightbox = function(imageUrl) {
     if (!imageUrl) return;
