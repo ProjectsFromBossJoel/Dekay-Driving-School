@@ -2775,7 +2775,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeEditLessonModal()">Cancel</button>
-        <button class="btn btn-gold" onclick="updateLesson()"><i class="fas fa-save"></i> Save changes</button>
+        <button class="btn btn-gold" id="editLessonSaveBtn" onclick="updateLesson()"><i class="fas fa-save"></i> Save changes</button>
       </div>
     </div>
   </div>
@@ -4140,7 +4140,7 @@ window.filterRecipientsByCourse = function() {
         return `<div>${dateStr}</div><div style="font-size:10px;">${hours}:${minutes} ${ampm}</div>`;
       })()}</td>
       <td style="display:flex;gap:6px;">
-        ${window.canDo('lessons','update') ? `<button class="btn btn-icon btn-outline" title="View / Edit" onclick="openEditLessonModal('${l.id}')"><i class="fas fa-eye"></i></button>` : ''}
+        <button class="btn btn-icon btn-outline" title="View" onclick="openEditLessonModal('${l.id}')"><i class="fas fa-eye"></i></button>
         ${window.canDo('lessons','delete') ? `<button class="btn btn-icon btn-danger" onclick="deleteLesson('${l.id}')"><i class="fas fa-trash"></i></button>` : ''}
       </td>
     </tr>`).join('');
@@ -6361,6 +6361,19 @@ window.approveStudent = async function(uid) {
         }).join('');
       }
     }
+
+    // FIX: a role with Read but not Update previously got no button at all
+    // (the table only rendered it when canDo('lessons','update') was true).
+    // Now the eye icon always opens this modal for viewing; here we hide the
+    // Save action and lock the upload inputs so a read-only viewer can watch
+    // the video/thumbnail but can't push changes.
+    const canEditLesson = window.canDo('lessons','update');
+    const lessonSaveBtn = document.getElementById("editLessonSaveBtn");
+    if (lessonSaveBtn) lessonSaveBtn.style.display = canEditLesson ? '' : 'none';
+    ['editLessonTitle','editLessonFolder','editLessonCategory','editLessonDuration','editLessonVideoFile','editLessonThumbFile','editLessonAssignedQuiz'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = !canEditLesson;
+    });
 
     openModal("editLessonModal");
   };
