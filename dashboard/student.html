@@ -1975,20 +1975,23 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
           </div>`;
         }
 
+        const resultBadge = done
+          ? `<span class="att-pill ${pass ? 'present' : 'absent'}" style="font-size:12px;padding:5px 12px;">
+               <i class="fas ${pass ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${score}% — ${pass ? 'Passed' : 'Failed'}
+             </span>`
+          : '';
+
         return `<div class="quiz-row">
           <div class="quiz-row-left">
             <div class="quiz-icon"><i class="fas fa-clipboard-question"></i></div>
             <div>
               <div class="quiz-name">${q.title}</div>
               <div class="quiz-desc">${q.questionCount || '?'} questions · Pass mark ${passMark}%</div>
+              ${done ? `<div style="margin-top:8px;">${resultBadge}</div>` : ''}
             </div>
           </div>
           ${done
-            ? `<div style="text-align:right;">
-                 <div class="quiz-score" style="color:${pass ? 'var(--success)' : 'var(--error)'}">${score}%</div>
-                 <div class="quiz-score-label">${pass ? 'Passed ✓' : 'Try again'}</div>
-                 <button class="btn-sm btn-sm-outline" style="margin-top:6px" onclick="openQuiz('${q.id}')">Retake</button>
-               </div>`
+            ? `<button class="btn-sm ${pass ? 'btn-sm-outline' : 'btn-sm-gold'}" onclick="openQuiz('${q.id}')"><i class="fas fa-redo"></i> Retake</button>`
             : `<button class="btn-sm btn-sm-gold" onclick="openQuiz('${q.id}')"><i class="fas fa-play"></i> Start</button>`
           }
         </div>`;
