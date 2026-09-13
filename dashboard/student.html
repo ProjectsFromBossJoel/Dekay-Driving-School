@@ -289,13 +289,35 @@
       border-radius: var(--radius-lg);
       padding: 24px;
       display: flex; align-items: center; justify-content: space-between; gap: 20px;
-      margin-bottom: 24px; flex-wrap: wrap;
+      margin-bottom: 24px; flex-wrap: nowrap;
     }
-    .checkin-card-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
-    .checkin-card-info p { font-size: 13px; color: var(--text-muted); }
-    .checkin-btn { padding: 12px 24px; background: var(--gold); color: var(--navy); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px; transition: all var(--transition); white-space: nowrap; }
+    .checkin-card-info { flex: 1; min-width: 0; }
+    .checkin-card-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .checkin-card-info p { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .checkin-btn { padding: 12px 24px; background: var(--gold); color: var(--navy); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px; transition: all var(--transition); white-space: nowrap; flex-shrink: 0; }
     .checkin-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
     .checkin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── TIP OF THE DAY (image background w/ fallback) ── */
+    .tip-card {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.02) 100%);
+      border: 1px solid var(--gold);
+    }
+    .tip-bg-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      z-index: 0;
+    }
+    .tip-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, rgba(10,22,40,0.88) 0%, rgba(10,22,40,0.6) 55%, rgba(10,22,40,0.25) 100%);
+      z-index: 1;
+    }
+    .tip-card.tip-fallback .tip-overlay { display: none; }
+    .tip-card .card-body { position: relative; z-index: 2; }
 
     /* ── NOTIFICATION PANEL ── */
     .notif-list { display: flex; flex-direction: column; gap: 1px; }
@@ -721,6 +743,20 @@
         <div style="font-size:14px; color:var(--text-muted)" id="dashDateLine">Loading your training status…</div>
       </div>
 
+      <div class="card tip-card" id="dashTipCard" style="margin-bottom:20px;">
+        <img class="tip-bg-img" src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1400&q=60" alt="" onerror="this.remove(); document.getElementById('dashTipCard').classList.add('tip-fallback');" />
+        <div class="tip-overlay"></div>
+        <div class="card-body" style="display:flex; align-items:flex-start; gap:14px; padding:18px 22px;">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(245,166,35,0.15);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:16px;flex-shrink:0;">
+            <i class="fas fa-lightbulb"></i>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Tip of the day</div>
+            <div id="dashTipText" style="font-size:13.5px;color:var(--text-light);line-height:1.6;">—</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Check-in card + Past Classes (dynamically rendered) -->
       <div id="studentCheckinContainer" style="display:none; flex-direction:column; gap:10px; margin-bottom:24px;"></div>
 
@@ -772,6 +808,8 @@
               </div>
             </div>
           </div>
+
+
         </div>
 
         <!-- RIGHT COLUMN -->
@@ -1013,6 +1051,32 @@
         <div style="font-size:22px; font-weight:700; margin-bottom:4px;">Notifications</div>
         <div style="font-size:14px; color:var(--text-muted)">Messages from your instructor and school updates.</div>
       </div>
+
+      <div class="stat-grid" style="grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-card-label"><i class="fas fa-bell"></i> Total</div>
+          <div class="stat-card-value" id="notifStatTotal">—</div>
+          <div class="stat-card-sub">All-time messages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label"><i class="fas fa-envelope"></i> Unread</div>
+          <div class="stat-card-value" id="notifStatUnread" style="color:var(--gold)">—</div>
+          <div class="stat-card-sub">Waiting for you</div>
+        </div>
+      </div>
+
+      <div class="card" style="border-color:var(--gold); background:linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.02) 100%); margin-bottom:24px;">
+        <div class="card-body" style="display:flex; align-items:flex-start; gap:14px; padding:18px 22px;">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(245,166,35,0.15);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:16px;flex-shrink:0;">
+            <i class="fas fa-lightbulb"></i>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Tip of the day</div>
+            <div id="notifTipText" style="font-size:13.5px;color:var(--text-light);line-height:1.6;">—</div>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="notif-list" id="fullNotifList">
           <div style="padding:32px; text-align:center; color:var(--text-muted); font-size:13px;">Loading…</div>
@@ -1572,6 +1636,7 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
     renderUpcomingClasses();
     checkTodaySession(attendanceRecords);
     checkAndShowUnlockButton();
+    renderDashTip();
   }
 
   async function loadAttendance(stage) {
@@ -2047,6 +2112,11 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
       document.getElementById("notifBadge").style.display = unread ? '' : 'none';
       document.getElementById("notifDot").style.display   = unread ? '' : 'none';
 
+      const notifStatTotal = document.getElementById("notifStatTotal");
+      const notifStatUnread = document.getElementById("notifStatUnread");
+      if (notifStatTotal) notifStatTotal.textContent = notifs.length;
+      if (notifStatUnread) notifStatUnread.textContent = unread;
+
       window._allNotifs = notifs;
 
       const renderNotif = (n) => {
@@ -2079,6 +2149,48 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
         ? notifs.map(renderNotif).join('')
         : `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications yet.</div>`;
     } catch(e) { console.error(e); }
+  }
+
+  const STUDENT_TIPS = [
+    "Look 12-15 seconds ahead of your vehicle — spotting hazards early gives you more time to react safely.",
+    "Keep at least a 3-second following distance behind the car ahead; double it in rain or low visibility.",
+    "Check your mirrors every 5-8 seconds while driving, not just before turns or lane changes.",
+    "Engine braking (downshifting) saves your brake pads on long hills and gives you more control.",
+    "Always do a full 360° walk-around check before starting the vehicle for your practical lessons.",
+    "Practice the two-second rule at every fixed point — a signpost, a shadow, a lamppost — to judge your following distance.",
+    "Adjust your mirrors and seat every time before driving, even if you drove the same car yesterday.",
+    "Signal early — at least 3 seconds before you turn or change lanes — so other road users can react.",
+    "Revisit your quiz results after each attempt; the questions you got wrong are the ones worth re-reading in the lesson notes.",
+    "Consistent attendance matters — missed sessions can delay your stage progression, so mark yourself present as soon as a class starts."
+  ];
+  let notifTipRotateTimer = null;
+  let notifTipIndex = Math.floor(Date.now() / 86400000) % STUDENT_TIPS.length;
+  function renderNotifTip() {
+    const tipEl = document.getElementById("notifTipText");
+    if (!tipEl) return;
+    tipEl.textContent = STUDENT_TIPS[notifTipIndex];
+    if (notifTipRotateTimer) clearInterval(notifTipRotateTimer);
+    notifTipRotateTimer = setInterval(() => {
+      const el = document.getElementById("notifTipText");
+      if (!el) { clearInterval(notifTipRotateTimer); notifTipRotateTimer = null; return; }
+      notifTipIndex = (notifTipIndex + 1) % STUDENT_TIPS.length;
+      el.textContent = STUDENT_TIPS[notifTipIndex];
+    }, 7000);
+  }
+
+  let dashTipRotateTimer = null;
+  let dashTipIndex = Math.floor(Date.now() / 86400000) % STUDENT_TIPS.length;
+  function renderDashTip() {
+    const tipEl = document.getElementById("dashTipText");
+    if (!tipEl) return;
+    tipEl.textContent = STUDENT_TIPS[dashTipIndex];
+    if (dashTipRotateTimer) clearInterval(dashTipRotateTimer);
+    dashTipRotateTimer = setInterval(() => {
+      const el = document.getElementById("dashTipText");
+      if (!el) { clearInterval(dashTipRotateTimer); dashTipRotateTimer = null; return; }
+      dashTipIndex = (dashTipIndex + 1) % STUDENT_TIPS.length;
+      el.textContent = STUDENT_TIPS[dashTipIndex];
+    }, 7000);
   }
 
   window.openNotifDetailModal = function(notifId) {
@@ -2875,7 +2987,7 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
         }
       });
     }
-    if (name === "notifications") { loadNotifications(); }
+    if (name === "notifications") { loadNotifications(); renderNotifTip(); }
     if (name === "classes" && typeof loadMyClasses === "function") { loadMyClasses(); }
     if (name === "resources" && typeof loadResources === "function") { loadResources(); }
     if (name === "instructors" && typeof loadInstructors === "function") { loadInstructors(); }

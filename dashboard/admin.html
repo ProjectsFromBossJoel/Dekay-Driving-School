@@ -100,6 +100,27 @@
     .delta-up { color: var(--success); }
     .delta-down { color: var(--error); }
 
+    /* ── DASHBOARD TIP CARD (image bg w/ fallback) ── */
+    .dash-tip-card {
+      position: relative; overflow: hidden;
+      background: linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.02) 100%);
+      border: 1px solid var(--gold);
+      margin-bottom: 20px;
+    }
+    .dash-tip-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: 0; }
+    .dash-tip-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10,22,40,0.9) 0%, rgba(10,22,40,0.62) 55%, rgba(10,22,40,0.25) 100%); z-index: 1; }
+    .dash-tip-card.tip-fallback .dash-tip-overlay { display: none; }
+    .dash-tip-card .card-body { position: relative; z-index: 2; }
+
+    /* ── PERFORMANCE MINI PANEL ── */
+    .perf-mini-grid { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 12px; }
+    .perf-mini-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius); background: var(--navy); border: 1px solid var(--border); min-width: 0; }
+    .perf-mini-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .perf-mini-label { font-size: 9.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .perf-mini-name { font-size: 13px; font-weight: 700; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .perf-mini-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 640px) { .perf-mini-grid { grid-template-columns: 1fr; grid-auto-rows: auto; } }
+
     /* ── TABLES ── */
     .data-table { width: 100%; border-collapse: collapse; }
     .data-table th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; }
@@ -776,56 +797,16 @@
         <div class="page-sub" id="overviewDate">Loading…</div>
       </div>
 
-      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
-        <div class="card" id="topPerformerCard" style="flex:1; min-width:260px; border-color:rgba(76,175,80,0.35);">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:18px 20px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:rgba(76,175,80,0.15);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:16px;flex-shrink:0;">
-              <i class="fas fa-arrow-trend-up"></i>
-            </div>
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Top performer</div>
-              <div id="topPerformerName" style="font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-              <div id="topPerformerMeta" style="font-size:11px;color:var(--text-muted);margin-top:2px;">—</div>
-            </div>
+      <div class="card dash-tip-card" id="dashTipCard">
+        <img class="dash-tip-bg-img" src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1400&q=60" alt="" onerror="this.remove(); document.getElementById('dashTipCard').classList.add('tip-fallback');" />
+        <div class="dash-tip-overlay"></div>
+        <div class="card-body" style="display:flex; align-items:flex-start; gap:14px; padding:18px 22px;">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(245,166,35,0.15);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:16px;flex-shrink:0;">
+            <i class="fas fa-lightbulb"></i>
           </div>
-        </div>
-        <div class="card" id="needsSupportCard" style="flex:1; min-width:260px; border-color:rgba(239,83,80,0.35);">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:18px 20px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:rgba(239,83,80,0.15);display:flex;align-items:center;justify-content:center;color:var(--error);font-size:16px;flex-shrink:0;">
-              <i class="fas fa-arrow-trend-down"></i>
-            </div>
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Needs support</div>
-              <div id="needsSupportName" style="font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-              <div id="needsSupportMeta" style="font-size:11px;color:var(--text-muted);margin-top:2px;">—</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
-        <div class="card" id="quizTopPerformerCard" style="flex:1; min-width:260px; border-color:rgba(76,175,80,0.35);">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:18px 20px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:rgba(76,175,80,0.15);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:16px;flex-shrink:0;">
-              <i class="fas fa-award"></i>
-            </div>
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Top performer <span style="opacity:.6;">· quiz avg.</span></div>
-              <div id="quizTopPerformerName" style="font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-              <div id="quizTopPerformerMeta" style="font-size:11px;color:var(--text-muted);margin-top:2px;">—</div>
-            </div>
-          </div>
-        </div>
-        <div class="card" id="quizNeedsSupportCard" style="flex:1; min-width:260px; border-color:rgba(239,83,80,0.35);">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:18px 20px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:rgba(239,83,80,0.15);display:flex;align-items:center;justify-content:center;color:var(--error);font-size:16px;flex-shrink:0;">
-              <i class="fas fa-book-open"></i>
-            </div>
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Needs support <span style="opacity:.6;">· quiz avg.</span></div>
-              <div id="quizNeedsSupportName" style="font-size:15px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-              <div id="quizNeedsSupportMeta" style="font-size:11px;color:var(--text-muted);margin-top:2px;">—</div>
-            </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Tip of the day</div>
+            <div id="dashTipText" style="font-size:13.5px;color:var(--text-light);line-height:1.6;">—</div>
           </div>
         </div>
       </div>
@@ -854,40 +835,80 @@
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;" class="overview-two-col">
+      <div style="display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;" class="overview-two-col">
 
-        <!-- Recent students -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><i class="fas fa-users"></i> Recent enrolments</div>
-            <button class="btn btn-outline" onclick="showPage('students', null)" style="font-size:12px; padding:6px 14px; white-space:nowrap;">All students <i class="fas fa-arrow-right"></i></button>
+        <!-- MAIN COLUMN -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-users"></i> Recent enrolments</div>
+              <button class="btn btn-outline" onclick="showPage('students', null)" style="font-size:12px; padding:6px 14px; white-space:nowrap;">All students <i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="data-table recent-enroll-table">
+                <thead><tr><th>Student</th><th>Course</th><th>Enrolled</th></tr></thead>
+                <tbody id="recentStudentsTable">
+                  <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:28px;">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div style="overflow-x:auto">
-            <table class="data-table recent-enroll-table">
-              <thead><tr><th>Student</th><th>Course</th><th>Enrolled</th></tr></thead>
-              <tbody id="recentStudentsTable">
-                <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:28px;">Loading…</td></tr>
-              </tbody>
-            </table>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="fas fa-chart-bar"></i> Enrolments by course</div></div>
+            <div class="card-body" id="courseDistribution">
+              <div style="display:flex;flex-direction:column;gap:12px;" id="courseBars"></div>
+            </div>
           </div>
         </div>
 
-
-        <!-- Activity feed -->
-        <div class="card">
-          <div class="card-header"><div class="card-title"><i class="fas fa-bolt"></i> Recent activity</div></div>
-          <div class="card-body" id="activityFeed" style="max-height:320px;overflow-y:auto;">
-            <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px;">Loading…</div>
+        <!-- SIDEBAR -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="fas fa-chart-line"></i> Performance</div></div>
+            <div class="card-body">
+              <div class="perf-mini-grid">
+                <div class="perf-mini-row" id="topPerformerCard">
+                  <div class="perf-mini-icon" style="background:rgba(76,175,80,0.15);color:var(--success);"><i class="fas fa-arrow-trend-up"></i></div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="perf-mini-label">Top performer</div>
+                    <div id="topPerformerName" class="perf-mini-name">—</div>
+                    <div id="topPerformerMeta" class="perf-mini-meta">—</div>
+                  </div>
+                </div>
+                <div class="perf-mini-row" id="needsSupportCard">
+                  <div class="perf-mini-icon" style="background:rgba(239,83,80,0.15);color:var(--error);"><i class="fas fa-arrow-trend-down"></i></div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="perf-mini-label">Needs support</div>
+                    <div id="needsSupportName" class="perf-mini-name">—</div>
+                    <div id="needsSupportMeta" class="perf-mini-meta">—</div>
+                  </div>
+                </div>
+                <div class="perf-mini-row" id="quizTopPerformerCard">
+                  <div class="perf-mini-icon" style="background:rgba(76,175,80,0.15);color:var(--success);"><i class="fas fa-award"></i></div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="perf-mini-label">Top · quiz avg.</div>
+                    <div id="quizTopPerformerName" class="perf-mini-name">—</div>
+                    <div id="quizTopPerformerMeta" class="perf-mini-meta">—</div>
+                  </div>
+                </div>
+                <div class="perf-mini-row" id="quizNeedsSupportCard">
+                  <div class="perf-mini-icon" style="background:rgba(239,83,80,0.15);color:var(--error);"><i class="fas fa-book-open"></i></div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="perf-mini-label">Lowest · quiz avg.</div>
+                    <div id="quizNeedsSupportName" class="perf-mini-name">—</div>
+                    <div id="quizNeedsSupportMeta" class="perf-mini-meta">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Course distribution -->
-      <div style="margin-top:20px;">
-        <div class="card">
-          <div class="card-header"><div class="card-title"><i class="fas fa-chart-bar"></i> Enrolments by course</div></div>
-          <div class="card-body" id="courseDistribution">
-            <div style="display:flex;flex-direction:column;gap:12px;" id="courseBars"></div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="fas fa-bolt"></i> Recent activity</div></div>
+            <div class="card-body" id="activityFeed" style="max-height:320px;overflow-y:auto;">
+              <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px;">Loading…</div>
+            </div>
           </div>
         </div>
       </div>
@@ -5193,6 +5214,33 @@ async function populateInstructorCheckboxes() {
       </div>`).join('');
 
     renderTopBottomPerformers();
+    renderAdminDashTip();
+  }
+
+  const ADMIN_DASH_TIPS = [
+    "Review pending student and instructor approvals daily so enrolments and hiring don't stall.",
+    "Check the Attendance page each morning to catch missed sessions before they add up.",
+    "Students flagged as \"Needs support\" often just need a nudge — a quick notification can help.",
+    "Keep your course pages up to date; students matched to the wrong course create scheduling headaches later.",
+    "Use the Vehicles page to spot double-booked cars before they cause a scheduling conflict.",
+    "Quiz averages below 60% across a course usually mean it's time to revisit that lesson's content.",
+    "Respond to new enquiries within 24 hours — quick replies convert far more often than slow ones.",
+    "Keep a habit of reviewing 'Recent activity' — it's the fastest way to spot something that needs attention.",
+    "DVLA Ready checklist items exist to protect the school — never skip a box to save time."
+  ];
+  let adminTipIndex = Math.floor(Date.now() / 86400000) % ADMIN_DASH_TIPS.length;
+  let adminTipRotateTimer = null;
+  function renderAdminDashTip() {
+    const tipEl = document.getElementById("dashTipText");
+    if (!tipEl) return;
+    tipEl.textContent = ADMIN_DASH_TIPS[adminTipIndex];
+    if (adminTipRotateTimer) clearInterval(adminTipRotateTimer);
+    adminTipRotateTimer = setInterval(() => {
+      const el = document.getElementById("dashTipText");
+      if (!el) { clearInterval(adminTipRotateTimer); adminTipRotateTimer = null; return; }
+      adminTipIndex = (adminTipIndex + 1) % ADMIN_DASH_TIPS.length;
+      el.textContent = ADMIN_DASH_TIPS[adminTipIndex];
+    }, 7000);
   }
 
   // Ranks active students by training stage to surface a top performer and
@@ -7396,6 +7444,13 @@ window.approveStudent = async function(uid) {
       }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
         return c;
       });
+    }
+
+    // Helper to truncate long text with an ellipsis (full text kept in title attr)
+    function truncateText(str, maxLen) {
+      if (!str) return '';
+      const s = String(str);
+      return s.length > maxLen ? s.slice(0, maxLen - 1) + '…' : s;
     }
 
     // ── RENDER CERTIFICATIONS WITH DOWNLOAD BUTTONS ──
@@ -9604,7 +9659,12 @@ window.showBusyResources = showBusyResources;
           const c = d.data();
           if (c.imageUrl) items.push({ type: 'image', url: c.imageUrl, name: `${c.studentName || 'Certificate'} — ${c.serialNumber || ''}`.trim(), source: 'Certificate' });
         });
-      } catch(e) { console.error("Media: certificates failed", e); }
+      } catch(e) {
+        // This account's role may not have Firestore read access to "certificates" —
+        // that's a security-rules matter, not a bug here. Skip this source quietly
+        // rather than filling the console with a permission-denied error every load.
+        if (e?.code !== 'permission-denied') console.error("Media: certificates failed", e);
+      }
 
       try {
         const iSnap = await getDocs(query(collection(db, "instructors"), where("schoolId", "==", adminSchoolId)));
@@ -10130,7 +10190,10 @@ async function loadPermissionsDoc(type) {
       const serialNum = String(count).padStart(6, '0');
       serialInput.value = serialNum;
     } catch(e) {
-      console.warn("Could not fetch certificate count, using timestamp-based serial:", e);
+      // Permission-denied here means this account's role isn't allowed to read
+      // "certificates" per the Firestore rules — expected for some staff roles,
+      // not worth warning about. Any other error is worth knowing about.
+      if (e?.code !== 'permission-denied') console.warn("Could not fetch certificate count, using timestamp-based serial:", e);
       // Fallback: use timestamp for unique serial
       const timestamp = Date.now().toString().slice(-6);
       serialInput.value = timestamp;
@@ -10754,9 +10817,13 @@ async function loadPermissionsDoc(type) {
     tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;">Loading…</td></tr>`;
 
     try {
-      const q = query(collection(db, "enquiries"), where("schoolId", "==", adminSchoolId), orderBy("createdAt", "desc"));
+      // No orderBy here on purpose — combining it with the schoolId filter requires
+      // a composite Firestore index. Sorting client-side avoids that entirely.
+      const q = query(collection(db, "enquiries"), where("schoolId", "==", adminSchoolId));
       const snaps = await getDocs(q);
-      allEnquiries = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+      allEnquiries = snaps.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
       
       // Update badge
       const newCount = allEnquiries.filter(e => e.status === "new").length;
@@ -10800,14 +10867,18 @@ async function loadPermissionsDoc(type) {
       };
       const statusColor = statusColors[e.status] || 'var(--text-muted)';
       
+      const fullName = `${e.firstName || ''} ${e.lastName || ''}`.trim();
+      const fullEmail = e.email || '';
+      const fullMessage = e.message || '';
+
       return `<tr>
-        <td style="font-size:12px;">${dateStr}</td>
-        <td><strong>${escapeHtml(e.firstName)} ${escapeHtml(e.lastName || '')}</strong></td>
-        <td><a href="tel:${escapeHtml(e.phone)}" style="color:var(--gold);text-decoration:none;">${escapeHtml(e.phone)}</a></td>
-        <td style="font-size:12px;">${e.email ? `<a href="mailto:${escapeHtml(e.email)}" style="color:var(--text-light);">${escapeHtml(e.email)}</a>` : '—'}</td>
+        <td style="font-size:12px;white-space:nowrap;">${dateStr}</td>
+        <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(fullName)}"><strong>${escapeHtml(truncateText(fullName, 16))}</strong></td>
+        <td style="white-space:nowrap;"><a href="tel:${escapeHtml(e.phone)}" style="color:var(--gold);text-decoration:none;">${escapeHtml(e.phone)}</a></td>
+        <td style="font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(fullEmail)}">${fullEmail ? `<a href="mailto:${escapeHtml(fullEmail)}" style="color:var(--text-light);">${escapeHtml(truncateText(fullEmail, 20))}</a>` : '—'}</td>
         <td><span class="stage-pill">${escapeHtml(e.courseType || '—')}</span></td>
-        <td style="font-size:12px;">${escapeHtml(e.experience || '—')}</td>
-        <td style="font-size:12px;max-width:200px;white-space:normal;">${escapeHtml(e.message || '—')}</td>
+        <td style="font-size:12px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(e.experience || '')}">${escapeHtml(truncateText(e.experience || '—', 14))}</td>
+        <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(fullMessage)}">${escapeHtml(truncateText(fullMessage || '—', 28))}</td>
         <td>
           <select onchange="updateEnquiryStatus('${e.id}', this.value)" style="padding:5px 8px; background:var(--navy); border:1px solid var(--border); border-radius:6px; color:${statusColor}; font-size:11px; font-weight:600; cursor:pointer;">
             <option value="new" ${e.status === 'new' ? 'selected' : ''}>🆕 New</option>
