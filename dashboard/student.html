@@ -1509,7 +1509,7 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
     document.getElementById("pfPhone").value     = d.phone     || '';
     document.getElementById("pfEmail").value     = currentUser.email;
 
-    const canEditProfile = !studentPermissions.editProfile || studentPermissions.editProfile.enabled !== false;
+    const canEditProfile = isStudentPermEnabled('editProfile');
     document.getElementById("pfFirstName").disabled = !canEditProfile;
     document.getElementById("pfLastName").disabled  = !canEditProfile;
     document.getElementById("pfPhone").disabled     = !canEditProfile;
@@ -2287,29 +2287,37 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
     function renderCard({ cls, start, end }, isCurrent) {
       const marked = isClassMarked(cls);
       const timeLabel = getClassTimeRange(cls);
+      const dateLabel = start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
       const isOngoing = now >= start && now <= end;
       const isUpcoming = now < start;
 
+      const checkinAllowed = isStudentPermEnabled('checkin');
+
       let headerText = 'Session in progress';
       let icon = 'fa-map-pin';
-      let detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> (${timeLabel}) — tap to mark your attendance.`;
+      let detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> (${dateLabel} · ${timeLabel}) — tap to mark your attendance.`;
       let btnDisabled = false;
       let btnLabel = '<i class="fas fa-check-circle"></i> Mark attendance';
 
       if (marked) {
         headerText = 'Attendance marked';
         icon = 'fa-check-circle';
-        detail = `<strong style="color:var(--success)">${escapeHtml(cls.title || 'Class')}</strong> (${timeLabel}) — you've already checked in.`;
+        detail = `<strong style="color:var(--success)">${escapeHtml(cls.title || 'Class')}</strong> (${dateLabel} · ${timeLabel}) — you've already checked in.`;
         btnDisabled = true;
         btnLabel = '<i class="fas fa-check-circle"></i> Attendance marked';
+      } else if (!checkinAllowed) {
+        headerText = 'Check-in disabled';
+        detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> (${dateLabel} · ${timeLabel}) — self check-in has been disabled by the school admin.`;
+        btnDisabled = true;
+        btnLabel = '<i class="fas fa-lock"></i> Check-in disabled';
       } else if (isUpcoming) {
         headerText = 'Upcoming Session';
-        detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> starts at ${timeLabel} — you'll be able to mark attendance when it begins.`;
+        detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> starts ${dateLabel} at ${timeLabel} — you'll be able to mark attendance when it begins.`;
         btnDisabled = true;
         btnLabel = '<i class="fas fa-clock"></i> Not yet started';
       } else if (!isOngoing) {
         headerText = 'Mark attendance';
-        detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> (${timeLabel}) has ended — you can still mark your attendance (within 48 hours).`;
+        detail = `<strong style="color:var(--gold)">${escapeHtml(cls.title || 'Class')}</strong> (${dateLabel} · ${timeLabel}) has ended — you can still mark your attendance (within 48 hours).`;
       }
 
       const btnStyle = marked
@@ -2650,6 +2658,12 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
     if (aq.currentQ < aq.quiz.questions.length) {
       renderQuizQuestion();
     } else {
+      const finishBtn = document.getElementById("nextQBtn");
+      if (finishBtn) {
+        finishBtn.disabled = true;
+        finishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finishing…';
+      }
+
       let correct = 0;
       aq.answers.forEach((ans, i) => {
         if (ans === aq.quiz.questions[i].correctIndex) correct++;
