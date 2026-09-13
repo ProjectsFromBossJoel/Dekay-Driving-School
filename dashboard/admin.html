@@ -3004,6 +3004,7 @@ function hideLoading() {
     getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
     collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, limit, arrayUnion, arrayRemove, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { uploadToCloudinary, getSchoolFolderSlug } from "./upload-utils.js";
   const SCHOOL_ID = "78BZvydj3iz8FEQMiDp5"; // Dekay's school ID from Marvini
 
   // ── FIREBASE CONFIG ──
@@ -6824,13 +6825,8 @@ window.approveStudent = async function(uid) {
     const file = input.files[0];
     if (!file) return;
     showToast("Uploading photo…", "success");
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("upload_preset", CLOUDINARY_PRESET);
     try {
-      const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
-      const data = await res.json();
-      const url  = data.secure_url;
+      const url = await uploadToCloudinary(db, file, 'admins', adminSchoolId);
       // Save to Firestore
       await updateDoc(doc(db, "users", adminUser.uid), { avatarUrl: url });
       // Update preview
@@ -6957,12 +6953,14 @@ window.approveStudent = async function(uid) {
     };
 
     // Helper to upload image to Cloudinary from admin context
-    async function uploadAdminImage(file) {
+    async function uploadAdminImage(file, folder) {
       if (!file) return null;
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", CLOUDINARY_PRESET);   // use admin_avatars preset
       try {
+        const schoolSlug = await getSchoolFolderSlug(db, adminSchoolId);
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("upload_preset", CLOUDINARY_PRESET);   // use admin_avatars preset
+        fd.append("folder", folder ? `${folder}/${schoolSlug}` : `misc/${schoolSlug}`);
         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
         if (!res.ok) return null;
         const data = await res.json();
@@ -7031,8 +7029,8 @@ window.approveStudent = async function(uid) {
 
         // 2. Upload Ghana Card images if provided
         const [ghFrontUrl, ghBackUrl] = await Promise.all([
-          ghFrontFile ? uploadAdminImage(ghFrontFile) : Promise.resolve(null),
-          ghBackFile ? uploadAdminImage(ghBackFile) : Promise.resolve(null)
+          ghFrontFile ? uploadAdminImage(ghFrontFile, 'instructors/ghcards') : Promise.resolve(null),
+          ghBackFile ? uploadAdminImage(ghBackFile, 'instructors/ghcards') : Promise.resolve(null)
         ]);
 
         // 3. Write Firestore document
@@ -8028,14 +8026,7 @@ renderVehicleSchedulePage();
     try {
       let imageUrl = document.getElementById("vehicleModal")._imageUrl || null;
       if (imgFile) {
-        const fd = new FormData();
-        fd.append("file", imgFile);
-        fd.append("upload_preset", VEHICLE_IMAGE_PRESET);
-        fd.append("folder", "vehicles");
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
-        if (!res.ok) throw new Error("Image upload failed");
-        const data = await res.json();
-        imageUrl = data.secure_url;
+        imageUrl = await uploadToCloudinary(db, imgFile, 'vehicles', adminSchoolId);
       }
 
       const payload = { year: Number(year), make, model, trim, engineType, transmissionType, imageUrl };
@@ -8408,7 +8399,8 @@ renderVehicleSchedulePage();
   async function uploadClassDocuments(files, courseName, classTitle) {
     if (!files || files.length === 0) return [];
     const urls = [];
-    const folder = `class_documents/${courseName}/${classTitle}`;
+    const schoolSlug = await getSchoolFolderSlug(db, adminSchoolId);
+    const folder = `class_documents/${schoolSlug}/${courseName}/${classTitle}`;
     for (const file of files) {
       const fd = new FormData();
       fd.append("file", file);
@@ -10330,10 +10322,11 @@ async function loadPermissionsDoc(type) {
   // Upload to Cloudinary
   async function uploadCertificateToCloudinary(imageDataUrl, serialNumber) {
     const blob = await (await fetch(imageDataUrl)).blob();
+    const schoolSlug = await getSchoolFolderSlug(db, adminSchoolId);
     const fd = new FormData();
     fd.append("file", blob);
     fd.append("upload_preset", "certificates_uploads");
-    fd.append("folder", `certificates/${serialNumber}`);
+    fd.append("folder", `certificates/${schoolSlug}`);
     fd.append("public_id", `cert_${serialNumber}`);
 
     try {
@@ -10787,10 +10780,11 @@ async function loadPermissionsDoc(type) {
   // ── UPLOAD DVLA CERTIFICATE TO CLOUDINARY ──
   async function uploadDvlaCertificateToCloudinary(imageDataUrl, serialNumber) {
     const blob = await (await fetch(imageDataUrl)).blob();
+    const schoolSlug = await getSchoolFolderSlug(db, adminSchoolId);
     const fd = new FormData();
     fd.append("file", blob);
     fd.append("upload_preset", "certificates_uploads");
-    fd.append("folder", `certificates/${serialNumber}`);
+    fd.append("folder", `certificates/${schoolSlug}`);
     fd.append("public_id", `cert_${serialNumber}`);
     
     try {

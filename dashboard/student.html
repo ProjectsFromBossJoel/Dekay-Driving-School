@@ -1347,6 +1347,7 @@
     getFirestore, doc, getDoc, setDoc, updateDoc,
     collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { uploadToCloudinary } from "./upload-utils.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyA5TnyzHJpcHcM2N-77gkyAaj7yRru3-V0",
@@ -2848,14 +2849,8 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
   window.uploadAvatar = async function(input) {
     const file = input.files[0]; if (!file) return;
     showToast("Uploading photo…");
-    const fd = new FormData();
-    fd.append("file",   file);
-    fd.append("upload_preset", CLOUDINARY_PRESET);
-    fd.append("folder", CLOUDINARY_AVATAR_FOLDER);
     try {
-      const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
-      const data = await res.json();
-      const url  = data.secure_url;
+      const url = await uploadToCloudinary(db, file, 'students', SCHOOL_ID);
       await updateDoc(doc(db, "students", currentUser.uid), { avatarUrl: url });
       window.currentAvatarUrl = url;
       studentData.avatarUrl = url; // keep in-memory studentData in sync so lesson/quiz locks clear immediately

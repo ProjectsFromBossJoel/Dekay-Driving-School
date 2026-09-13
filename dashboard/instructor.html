@@ -980,6 +980,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, orderBy, serverTimestamp, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { uploadToCloudinary } from "./upload-utils.js";
+    
 
     const firebaseConfig = {
       apiKey: "AIzaSyA5TnyzHJpcHcM2N-77gkyAaj7yRru3-V0",
@@ -2280,14 +2282,8 @@
     window.uploadInstructorAvatar = async function(input) {
       const file = input.files[0]; if (!file) return;
       showToast("Uploading photo…", "success");
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("upload_preset", "instructor_avatars");
       try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: "POST", body: fd });
-        if (!res.ok) throw new Error("Upload failed");
-        const data = await res.json();
-        const url = data.secure_url;
+        const url = await uploadToCloudinary(db, file, 'instructors', SCHOOL_ID);
         await updateDoc(doc(db, "instructors", currentUser.uid), { profilePhoto: url });
         window.currentInstructorAvatarUrl = url;
         document.getElementById("profileAvatarBig").style.backgroundImage = `url(${url})`;
