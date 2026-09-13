@@ -7208,17 +7208,30 @@ window.approveStudent = async function(uid) {
     const profilePhoto = i.profilePhoto || i.avatarUrl || null;
 
     // Avatar HTML
+    const canEditInstrPhoto = window.canDo('instructors','update');
+    const editBadgeHtml = canEditInstrPhoto
+      ? `<div onclick="document.getElementById('instrAvatarUploadInput').click()" title="Change photo" style="position:absolute; bottom:0; right:0; width:28px; height:28px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid var(--navy-mid);"><i class="fas fa-pencil-alt" style="font-size:11px; color:var(--navy);"></i></div>`
+      : '';
     let avatarHtml = '';
     if (profilePhoto) {
-      avatarHtml = `<div style="width: 100px; height: 100px; border-radius: 50%; background: url(${profilePhoto}) center/cover; border: 3px solid var(--gold); margin: 0 auto 16px; cursor: pointer;" onclick="openLightbox('${profilePhoto}')"></div>`;
+      avatarHtml = `
+        <div style="position:relative; width:100px; height:100px; margin:0 auto 16px;">
+          <div style="width:100px; height:100px; border-radius:50%; background:url(${profilePhoto}) center/cover; border:3px solid var(--gold); cursor:pointer;" onclick="openLightbox('${profilePhoto}')"></div>
+          ${editBadgeHtml}
+        </div>`;
     } else {
-      avatarHtml = `<div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(245,166,35,0.15); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 700; color: var(--gold); border: 3px solid var(--gold); margin: 0 auto 16px;">${initials}</div>`;
+      avatarHtml = `
+        <div style="position:relative; width:100px; height:100px; margin:0 auto 16px;">
+          <div style="width:100px; height:100px; border-radius:50%; background:rgba(245,166,35,0.15); display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:700; color:var(--gold); border:3px solid var(--gold);">${initials}</div>
+          ${editBadgeHtml}
+        </div>`;
     }
 
     // Build editable form HTML
     const html = `
       <div style="text-align: center; margin-bottom: 24px;">
         ${avatarHtml}
+        <input type="file" id="instrAvatarUploadInput" accept="image/*" style="display:none" onchange="uploadInstructorPhotoFromAdmin('${uid}', this)" />
         <div style="margin-top: 8px;">
           <input type="text" id="editFirstName" class="form-input" value="${escapeHtml(i.firstName || '')}" placeholder="First name" style="width: 45%; display: inline-block; margin-right: 8px;" />
           <input type="text" id="editLastName" class="form-input" value="${escapeHtml(i.lastName || '')}" placeholder="Last name" style="width: 45%; display: inline-block;" />
@@ -7340,6 +7353,27 @@ window.approveStudent = async function(uid) {
 };
 
     
+
+    // ── UPLOAD INSTRUCTOR PHOTO (from Admin) ──
+    window.uploadInstructorPhotoFromAdmin = async function(uid, input) {
+      if (!window.canDo('instructors','update')) {
+        showToast("You don't have permission to update instructor photos.", "error");
+        return;
+      }
+      const file = input.files[0];
+      if (!file) return;
+      showToast("Uploading photo…", "success");
+      try {
+        const url = await uploadToCloudinary(db, file, 'instructors', adminSchoolId);
+        await updateDoc(doc(db, "instructors", uid), { profilePhoto: url });
+        showToast("Instructor photo updated ✓", "success");
+        await loadInstructors();
+        await openInstructorDetail(uid);
+      } catch(e) {
+        console.error("Instructor photo upload failed:", e);
+        showToast("Upload failed. Try again.", "error");
+      }
+    };
 
     // Close course dropdown when clicking outside
     document.addEventListener("click", function(e) {
