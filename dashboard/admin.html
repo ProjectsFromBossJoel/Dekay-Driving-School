@@ -5348,15 +5348,31 @@ async function populateInstructorCheckboxes() {
     if (!s) { hideLoading(); return; }
     const name = `${s.firstName || ''} ${s.lastName || ''}`.trim();
     const initials = (s.firstName?.[0] || '') + (s.lastName?.[0] || '') || 'S';
-    const avatarHtml = s.avatarUrl
-      ? `<div style="width:80px; height:80px; border-radius:50%; background:rgba(245,166,35,0.15); border:2px solid var(--gold); background-size:cover; background-position:center; background-image:url(${s.avatarUrl}); margin:0 auto 12px; cursor:pointer;" onclick="openLightbox('${s.avatarUrl}')"></div>`
-      : `<div style="width:80px; height:80px; border-radius:50%; background:rgba(245,166,35,0.15); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:var(--gold); margin:0 auto 12px;">${initials}</div>`;
+    const canEditStudentPhoto = window.canDo('students','update');
+    const studentEditBadgeHtml = canEditStudentPhoto
+      ? `<div onclick="document.getElementById('studentAvatarUploadInput').click()" title="Change photo" style="position:absolute; bottom:0; right:0; width:28px; height:28px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid var(--navy-mid);"><i class="fas fa-pencil-alt" style="font-size:11px; color:var(--navy);"></i></div>`
+      : '';
+    let avatarHtml = '';
+    if (s.avatarUrl) {
+      avatarHtml = `
+        <div style="position:relative; width:80px; height:80px; margin:0 auto 12px;">
+          <div style="width:80px; height:80px; border-radius:50%; background:rgba(245,166,35,0.15); border:2px solid var(--gold); background-size:cover; background-position:center; background-image:url(${s.avatarUrl}); cursor:pointer;" onclick="openLightbox('${s.avatarUrl}')"></div>
+          ${studentEditBadgeHtml}
+        </div>`;
+    } else {
+      avatarHtml = `
+        <div style="position:relative; width:80px; height:80px; margin:0 auto 12px;">
+          <div style="width:80px; height:80px; border-radius:50%; background:rgba(245,166,35,0.15); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:var(--gold);">${initials}</div>
+          ${studentEditBadgeHtml}
+        </div>`;
+    }
 
 
 
     const html = `
       <div style="text-align:center; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border);">
         ${avatarHtml}
+        <input type="file" id="studentAvatarUploadInput" accept="image/*" style="display:none" onchange="uploadStudentPhotoFromAdmin('${uid}', this)" />
         <div style="font-size:18px; font-weight:700; margin-bottom:4px;">${name}</div>
         <div style="font-size:13px; color:var(--text-muted);"><i class="fas fa-envelope"></i> ${s.email || '—'}</div>
         <div style="font-size:13px; color:var(--text-muted); margin-top:2px;"><i class="fas fa-phone"></i> ${s.phone || '—'}</div>
@@ -7156,6 +7172,11 @@ window.approveStudent = async function(uid) {
     tbody.innerHTML = instructors.map(i => {
       const pill = `<span class="pill pill-${i.status === 'active' ? 'active' : 'inactive'}">${i.status || 'active'}</span>`;
       const email = i.email || '';
+      const instrInitials = (i.firstName?.[0] || '') + (i.lastName?.[0] || '') || 'I';
+      const instrPhoto = i.profilePhoto || i.avatarUrl;
+      const instrAvatarHtml = instrPhoto
+        ? `<div style="width:36px; height:36px; border-radius:50%; background:rgba(245,166,35,0.15); border:1.5px solid var(--gold); background-size:cover; background-position:center; background-image:url(${instrPhoto}); flex-shrink:0;"></div>`
+        : `<div style="width:36px; height:36px; border-radius:50%; background:rgba(245,166,35,0.15); border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--gold); flex-shrink:0;">${instrInitials}</div>`;
       let assignedCoursesList = i.assignedCourses || [];
       if (assignedCoursesList && typeof assignedCoursesList === 'object' && !Array.isArray(assignedCoursesList)) {
         assignedCoursesList = Object.values(assignedCoursesList);
@@ -7168,7 +7189,12 @@ window.approveStudent = async function(uid) {
             : assignedCoursesList.map(c => `<span class="stage-pill" style="margin:2px;"><i class="fas fa-book" style="font-size:9px"></i> ${escapeHtml(c)}</span>`).join(''))
         : '<span style="color:var(--text-muted);">—</span>';
       return `<tr>
-        <td><div style="font-weight:600">${i.firstName || ''} ${i.lastName || ''}</div></td>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${instrAvatarHtml}
+            <div style="font-weight:600">${i.firstName || ''} ${i.lastName || ''}</div>
+          </div>
+        </td>
         <td style="color:var(--text-muted)">${email}</td>
         <td>${i.branch ? `<span class="stage-pill"><i class="fas fa-map-marker-alt" style="font-size:10px"></i> ${escapeHtml(i.branch)}</span>` : '—'}</td>
         <td>${courseAssignedDisplay}</td>
@@ -7371,6 +7397,27 @@ window.approveStudent = async function(uid) {
         await openInstructorDetail(uid);
       } catch(e) {
         console.error("Instructor photo upload failed:", e);
+        showToast("Upload failed. Try again.", "error");
+      }
+    };
+
+    // ── UPLOAD STUDENT PHOTO (from Admin) ──
+    window.uploadStudentPhotoFromAdmin = async function(uid, input) {
+      if (!window.canDo('students','update')) {
+        showToast("You don't have permission to update student photos.", "error");
+        return;
+      }
+      const file = input.files[0];
+      if (!file) return;
+      showToast("Uploading photo…", "success");
+      try {
+        const url = await uploadToCloudinary(db, file, 'students', adminSchoolId);
+        await updateDoc(doc(db, "students", uid), { avatarUrl: url });
+        showToast("Student photo updated ✓", "success");
+        await loadStudents();
+        await openStudentDetail(uid);
+      } catch(e) {
+        console.error("Student photo upload failed:", e);
         showToast("Upload failed. Try again.", "error");
       }
     };
