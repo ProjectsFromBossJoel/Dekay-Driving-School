@@ -35,6 +35,14 @@
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); display: flex; min-height: 100vh; overflow-x: hidden; }
 
+        body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); display: flex; min-height: 100vh; overflow-x: hidden; }
+    /* Removes the ~300ms native tap delay some browsers/webviews apply even
+       with a correct viewport meta tag — this is what was causing the raised
+       "Lessons" circle to miss taps while the flat text label beside it
+       worked fine. */
+    button, [onclick] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+
     /* ── SIDEBAR (DESKTOP) ── */
     .sidebar {
       width: var(--sidebar);
@@ -292,8 +300,8 @@
       margin-bottom: 24px; flex-wrap: nowrap;
     }
     .checkin-card-info { flex: 1; min-width: 0; }
-    .checkin-card-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .checkin-card-info p { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .checkin-card-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; white-space: normal; overflow: hidden; text-overflow: ellipsis; }
+    .checkin-card-info p { font-size: 13px; color: var(--text-muted); white-space: normal; overflow: hidden; text-overflow: ellipsis; }
     .checkin-btn { padding: 12px 24px; background: var(--gold); color: var(--navy); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px; transition: all var(--transition); white-space: nowrap; flex-shrink: 0; }
     .checkin-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
     .checkin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -460,13 +468,14 @@
     @media (max-width: 900px) {
       /* Hide desktop sidebar on mobile */
       .sidebar { display: none !important; }
-      .main { margin-left: 0 !important; padding-bottom: 80px !important; }
+      .main { margin-left: 0 !important; padding-bottom: 96px !important; }
 
       /* Topbar Mobile Optimizations */
       .topbar { padding: 0 16px; height: 58px; }
 
-      /* Stat cards responsive vertical stacking */
-      .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      /* Stat cards responsive vertical stacking (!important beats the inline
+         grid-template-columns used on the Attendance/Notifications pages) */
+      .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
       .profile-grid { grid-template-columns: 1fr; }
       .pf-row { grid-template-columns: 1fr; }
       .page { padding: 18px 16px; }
@@ -477,23 +486,89 @@
         grid-template-columns: 1fr !important;
       }
 
-      /* Mobile App Bottom Navigation Bar */
+      /* Check-in card: stack info + button instead of squeezing them side by side */
+      .checkin-card {
+        flex-wrap: wrap;
+        align-items: stretch;
+        padding: 18px;
+      }
+      .checkin-card-info {
+        width: 100%;
+      }
+      .checkin-card-info h3,
+      .checkin-card-info p {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+      }
+      .checkin-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* Search bars on My Classes / Resources: let the input take full width
+         before the dropdown/reset button, instead of squeezing three inline
+         min-widths into one row */
+      .search-input-wrap {
+        min-width: 100% !important;
+      }
+
+      /* Certificates list: stack the View/Download buttons under the info
+         instead of cramming a full row of buttons next to it */
+      #studentCertificatesList > div {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      #studentCertificatesList > div > div:last-child {
+        width: 100%;
+      }
+      #studentCertificatesList > div > div:last-child button {
+        flex: 1;
+        justify-content: center;
+      }
+
+      /* Topbar badges: tighten spacing so branch + status + bell + avatar
+         don't crowd narrow screens */
+      .topbar-right {
+        gap: 8px;
+      }
+      .topbar-badge {
+        padding: 5px 9px;
+        font-size: 11px;
+      }
+
+      /* Mobile App Bottom Navigation Bar (floating pill, hangs above the edge).
+         The visual pill (blur/background/border/shadow) lives on ::before, sized
+         to just the 62px strip. The buttons themselves sit in this plain,
+         filter-free 92px-tall box so the raised circle's tap area is never
+         clipped — backdrop-filter creates its own compositing layer, and on
+         many mobile browsers/WebViews touches on content that overflows above
+         that layer's box (like the raised circle used to) get silently
+         swallowed even though the circle still renders correctly. */
       .mobile-bottom-nav {
         display: flex;
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        left: 16px;
+        right: 16px;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        height: 92px;
+        align-items: flex-end;
+        justify-content: space-around;
+        z-index: 990;
+      }
+      .mobile-bottom-nav::before {
+        content: '';
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
         height: 62px;
-        background: rgba(18, 34, 63, 0.95);
+        background: rgba(18, 34, 63, 0.97);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border-top: 1px solid var(--border);
-        justify-content: space-around;
-        align-items: center;
-        z-index: 990;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
-        padding-bottom: env(safe-area-inset-bottom);
+        border: 1px solid rgba(245,166,35,0.18);
+        border-radius: 32px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+        z-index: -1;
+        pointer-events: none;
       }
 
       .mobile-nav-item {
@@ -509,7 +584,7 @@
         font-weight: 500;
         cursor: pointer;
         width: 20%;
-        height: 100%;
+        height: 62px;
         font-family: 'Inter', sans-serif;
         transition: all 0.2s ease;
         -webkit-tap-highlight-color: transparent;
@@ -529,6 +604,21 @@
         transform: translateY(-2px);
         color: var(--gold);
       }
+
+      .mobile-nav-item.center-action { flex: 0 0 64px; width: 64px; height: 92px; position: relative; justify-content: center; align-items: center; }
+      .mobile-nav-item.center-action .center-fab {
+        width: 64px; height: 64px; border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold));
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 0 6px rgba(245,166,35,0.16), 0 8px 20px rgba(245,166,35,0.4);
+        border: 3px solid var(--navy);
+        transition: transform 0.15s ease;
+        margin-top: 14px;
+      }
+      .mobile-nav-item.center-action .center-fab i {
+        font-size: 22px; color: var(--navy); transform: none !important;
+      }
+      .mobile-nav-item.center-action:active .center-fab { transform: scale(0.92); }
 
       /* Slide-up Bottom Sheet for "More" Menu */
       .mobile-more-overlay {
@@ -588,6 +678,27 @@
         text-align: center;
       }
 
+      .sheet-close-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .sheet-close-btn:active {
+        background: rgba(245,166,35,0.15);
+        color: var(--gold);
+      }
+
       .sheet-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -637,6 +748,78 @@
       .video-grid { grid-template-columns: 1fr; }
       .sheet-grid { grid-template-columns: repeat(2, 1fr); }
       .toast { left: 16px; right: 16px; max-width: none; bottom: 80px; }
+
+      /* Modals: less padding so content has more breathing room on tiny screens */
+      .modal-header { padding: 16px 18px; }
+      .modal-body { padding: 18px; }
+
+      /* Resources filter row: stack fully instead of wrapping mid-row.
+         My Classes keeps its normal row-flow instead — the search bar
+         already drops to its own line (min-width:100% above), so the
+         status filter and Reset button now share the next line together
+         rather than each getting stacked on its own row. */
+      #page-resources > div[style*="flex-wrap:wrap"] {
+        flex-direction: column;
+        align-items: stretch !important;
+      }
+      #classStatusFilter {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+
+    /* Attendance & My Classes tables: collapse into stacked cards on mobile
+       instead of shrinking a wide desktop table into unreadable columns */
+    @media (max-width: 700px) {
+      .att-table thead { display: none; }
+      .att-table, .att-table tbody, .att-table tr, .att-table td {
+        display: block;
+        width: 100%;
+      }
+      .att-table tr {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 12px;
+        padding: 12px 14px;
+        background: var(--navy);
+      }
+      .att-table tr:last-child { margin-bottom: 0; }
+      .att-table td {
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 8px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        text-align: right;
+        font-size: 13px;
+      }
+      .att-table td:last-child { border-bottom: none; }
+      .att-table td[data-label]::before {
+        content: attr(data-label);
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: left;
+        flex-shrink: 0;
+        margin-right: 12px;
+      }
+      /* Loading/empty rows (colspan) render as plain centered text, no label */
+      .att-table td[colspan] {
+        display: block;
+        text-align: center;
+      }
+      .att-table td[colspan]::before { content: none; }
+      #studentClassesTableBody td[data-label="Title"] {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+      }
+      #studentClassesTableBody td[data-label="Actions"] {
+        justify-content: flex-end;
+      }
     }
     #systemLogoutOverlay {
       position: fixed; inset: 0; z-index: 99999;
@@ -1140,31 +1323,71 @@
 
   <!-- MOBILE APP BOTTOM NAVIGATION BAR -->
   <nav class="mobile-bottom-nav">
-    <button class="mobile-nav-item active" data-page="dashboard" onclick="mobileSelectTab('dashboard')">
+    <button class="mobile-nav-item active" data-page="dashboard">
       <i class="fas fa-th-large"></i>
       <span>Dashboard</span>
     </button>
-    <button class="mobile-nav-item" id="mobNavLessons" data-page="lessons" onclick="mobileSelectTab('lessons')">
-      <i class="fas fa-play-circle"></i>
-      <span>Lessons</span>
-    </button>
-    <button class="mobile-nav-item" id="mobNavQuizzes" data-page="quizzes" onclick="mobileSelectTab('quizzes')">
+    <button class="mobile-nav-item" id="mobNavQuizzes" data-page="quizzes">
       <i class="fas fa-tasks"></i>
       <span>Quizzes</span>
     </button>
-    <button class="mobile-nav-item" data-page="classes" onclick="mobileSelectTab('classes')">
+    <button class="mobile-nav-item center-action" id="mobNavLessons" data-page="lessons">
+      <div class="center-fab"><i class="fas fa-play-circle"></i></div>
+    </button>
+    <button class="mobile-nav-item" data-page="classes">
       <i class="fas fa-chalkboard"></i>
       <span>Classes</span>
     </button>
-    <button class="mobile-nav-item" id="mobileMoreBtn" onclick="toggleMobileMoreSheet()">
+    <button class="mobile-nav-item" id="mobileMoreBtn">
       <i class="fas fa-ellipsis-h"></i>
       <span>More</span>
     </button>
   </nav>
 
+  <script>
+    // Global stub so any other onclick= attributes still work before the
+    // module loads. Retries briefly instead of silently no-op'ing.
+    function callWhenReady(fnName, args, attempts) {
+      attempts = attempts || 0;
+      const fn = window[fnName];
+      if (typeof fn === "function") { fn.apply(null, args); return; }
+      if (attempts > 40) return; // ~4s, then give up quietly
+      setTimeout(() => callWhenReady(fnName, args, attempts + 1), 100);
+    }
+
+    // Binds one element with BOTH touchend and click, so a tap always fires
+    // exactly once, immediately — this is what actually fixes the raised
+    // "Lessons" circle missing taps, rather than relying on inline onclick=.
+    function bindTap(el, handler) {
+      if (!el) return;
+      let touchHandled = false;
+      el.addEventListener('touchend', function (e) {
+        touchHandled = true;
+        e.preventDefault();
+        handler(e);
+        setTimeout(function () { touchHandled = false; }, 400);
+      }, { passive: false });
+      el.addEventListener('click', function (e) {
+        if (touchHandled) { e.preventDefault(); e.stopPropagation(); return; }
+        handler(e);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.mobile-bottom-nav .mobile-nav-item').forEach(function (btn) {
+        if (btn.id === 'mobileMoreBtn') {
+          bindTap(btn, function () { callWhenReady('toggleMobileMoreSheet', []); });
+        } else {
+          bindTap(btn, function () { callWhenReady('mobileSelectTab', [btn.dataset.page]); });
+        }
+      });
+    });
+  </script>
+
   <!-- MOBILE "MORE" SLIDE-UP SHEET -->
   <div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="closeMobileMoreSheet()"></div>
   <div class="mobile-more-sheet" id="mobileMoreSheet">
+    <button class="sheet-close-btn" onclick="closeMobileMoreSheet()" aria-label="Close"><i class="fas fa-times"></i></button>
     <div class="sheet-handle"></div>
     <div class="sheet-title">More Options</div>
     <div class="sheet-grid">
@@ -1709,12 +1932,12 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
               if (foundClass) classTitle = foundClass.title || '—';
             }
             return `<tr>
-              <td style="font-size:12px;">${dateTimeStr}</td>
-              <td style="font-size:12px;">${studentData.courseType || '—'}</td>
-              <td style="font-size:12px;">${escapeHtml(classTitle)}</td>
-              <td style="font-size:12px;">${r.instructor || '—'}</td>
-              <td style="font-size:12px;">Stage ${r.stage || '—'}</td>
-              <td style="font-size:12px;">${pill}</td>
+              <td style="font-size:12px;" data-label="Date">${dateTimeStr}</td>
+              <td style="font-size:12px;" data-label="Course">${studentData.courseType || '—'}</td>
+              <td style="font-size:12px;" data-label="Class Title">${escapeHtml(classTitle)}</td>
+              <td style="font-size:12px;" data-label="Instructor">${r.instructor || '—'}</td>
+              <td style="font-size:12px;" data-label="Stage">Stage ${r.stage || '—'}</td>
+              <td style="font-size:12px;" data-label="Status">${pill}</td>
             </tr>`;
           }).join('');
 
@@ -3139,13 +3362,13 @@ window.applyStudentPermissionsToNav = applyStudentPermissionsToNav;
         ? `${cls.durationMinutes / 60}h${cls.durationMinutes % 60 ? ` ${cls.durationMinutes % 60}m` : ''}`
         : `${cls.durationMinutes}m`;
       return `<tr>
-        <td><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
-        <td style="color:var(--text-muted);font-size:12px;">${escapeHtml(cls.instructorName || '—')}</td>
-        <td><div style="font-weight:500;">${dateStr}</div><div style="font-size:11px;color:var(--text-muted);">${timeRange}</div></td>
-        <td style="color:var(--text-muted);">${durLabel}</td>
-        <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);"><i class="fas ${modeIcon}" style="color:var(--gold);"></i>${modeLabel}</span></td>
-        <td>${classStatusPill(status)}</td>
-        <td style="display:flex;gap:6px;">
+        <td data-label="Title"><div style="font-weight:600">${escapeHtml(cls.title)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(cls.description || '')}</div></td>
+        <td style="color:var(--text-muted);font-size:12px;" data-label="Instructor">${escapeHtml(cls.instructorName || '—')}</td>
+        <td data-label="Date & Time"><div style="font-weight:500;">${dateStr}</div><div style="font-size:11px;color:var(--text-muted);">${timeRange}</div></td>
+        <td style="color:var(--text-muted);" data-label="Duration">${durLabel}</td>
+        <td data-label="Mode"><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);"><i class="fas ${modeIcon}" style="color:var(--gold);"></i>${modeLabel}</span></td>
+        <td data-label="Status">${classStatusPill(status)}</td>
+        <td style="display:flex;gap:6px;" data-label="Actions">
           <button class="btn-sm btn-sm-outline" onclick="openClassDetailsModal('${cls.id}')" style="padding:5px 10px;">
             <i class="fas fa-eye"></i> View
           </button>

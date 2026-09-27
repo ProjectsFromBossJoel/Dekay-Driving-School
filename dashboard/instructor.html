@@ -29,6 +29,10 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+    /* Removes the ~300ms native tap delay some mobile browsers/in-app webviews
+       still apply even with a correct viewport meta tag, so buttons feel
+       instant instead of laggy. */
+    button, [onclick] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Inter', sans-serif; background: var(--navy); color: var(--white); display: flex; min-height: 100vh; overflow-x: hidden; }
 
     /* Sidebar (Desktop View) */
@@ -254,35 +258,63 @@
     @media (max-width: 900px) {
       /* Hide desktop sidebar on mobile */
       .sidebar { display: none !important; }
-      .main { margin-left: 0 !important; padding-bottom: 75px !important; }
+      .main { margin-left: 0 !important; padding-bottom: 96px !important; }
 
-      /* Topbar Mobile Optimizations */
-      .topbar { padding: 0 16px; height: 58px; }
+      /* Topbar Mobile Optimizations — also respects the phone's rounded-corner
+         / notch safe area, since viewport-fit=cover is set on this page */
+      .topbar { padding: 0 16px; padding-top: env(safe-area-inset-top, 0px); height: calc(58px + env(safe-area-inset-top, 0px)); }
       .instructor-chip { display: none; } /* Saved space for mobile title */
 
       /* Stat cards responsive vertical stacking */
       .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .stat-card { padding: 14px; }
+      .stat-card-icon { width: 34px; height: 34px; font-size: 15px; margin-bottom: 10px; }
+      .stat-card-value { font-size: 22px; }
       .profile-grid { grid-template-columns: 1fr; }
       .pf-row { grid-template-columns: 1fr; }
       .page { padding: 18px 16px; }
 
-      /* Mobile App Bottom Navigation Bar */
+      /* Tighter cards so more fits on screen without feeling cramped */
+      .card-header { padding: 14px 16px; flex-wrap: wrap; gap: 8px; }
+      .card-body { padding: 16px; }
+
+      /* Modals: full-bleed with less padding, like a native sheet */
+      .modal { max-width: 100% !important; margin: 0 8px; }
+      .modal-header, .modal-footer { padding: 14px 16px; }
+      .modal-body { padding: 16px; }
+
+      /* Mobile App Bottom Navigation Bar (floating pill, hangs above the edge).
+         The visual pill (blur/background/border/shadow) lives on ::before, sized
+         to just the 62px strip. The buttons themselves sit in this plain,
+         filter-free 92px-tall box so the raised Lessons button's tap area is
+         never clipped — backdrop-filter creates its own compositing layer, and
+         on many mobile browsers/WebViews touches on content that overflows
+         above that layer's box get silently swallowed even though it still
+         renders correctly. */
       .mobile-bottom-nav {
         display: flex;
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        left: 16px;
+        right: 16px;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        height: 92px;
+        align-items: flex-end;
+        justify-content: space-around;
+        z-index: 990;
+      }
+      .mobile-bottom-nav::before {
+        content: '';
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
         height: 62px;
-        background: rgba(18, 34, 63, 0.95);
+        background: rgba(18, 34, 63, 0.97);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border-top: 1px solid var(--border);
-        justify-content: space-around;
-        align-items: center;
-        z-index: 990;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
-        padding-bottom: env(safe-area-inset-bottom);
+        border: 1px solid rgba(245,166,35,0.18);
+        border-radius: 32px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+        z-index: -1;
+        pointer-events: none;
       }
 
       .mobile-nav-item {
@@ -298,7 +330,7 @@
         font-weight: 500;
         cursor: pointer;
         width: 20%;
-        height: 100%;
+        height: 62px;
         font-family: 'Inter', sans-serif;
         transition: all 0.2s ease;
         -webkit-tap-highlight-color: transparent;
@@ -318,6 +350,22 @@
         transform: translateY(-2px);
         color: var(--gold);
       }
+
+      /* Raised center action (Lessons) — same width/height as its own hit box,
+         so the whole circle is always tappable, never clipped */
+      .mobile-nav-item.center-action { flex: 0 0 64px; width: 64px; height: 92px; position: relative; justify-content: center; align-items: center; }
+      .mobile-nav-item.center-action .center-fab {
+        width: 64px; height: 64px; border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold));
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 0 6px rgba(245,166,35,0.16), 0 8px 20px rgba(245,166,35,0.4);
+        border: 3px solid var(--navy);
+        transition: transform 0.15s ease;
+      }
+      .mobile-nav-item.center-action .center-fab i {
+        font-size: 22px; color: var(--navy);
+      }
+      .mobile-nav-item.center-action:active .center-fab { transform: scale(0.92); }
 
       /* Slide-up Bottom Sheet for "More" Menu */
       .mobile-more-overlay {
@@ -377,6 +425,27 @@
         text-align: center;
       }
 
+      .sheet-close-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .sheet-close-btn:active {
+        background: rgba(245,166,35,0.15);
+        color: var(--gold);
+      }
+
       .sheet-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -426,7 +495,7 @@
       .stat-card-value { font-size: 22px; }
       .stat-card { padding: 14px; }
       .sheet-grid { grid-template-columns: repeat(2, 1fr); }
-      .toast { left: 16px; right: 16px; max-width: none; bottom: 80px; }
+      .toast { left: 16px; right: 16px; max-width: none; bottom: 96px; }
     }
     #systemLogoutOverlay {
       position: fixed; inset: 0; z-index: 99999;
@@ -816,9 +885,8 @@
       <i class="fas fa-users"></i>
       <span>Students</span>
     </button>
-    <button class="mobile-nav-item" id="mobNavLessons" data-page="lessons" onclick="mobileSelectTab('lessons')">
-      <i class="fas fa-play-circle"></i>
-      <span>Lessons</span>
+    <button class="mobile-nav-item center-action" id="mobNavLessons" data-page="lessons" onclick="mobileSelectTab('lessons')">
+      <div class="center-fab"><i class="fas fa-play-circle"></i></div>
     </button>
     <button class="mobile-nav-item" id="mobNavMyAttendance" data-page="myAttendance" onclick="mobileSelectTab('myAttendance')">
       <i class="fas fa-user-check"></i>
@@ -833,6 +901,7 @@
   <!-- MOBILE "MORE" SLIDE-UP SHEET -->
   <div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="closeMobileMoreSheet()"></div>
   <div class="mobile-more-sheet" id="mobileMoreSheet">
+    <button class="sheet-close-btn" onclick="closeMobileMoreSheet()" aria-label="Close"><i class="fas fa-times"></i></button>
     <div class="sheet-handle"></div>
     <div class="sheet-title">More Options</div>
     <div class="sheet-grid">
